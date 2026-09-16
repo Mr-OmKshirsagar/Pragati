@@ -71,22 +71,57 @@ describe("Phase 05: Faculty Mentoring & Closed-Loop Interventions", () => {
 
   beforeAll(async () => {
     const studentCtx = await createTestContext("demo_STUDENT");
-    const caller = appRouter.createCaller(studentCtx);
+    studentProfileId = studentCtx.user?.studentProfile?.id;
 
+    const db = await getDb();
+    if (db && studentProfileId) {
+      // Ensure any leftover 82 scores from prior test crashes are removed
+      await db
+        .delete(skillHistory)
+        .where(
+          and(
+            eq(skillHistory.studentId, studentProfileId),
+            eq(skillHistory.score, "82.00")
+          )
+        );
+      // Ensure DSA gap is reset to OPEN
+      await db
+        .update(skillGaps)
+        .set({ status: "OPEN", resolvedAt: null })
+        .where(eq(skillGaps.studentId, studentProfileId));
+    }
+
+    const caller = appRouter.createCaller(studentCtx);
     // Ensure student's gaps are evaluated and seeded
     const gaps = await caller.skillGap.getMyGaps();
     const dsaGap = gaps.find((g) => g.skillName === "Data Structures & Algorithms");
     testGapId = dsaGap?.id;
-    studentProfileId = studentCtx.user?.studentProfile?.id;
   });
 
   afterAll(async () => {
     const db = await getDb();
-    if (db && createdInterventionId) {
-      // Clean up test intervention
-      await db
-        .delete(interventions)
-        .where(eq(interventions.id, createdInterventionId));
+    if (db) {
+      if (createdInterventionId) {
+        await db
+          .delete(interventions)
+          .where(eq(interventions.id, createdInterventionId));
+      }
+      if (testGapId) {
+        await db
+          .update(skillGaps)
+          .set({ status: "OPEN", resolvedAt: null })
+          .where(eq(skillGaps.id, testGapId));
+      }
+      if (studentProfileId) {
+        await db
+          .delete(skillHistory)
+          .where(
+            and(
+              eq(skillHistory.studentId, studentProfileId),
+              eq(skillHistory.score, "82.00")
+            )
+          );
+      }
     }
   });
 
