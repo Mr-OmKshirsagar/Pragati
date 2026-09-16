@@ -155,6 +155,80 @@
 
 @media (min-width: 640px) { .container { padding-inline: 1.5rem; } }
 @media (min-width: 1024px) { .container { max-width: 1440px; padding-inline: 2.5rem; } }
+/* ── Landing page ─────────────────────────────────────────────────────────── */
+
+.landing-page-root {
+  color-scheme: dark;
+  background: #060d1e;
+}
+
+/* Shimmer sweep used on CTA buttons */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Gentle pulse ring around live-status dots */
+@keyframes ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(110, 231, 183, 0.55); }
+  50%       { box-shadow: 0 0 0 7px rgba(110, 231, 183, 0); }
+}
+
+/* Slow spin for decorative arcs */
+@keyframes slow-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Drift — used by floating badge cards */
+@keyframes drift-up {
+  0%, 100% { transform: translateY(0px) translateZ(20px); }
+  50%       { transform: translateY(-10px) translateZ(20px); }
+}
+
+@keyframes drift-down {
+  0%, 100% { transform: translateY(0px) translateZ(24px); }
+  50%       { transform: translateY(10px) translateZ(24px); }
+}
+
+/* Text gradient shimmer */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-text {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* Utility: twinkling star dots in hero background */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.55; }
+}
+
+/* Topic pill enter */
+@keyframes pill-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Stat card count-up feel */
+@keyframes stat-pop {
+  0%   { transform: scale(0.88); opacity: 0; }
+  60%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* Underline reveal */
+@keyframes underline-in {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+
+/* ── Prose / body stays light in non-landing pages ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.001ms !important; }
 }
