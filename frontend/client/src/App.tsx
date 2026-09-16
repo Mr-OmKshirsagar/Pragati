@@ -1,10 +1,12 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import Achievements from "./pages/Achievements";
+import AuthPage from "./pages/Auth";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
-import Achievements from "./pages/Achievements";
 import Opportunities from "./pages/Opportunities";
 import Progress from "./pages/Progress";
 import Skills from "./pages/Skills";
@@ -16,22 +18,38 @@ const Passport = () => <WorkspacePage kind="passport" />;
 const Mentoring = () => <WorkspacePage kind="mentoring" />;
 
 function Router() {
-  return <Switch>
-    <Route path="/" component={Home} />
-    <Route path="/overview" component={Home} />
-    <Route path="/dashboard" component={Home} />
-    <Route path="/progress" component={Progress} />
-    <Route path="/skills" component={Skills} />
-    <Route path="/achievements" component={Achievements} />
-    <Route path="/opportunities" component={Opportunities} />
-    <Route path="/internship" component={Internship} />
-    <Route path="/career-passport" component={Passport} />
-    <Route path="/mentoring" component={Mentoring} />
-    <Route path="/404" component={NotFound} />
-    <Route component={NotFound} />
-  </Switch>;
+  return (
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/overview" component={Home} />
+      <Route path="/dashboard" component={Home} />
+      <Route path="/login">{() => <AuthPage initialMode="login" />}</Route>
+      <Route path="/register">{() => <AuthPage initialMode="register" />}</Route>
+      <Route path="/auth">{() => <AuthPage initialMode="login" />}</Route>
+      <Route path="/progress" component={Progress} />
+      <Route path="/skills" component={Skills} />
+      <Route path="/achievements" component={Achievements} />
+      <Route path="/opportunities" component={Opportunities} />
+      <Route path="/internship" component={Internship} />
+      <Route path="/career-passport" component={Passport} />
+      <Route path="/mentoring" component={Mentoring} />
+      <Route path="/404" component={NotFound} />
+      <Route component={NotFound} />
+    </Switch>
+  );
 }
 
 export default function App() {
-  return <ErrorBoundary><ThemeProvider defaultTheme="light"><TooltipProvider><Toaster /><Router /></TooltipProvider></ThemeProvider></ErrorBoundary>;
+  return (
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="light">
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
 }

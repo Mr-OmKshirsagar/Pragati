@@ -12,7 +12,105 @@ const records = [
 
 export default function Achievements() {
   const [showForm, setShowForm] = useState(false);
-  return <PragatiFrame title="Achievements" activePath="/achievements"><main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10"><div className="mx-auto max-w-[1240px]"><header className="mb-7 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><div className="mb-2 eyebrow">Verified record</div><h1 className="text-[30px] font-extrabold tracking-[-0.045em] text-[#182643] sm:text-[36px]">Achievements</h1><p className="mt-1 text-sm text-[#6c7890]">A clean record of the work, competitions, certificates, and leadership moments that belong in your Career Passport.</p></div><button onClick={() => setShowForm(true)} className="flex items-center justify-center gap-2 rounded-xl bg-[#3048a8] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#3f5ac1]"><Plus className="h-3.5 w-3.5" /> Add achievement</button></header><div className="mb-5 grid grid-cols-2 gap-3.5 sm:grid-cols-4">{[["Total records", "12"], ["Institution verified", "09"], ["Issuer verified", "04"], ["Pending review", "01"]].map(([label, value]) => <div key={label} className="premium-card p-4"><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8490a5]">{label}</div><div className="mt-2 text-2xl font-extrabold tracking-[-0.05em] text-[#1b2946]">{value}</div></div>)}</div><div className="mb-4 flex items-center justify-between"><div><div className="eyebrow mb-1">Achievement registry</div><h2 className="text-lg font-extrabold tracking-[-0.03em] text-[#1c2a47]">Your records</h2></div><div className="flex items-center gap-2 text-[11px] text-[#8995aa]"><Award className="h-4 w-4 text-[#5268cb]" /> 4 categories</div></div><div className="grid gap-4 md:grid-cols-2">{records.map((record, index) => <article key={record.title} className={`premium-card motion-enter motion-delay-${index + 1} p-5 transition hover:-translate-y-0.5 hover:border-[#cbd5ef]`}><div className="flex items-start gap-3"><div className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf0ff] text-[#5268cb]"><Award className="h-5 w-5" /></div><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><h3 className="text-sm font-extrabold text-[#263653]">{record.title}</h3><span className="rounded-full bg-[#eef1f7] px-2 py-1 text-[9px] font-bold text-[#71809a]">{record.category}</span></div><div className="mt-1 text-xs text-[#7d899f]">{record.issuer}</div></div></div><div className="mt-5 flex items-center justify-between border-t border-[#edf0f4] pt-4"><div className="flex items-center gap-1.5 text-[11px] text-[#8995aa]"><CalendarDays className="h-3.5 w-3.5" /> {record.date}</div><VerificationBadge state={record.state} tone={record.tone} /></div><div className="mt-4 flex items-center justify-between"><button onClick={() => toast.info("Evidence viewer is ready for backend file storage")} className="flex items-center gap-1.5 text-[11px] font-bold text-[#5268cb]"><FileCheck2 className="h-3.5 w-3.5" /> View evidence</button><button onClick={() => toast.info("Evidence upload will use the PRAGATI storage API")} className="flex items-center gap-1.5 text-[11px] font-bold text-[#71809a]"><UploadCloud className="h-3.5 w-3.5" /> Upload</button></div></article>)}</div></div></main>{showForm && <div className="fixed inset-0 z-50"><button aria-label="Close add achievement" onClick={() => setShowForm(false)} className="absolute inset-0 bg-[#07112d]/45 backdrop-blur-sm" /><aside className="motion-enter absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-[#f8f9fc] p-6 shadow-2xl"><div className="mb-7 flex items-center justify-between"><div><div className="eyebrow">New record</div><h2 className="mt-1 text-xl font-extrabold text-[#1c2a47]">Add achievement</h2></div><button onClick={() => setShowForm(false)} className="rounded-lg p-2 text-[#71809a]">×</button></div><div className="space-y-4"><label className="block text-xs font-bold text-[#52617d]">Achievement title<input className="mt-2 w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#cbd3f6]" placeholder="e.g. Hackathon finalist" /></label><label className="block text-xs font-bold text-[#52617d]">Issuer<input className="mt-2 w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#cbd3f6]" placeholder="Organization or institution" /></label><div className="rounded-2xl border border-dashed border-[#c8d2e3] bg-white p-6 text-center"><UploadCloud className="mx-auto h-5 w-5 text-[#5268cb]" /><div className="mt-2 text-xs font-bold text-[#52617d]">Drop evidence here</div><div className="mt-1 text-[10px] text-[#8995aa]">PDF, PNG, or JPG · verification state starts as Self Reported</div></div><button onClick={() => { setShowForm(false); toast.success("Achievement saved as Self Reported"); }} className="w-full rounded-xl bg-[#3048a8] py-3 text-xs font-bold text-white">Save achievement</button></div></aside></div>}</PragatiFrame>;
+  return (
+    <PragatiFrame title="Achievements" activePath="/achievements">
+      <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10">
+        <div className="mx-auto max-w-[1240px]">
+          <header className="mb-7 grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div>
+              <div className="mb-2 eyebrow">Verified record</div>
+              <h1 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#182643] sm:text-[34px]">Achievements</h1>
+              <p className="mt-1 text-sm leading-relaxed text-[#6c7890]">A clean record of the work, competitions, certificates, and leadership moments that belong in your Career Passport.</p>
+            </div>
+            <button onClick={() => setShowForm(true)} className="grid grid-flow-col auto-cols-max items-center justify-center gap-2 rounded-xl bg-[#3048a8] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#3f5ac1]">
+              <Plus className="h-3.5 w-3.5" /> Add achievement
+            </button>
+          </header>
+          <div className="mb-5 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+            {[["Total records", "12"], ["Institution verified", "09"], ["Issuer verified", "04"], ["Pending review", "01"]].map(([label, value]) => (
+              <div key={label} className="premium-card p-4">
+                <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#8490a5]">{label}</div>
+                <div className="kpi-value mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#1b2946]">{value}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mb-4 grid grid-cols-[1fr_auto] items-center">
+            <div>
+              <div className="eyebrow mb-1">Achievement registry</div>
+              <h2 className="text-lg font-bold tracking-tight text-[#1c2a47]">Your records</h2>
+            </div>
+            <div className="grid grid-flow-col auto-cols-max items-center gap-2 text-[11px] font-medium text-[#8995aa]">
+              <Award className="h-4 w-4 text-[#5268cb]" /> 4 categories
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {records.map((record, index) => (
+              <article key={record.title} className={`premium-card motion-enter motion-delay-${index + 1} p-5 transition hover:-translate-y-0.5 hover:border-[#cbd5ef]`}>
+                <div className="grid grid-cols-[auto_1fr] items-start gap-3">
+                  <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf0ff] text-[#5268cb]">
+                    <Award className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+                      <h3 className="text-sm font-bold text-[#263653]">{record.title}</h3>
+                      <span className="rounded-full bg-[#eef1f7] px-2 py-1 text-[9px] font-bold text-[#71809a]">{record.category}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-[#7d899f]">{record.issuer}</div>
+                  </div>
+                </div>
+                <div className="mt-5 grid grid-cols-[1fr_auto] items-center border-t border-[#edf0f4] pt-4">
+                  <div className="grid grid-flow-col auto-cols-max items-center gap-1.5 text-[11px] text-[#8995aa]">
+                    <CalendarDays className="h-3.5 w-3.5" /> {record.date}
+                  </div>
+                  <VerificationBadge state={record.state} tone={record.tone} />
+                </div>
+                <div className="mt-4 grid grid-cols-[auto_auto] justify-between items-center">
+                  <button onClick={() => toast.info("Evidence viewer is ready for backend file storage")} className="grid grid-flow-col auto-cols-max items-center gap-1.5 text-[11px] font-bold text-[#5268cb]">
+                    <FileCheck2 className="h-3.5 w-3.5" /> View evidence
+                  </button>
+                  <button onClick={() => toast.info("Evidence upload will use the PRAGATI storage API")} className="grid grid-flow-col auto-cols-max items-center gap-1.5 text-[11px] font-bold text-[#71809a]">
+                    <UploadCloud className="h-3.5 w-3.5" /> Upload
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </main>
+      {showForm && (
+        <div className="fixed inset-0 z-50">
+          <button aria-label="Close add achievement" onClick={() => setShowForm(false)} className="absolute inset-0 bg-[#07112d]/45 backdrop-blur-sm" />
+          <aside className="motion-enter absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-[#f8f9fc] p-6 shadow-2xl">
+            <div className="mb-7 grid grid-cols-[1fr_auto] items-center">
+              <div>
+                <div className="eyebrow">New record</div>
+                <h2 className="mt-1 text-xl font-extrabold text-[#1c2a47]">Add achievement</h2>
+              </div>
+              <button onClick={() => setShowForm(false)} className="rounded-lg p-2 text-[#71809a]">×</button>
+            </div>
+            <div className="grid gap-4">
+              <label className="block text-xs font-bold text-[#52617d]">
+                Achievement title
+                <input className="mt-2 w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#cbd3f6]" placeholder="e.g. Hackathon finalist" />
+              </label>
+              <label className="block text-xs font-bold text-[#52617d]">
+                Issuer
+                <input className="mt-2 w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#cbd3f6]" placeholder="Organization or institution" />
+              </label>
+              <div className="rounded-2xl border border-dashed border-[#c8d2e3] bg-white p-6 text-center">
+                <UploadCloud className="mx-auto h-5 w-5 text-[#5268cb]" />
+                <div className="mt-2 text-xs font-bold text-[#52617d]">Drop evidence here</div>
+                <div className="mt-1 text-[10px] text-[#8995aa]">PDF, PNG, or JPG · verification state starts as Self Reported</div>
+              </div>
+              <button onClick={() => { setShowForm(false); toast.success("Achievement saved as Self Reported"); }} className="w-full rounded-xl bg-[#3048a8] py-3 text-xs font-bold text-white">
+                Save achievement
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+    </PragatiFrame>
+  );
 }
 
 function VerificationBadge({ state, tone }: { state: string; tone: string }) { const Icon = state === "Rejected" ? XCircle : state === "Pending" || state === "Self Reported" ? FileCheck2 : CheckCircle2; const styles: Record<string, string> = { green: "bg-[#e5f7f2] text-[#13876f]", blue: "bg-[#edf0ff] text-[#5268cb]", amber: "bg-[#fff1dc] text-[#bd7a27]", slate: "bg-[#eef1f6] text-[#71809a]" }; return <span className={`flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold ${styles[tone]}`}><Icon className="h-3 w-3" /> {state}</span>; }
