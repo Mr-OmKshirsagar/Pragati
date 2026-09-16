@@ -1,28 +1,31 @@
 # PRAGATI — DEVELOPMENT PROGRESS
 
 Last Updated:
-`YYYY-MM-DD HH:MM`
+`2026-09-16 15:08 IST`
 
 ---
 
-# PHASE 0 — ARCHITECTURE
+# PHASE 0 — ARCHITECTURE & SUPABASE FOUNDATION (COMPLETED)
 
-* [x] Repository audit
+* [x] Repository audit & SDD architecture
 * [x] Technology decisions (Supabase PostgreSQL, Supabase Auth/Storage/Realtime, React 19, Vite, Express + tRPC)
 * [x] System architecture & master spec.md
-* [x] Database schema & RLS policies
-* [x] API contract & tRPC routers
 * [x] Folder structure & specs/ directory (13 phase-wise specs)
+* [x] Dedicated `backend/` workspace initialized (`package.json`, `tsconfig.json`)
+* [x] Environment configuration (`.env.example`, `.env`, `.gitignore`)
+* [x] Supabase Admin Client (`src/_core/supabase.ts`)
+* [x] PostgreSQL & Drizzle ORM foundation (`src/db.ts`, `drizzle.config.ts`, `drizzle/schema.ts`)
+* [x] Express Application Bootstrap with `/health` endpoint (`src/index.ts`)
+* [x] Automated test suite passing (`tests/phase-00.test.ts`)
 
 ---
 
-# PHASE 1 — FOUNDATION
+# PHASE 1 — DATABASE SCHEMA & RLS
 
-* [ ] PostgreSQL
-* [ ] Database migrations
-* [ ] Seed system
-* [ ] Environment configuration
-* [ ] Health endpoint
+* [ ] Full 26-table PostgreSQL DDL schema
+* [ ] Database migrations (`drizzle-kit generate & migrate`)
+* [ ] Supabase Row Level Security (RLS) policies
+* [ ] Institutional seed fixtures (`scripts/seed.ts`)
 
 ---
 

@@ -3,7 +3,7 @@
 ## 1. Metadata
 - **Phase**: 00
 - **Title**: Architecture & Supabase Foundation Setup
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: None
 - **Target Files**:
   - `backend/.env.example`
@@ -137,8 +137,10 @@ export async function getDb() {
 
 ---
 
-## 6. Definition of Done
-- [ ] Dependencies configured in `backend/package.json`.
-- [ ] `backend/drizzle.config.ts` configured for `postgresql`.
-- [ ] Supabase admin client initialized in `backend/src/_core/supabase.ts`.
-- [ ] Type check passes cleanly with zero errors.
+- [x] Dependencies configured in `backend/package.json`.
+- [x] `backend/drizzle.config.ts` configured for `postgresql`.
+- [x] Supabase admin client initialized in `backend/src/_core/supabase.ts`.
+- [x] Type check passes cleanly with zero errors.
+- [x] Fail-safe DB access layer with graceful degradation in `backend/src/db.ts`.
+- [x] Express application bootstrap with `/health` in `backend/src/index.ts`.
+- [x] Automated test suite in `backend/tests/phase-00.test.ts` passing (4/4).
