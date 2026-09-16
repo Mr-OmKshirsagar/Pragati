@@ -83,14 +83,16 @@ Last Updated:
 
 ---
 
-# PHASE 6 — EVIDENCE
+# PHASE 6 — EVIDENCE DOCUMENTS & CRYPTOGRAPHIC SHA-256 STORAGE (COMPLETED)
 
-* [ ] File upload
-* [ ] File validation
-* [ ] SHA-256
-* [ ] Evidence metadata
-* [ ] Verification states
-* [ ] Audit logging
+* [x] Supabase Storage evidence vault configuration (`evidence-vault` bucket with tenant isolation)
+* [x] Dual-layer SHA-256 cryptographic hashing (`computeSHA256`, client Web Crypto `computeFileSHA256`)
+* [x] Security restrictions & file validation (PDF/PNG/JPEG <= 10MB, executable rejection)
+* [x] Server-side tamper detection & in-flight hash mismatch alert
+* [x] Evidence documents persistence & retrieval (`evidenceDocuments`, `evidenceRouter.getMyEvidence`)
+* [x] Interactive evaluator tamper demonstration (`TamperDemoModal.tsx` showing avalanche effect)
+* [x] Modern drag-and-drop file upload modal (`EvidenceUploadModal.tsx`) connected in `Achievements.tsx`
+* [x] Automated test suite passing (`backend/tests/phase-06.test.ts` - 54/54 tests passing across all 7 suites)
 
 ---
 

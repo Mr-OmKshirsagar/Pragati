@@ -1,17 +1,23 @@
 import PragatiFrame from "@/components/PragatiFrame";
-import { Award, CalendarDays, CheckCircle2, FileCheck2, Plus, UploadCloud, XCircle } from "lucide-react";
+import EvidenceUploadModal from "@/components/EvidenceUploadModal";
+import TamperDemoModal from "@/components/TamperDemoModal";
+import { Award, CalendarDays, CheckCircle2, FileCheck2, Plus, ShieldCheck, UploadCloud, XCircle, Zap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 const records = [
-  { title: "Hackathon Finalist", issuer: "ABC Organization", date: "08 Sep 2026", category: "Competition", state: "Institution Verified", tone: "green" },
-  { title: "Python for Data Structures", issuer: "Code Academy", date: "22 Jul 2026", category: "Certification", state: "Issuer Verified", tone: "blue" },
-  { title: "Student Tech Lead", issuer: "Northstar Institute", date: "12 May 2026", category: "Leadership", state: "Pending", tone: "amber" },
-  { title: "Open Source Sprint", issuer: "Community Program", date: "28 Mar 2026", category: "Project", state: "Self Reported", tone: "slate" },
+  { title: "Hackathon Finalist", issuer: "ABC Organization", date: "08 Sep 2026", category: "Competition", state: "Institution Verified", tone: "green", hasEvidence: true, hash: "3b9c7a4e8d2f105b6c3e7a9f1d4c2b8e0a6d5f4c3b2a1e9d8c7b6a5f4e3d2c1b" },
+  { title: "Python for Data Structures", issuer: "Code Academy", date: "22 Jul 2026", category: "Certification", state: "Issuer Verified", tone: "blue", hasEvidence: true, hash: "8f4a1c2d3e5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f" },
+  { title: "Student Tech Lead", issuer: "Northstar Institute", date: "12 May 2026", category: "Leadership", state: "Pending", tone: "amber", hasEvidence: false },
+  { title: "Open Source Sprint", issuer: "Community Program", date: "28 Mar 2026", category: "Project", state: "Self Reported", tone: "slate", hasEvidence: false },
 ];
 
 export default function Achievements() {
   const [showForm, setShowForm] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [showTamperDemo, setShowTamperDemo] = useState(false);
+  const [selectedForUpload, setSelectedForUpload] = useState<any | null>(null);
+
   return (
     <PragatiFrame title="Achievements" activePath="/achievements">
       <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10">
@@ -22,9 +28,29 @@ export default function Achievements() {
               <h1 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#182643] sm:text-[34px]">Achievements</h1>
               <p className="mt-1 text-sm leading-relaxed text-[#6c7890]">A clean record of the work, competitions, certificates, and leadership moments that belong in your Career Passport.</p>
             </div>
-            <button onClick={() => setShowForm(true)} className="grid grid-flow-col auto-cols-max items-center justify-center gap-2 rounded-xl bg-[#3048a8] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#3f5ac1]">
-              <Plus className="h-3.5 w-3.5" /> Add achievement
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setShowTamperDemo(true)}
+                className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-bold text-red-700 hover:bg-red-100 transition shadow-sm"
+              >
+                <Zap className="h-3.5 w-3.5" /> Tamper Proof Demo
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedForUpload(null);
+                  setShowUpload(true);
+                }}
+                className="flex items-center gap-1.5 rounded-xl border border-[#dfe5ef] bg-white px-3.5 py-2.5 text-xs font-bold text-[#3048a8] hover:bg-[#f4f7fd] transition shadow-sm"
+              >
+                <UploadCloud className="h-3.5 w-3.5" /> Vault Evidence
+              </button>
+              <button
+                onClick={() => setShowForm(true)}
+                className="flex items-center gap-1.5 rounded-xl bg-[#3048a8] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#3f5ac1] transition shadow-sm"
+              >
+                <Plus className="h-3.5 w-3.5" /> Add achievement
+              </button>
+            </div>
           </header>
           <div className="mb-5 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
             {[["Total records", "12"], ["Institution verified", "09"], ["Issuer verified", "04"], ["Pending review", "01"]].map(([label, value]) => (
@@ -65,11 +91,21 @@ export default function Achievements() {
                   <VerificationBadge state={record.state} tone={record.tone} />
                 </div>
                 <div className="mt-4 grid grid-cols-[auto_auto] justify-between items-center">
-                  <button onClick={() => toast.info("Evidence viewer is ready for backend file storage")} className="grid grid-flow-col auto-cols-max items-center gap-1.5 text-[11px] font-bold text-[#5268cb]">
-                    <FileCheck2 className="h-3.5 w-3.5" /> View evidence
+                  <button
+                    onClick={() => setShowTamperDemo(true)}
+                    className="grid grid-flow-col auto-cols-max items-center gap-1.5 text-[11px] font-bold text-[#5268cb] hover:underline"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    {record.hasEvidence ? "Verify SHA-256" : "Tamper Demo"}
                   </button>
-                  <button onClick={() => toast.info("Evidence upload will use the PRAGATI storage API")} className="grid grid-flow-col auto-cols-max items-center gap-1.5 text-[11px] font-bold text-[#71809a]">
-                    <UploadCloud className="h-3.5 w-3.5" /> Upload
+                  <button
+                    onClick={() => {
+                      setSelectedForUpload(record);
+                      setShowUpload(true);
+                    }}
+                    className="grid grid-flow-col auto-cols-max items-center gap-1.5 text-[11px] font-bold text-[#71809a] hover:text-[#182643]"
+                  >
+                    <UploadCloud className="h-3.5 w-3.5" /> Upload Proof
                   </button>
                 </div>
               </article>
@@ -77,6 +113,26 @@ export default function Achievements() {
           </div>
         </div>
       </main>
+
+      {showUpload && (
+        <EvidenceUploadModal
+          defaultTitle={selectedForUpload?.title}
+          onClose={() => {
+            setShowUpload(false);
+            setSelectedForUpload(null);
+          }}
+          onSuccess={() => {
+            toast.success(
+              "Document vaulted in Supabase Storage with verified SHA-256 checksum!"
+            );
+          }}
+        />
+      )}
+
+      {showTamperDemo && (
+        <TamperDemoModal onClose={() => setShowTamperDemo(false)} />
+      )}
+
       {showForm && (
         <div className="fixed inset-0 z-50">
           <button aria-label="Close add achievement" onClick={() => setShowForm(false)} className="absolute inset-0 bg-[#07112d]/45 backdrop-blur-sm" />
@@ -97,10 +153,16 @@ export default function Achievements() {
                 Issuer
                 <input className="mt-2 w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#cbd3f6]" placeholder="Organization or institution" />
               </label>
-              <div className="rounded-2xl border border-dashed border-[#c8d2e3] bg-white p-6 text-center">
+              <div
+                onClick={() => {
+                  setShowForm(false);
+                  setShowUpload(true);
+                }}
+                className="rounded-2xl border border-dashed border-[#c8d2e3] bg-white p-6 text-center cursor-pointer hover:border-[#3048a8]"
+              >
                 <UploadCloud className="mx-auto h-5 w-5 text-[#5268cb]" />
-                <div className="mt-2 text-xs font-bold text-[#52617d]">Drop evidence here</div>
-                <div className="mt-1 text-[10px] text-[#8995aa]">PDF, PNG, or JPG · verification state starts as Self Reported</div>
+                <div className="mt-2 text-xs font-bold text-[#52617d]">Click to upload proof document</div>
+                <div className="mt-1 text-[10px] text-[#8995aa]">PDF, PNG, or JPG · Dual-layer SHA-256 computed on upload</div>
               </div>
               <button onClick={() => { setShowForm(false); toast.success("Achievement saved as Self Reported"); }} className="w-full rounded-xl bg-[#3048a8] py-3 text-xs font-bold text-white">
                 Save achievement

@@ -3,7 +3,7 @@
 ## 1. Metadata
 - **Phase**: 06
 - **Title**: Cryptographic Evidence Vault, Supabase Storage & SHA-256 Tamper Detection
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: Phase 00, Phase 01, Phase 02
 - **Target Files**:
   - `backend/src/_core/storage.ts`
@@ -164,7 +164,7 @@ A dedicated component for judges and hackathon evaluation:
 ---
 
 ## 7. Definition of Done
-- [ ] Supabase Storage bucket `evidence-vault` configured.
-- [ ] Client Web Crypto SHA-256 hashing implemented.
-- [ ] Backend server validation and metadata persistence functioning.
-- [ ] `TamperDemoModal.tsx` working smoothly for evaluation demonstrations.
+- [x] Supabase Storage bucket `evidence-vault` configured.
+- [x] Client Web Crypto SHA-256 hashing implemented.
+- [x] Backend server validation and metadata persistence functioning.
+- [x] `TamperDemoModal.tsx` working smoothly for evaluation demonstrations.
