@@ -44,7 +44,23 @@ export const requireRole = (
   });
 
 // Role-Scoped Procedure Guards
-export const studentProcedure = requireRole(["STUDENT"]);
+export const studentProcedure = requireRole(["STUDENT"]).use(async ({ ctx, next }) => {
+  if (!ctx.user.studentProfile) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Student profile not found for this user account.",
+    });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      user: {
+        ...ctx.user,
+        studentProfile: ctx.user.studentProfile,
+      },
+    },
+  });
+});
 export const facultyProcedure = requireRole(["FACULTY", "HOD", "ADMIN"]);
 export const hodProcedure = requireRole(["HOD", "ADMIN"]);
 export const tnpProcedure = requireRole(["TNP_COORDINATOR", "ADMIN"]);

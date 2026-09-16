@@ -53,6 +53,68 @@ export const appRouter = router({
     opportunities: publicProcedure.query(() => opportunitiesData),
     progress: publicProcedure.query(() => progressData),
     skills: publicProcedure.query(() => skillsData),
+    getProfile: publicProcedure.query(() => ({
+      id: "student-rahul-sharma",
+      userId: "10000000-0000-0000-0000-000000000005",
+      name: "Rahul Sharma",
+      email: "student@northstar.edu",
+      avatarUrl: null,
+      enrollmentNumber: "CSE2024042",
+      program: "B.Tech Computer Science and Engineering",
+      section: "A",
+      currentSemester: 6,
+      admissionYear: 2021,
+      graduationYear: 2025,
+      institution: { id: "inst-nit-001", name: "Northstar Institute of Technology", code: "NIT-001" },
+      department: { id: "dept-cse-001", name: "Computer Science and Engineering", code: "CSE" },
+      mentor: { id: "faculty-anand-verma", name: "Dr. Anand Verma", email: "faculty@northstar.edu" },
+    })),
+    getAcademics: publicProcedure.query(() => ({
+      cgpa: 8.42,
+      totalCredits: 100,
+      activeBacklogsCount: 1,
+      semesters: [
+        { semester: 1, academicYear: "2021-22", sgpa: 8.5, cgpa: 8.5, totalCredits: 20, subjects: [] },
+        { semester: 2, academicYear: "2021-22", sgpa: 8.4, cgpa: 8.45, totalCredits: 20, subjects: [] },
+        { semester: 3, academicYear: "2022-23", sgpa: 8.6, cgpa: 8.5, totalCredits: 20, subjects: [] },
+        { semester: 4, academicYear: "2022-23", sgpa: 8.1, cgpa: 8.4, totalCredits: 20, subjects: [] },
+        { semester: 5, academicYear: "2023-24", sgpa: 8.5, cgpa: 8.42, totalCredits: 20, subjects: [] },
+      ],
+      backlogs: [
+        { id: "backlog-os", subjectCode: "CS401", subjectName: "Operating Systems", semester: 4, status: "ACTIVE" as const },
+      ],
+    })),
+    getSkills: publicProcedure.query(() => ({
+      skills: [
+        { id: "s1", name: "Data Structures & Algorithms", category: "Core Technical", latestScore: 61, delta: -9, scoreHistory: [78, 70, 61], verified: true },
+        { id: "s2", name: "Python", category: "Programming Languages", latestScore: 84, delta: 5, scoreHistory: [72, 79, 84], verified: true },
+        { id: "s3", name: "DBMS", category: "Data & Storage", latestScore: 72, delta: 3, scoreHistory: [64, 69, 72], verified: true },
+        { id: "s4", name: "Object-Oriented Programming", category: "Software Engineering", latestScore: 81, delta: 5, scoreHistory: [68, 76, 81], verified: true },
+        { id: "s5", name: "Operating Systems", category: "Systems & Architecture", latestScore: 61, delta: -9, scoreHistory: [78, 70, 61], verified: true },
+        { id: "s6", name: "Computer Networks", category: "Systems & Architecture", latestScore: 69, delta: 5, scoreHistory: [59, 64, 69], verified: true },
+      ],
+    })),
+    getAssessments: publicProcedure.query(() => [
+      { id: "assess-dsa-1", name: "DSA Assessment Cycle 1", maxScore: 100, durationMinutes: 60, status: "PUBLISHED" },
+      { id: "assess-dsa-2", name: "DSA Assessment Cycle 2", maxScore: 100, durationMinutes: 60, status: "PUBLISHED" },
+      { id: "assess-dsa-3", name: "DSA Assessment Cycle 3", maxScore: 100, durationMinutes: 60, status: "PUBLISHED" },
+    ]),
+    submitAssessment: publicProcedure
+      .input(
+        z.object({
+          assessmentId: z.string(),
+          answers: z.record(z.string(), z.any()).optional(),
+          score: z.number().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        success: true,
+        submissionId: "demo-sub-id",
+        assessmentName: "DSA Assessment",
+        score: input.score ?? 85,
+        attemptNumber: 1,
+        submittedAt: new Date().toISOString(),
+      })),
   }),
 });
 
