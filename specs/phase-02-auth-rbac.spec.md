@@ -3,7 +3,7 @@
 ## 1. Metadata
 - **Phase**: 02
 - **Title**: Supabase Auth Integration, Session Handling & Server-Side RBAC
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: Phase 00, Phase 01
 - **Target Files**:
   - `backend/src/_core/context.ts`
@@ -176,7 +176,10 @@ export const authRouter = router({
 ---
 
 ## 6. Definition of Done
-- [ ] Context extracts and verifies Supabase JWTs.
-- [ ] 5-role procedures (`studentProcedure`, `facultyProcedure`, etc.) correctly enforce access.
-- [ ] Unauthorized calls return typed TRPC errors.
-- [ ] Client `AuthContext` provides user state and role to React views.
+- [x] Context extracts and verifies Supabase JWTs & demo tokens (`backend/src/_core/context.ts`).
+- [x] 5-role procedures (`studentProcedure`, `facultyProcedure`, etc.) correctly enforce access (`backend/src/_core/trpc.ts`).
+- [x] Unauthorized calls return typed TRPC errors (401 UNAUTHORIZED / 403 FORBIDDEN).
+- [x] Anti-IDOR: student queries resolve strictly from `ctx.user.studentProfile.id`.
+- [x] Client `AuthContext` provides user state, role, and fast-switching (`frontend/client/src/contexts/AuthContext.tsx`).
+- [x] Institutional `Login.tsx` view and floating `PersonaSwitcher.tsx` component implemented.
+- [x] Automated test suite in `backend/tests/auth_rbac.test.ts` passing (8/8).

@@ -22,6 +22,19 @@ app.use((req, _res, next) => {
   }
 });
 
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { createContext } from "./_core/context";
+import { appRouter } from "./routers";
+
+// Mount tRPC API endpoint
+app.use(
+  "/api/trpc",
+  createExpressMiddleware({
+    router: appRouter,
+    createContext,
+  })
+);
+
 // Health & System Status Endpoint
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({

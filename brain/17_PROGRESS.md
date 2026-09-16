@@ -31,14 +31,15 @@ Last Updated:
 
 ---
 
-# PHASE 2 — AUTHENTICATION
+# PHASE 2 — AUTHENTICATION & 5-ROLE RBAC (COMPLETED)
 
-* [ ] Login
-* [ ] Password hashing
-* [ ] JWT/session
-* [ ] RBAC
-* [ ] Protected routes
-* [ ] IDOR protection
+* [x] Login & 1-click persona switching (`Login.tsx`, `PersonaSwitcher.tsx`)
+* [x] JWT & demo session context resolution (`backend/src/_core/context.ts`)
+* [x] 5-Role server-side RBAC (`backend/src/_core/trpc.ts`)
+* [x] Protected routes (`protectedProcedure`, `studentProcedure`, `facultyProcedure`, `tnpProcedure`, `adminProcedure`)
+* [x] Zero-IDOR protection (student profile resolved strictly from context)
+* [x] Client AuthContext with live role state (`frontend/client/src/contexts/AuthContext.tsx`)
+* [x] Automated test suite passing (`backend/tests/auth_rbac.test.ts`)
 
 ---
 
