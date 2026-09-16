@@ -6,8 +6,8 @@
 - **Status**: Ready for Implementation
 - **Dependencies**: Phase 00, Phase 01, Phase 02
 - **Target Files**:
-  - `frontend/server/_core/storage.ts`
-  - `frontend/server/routers/evidence.ts`
+  - `backend/src/_core/storage.ts`
+  - `backend/src/routers/evidence.ts`
   - `frontend/client/src/lib/crypto.ts`
   - `frontend/client/src/components/EvidenceUploadModal.tsx`
   - `frontend/client/src/components/TamperDemoModal.tsx`
@@ -54,7 +54,7 @@ export async function computeFileSHA256(file: File): Promise<string> {
 }
 ```
 
-### 4.2 Server-Side Supabase Storage Handler (`server/_core/storage.ts`)
+### 4.2 Server-Side Supabase Storage Handler (`backend/src/_core/storage.ts`)
 ```typescript
 import { supabaseAdmin } from "./supabase";
 import crypto from "crypto";
@@ -96,7 +96,7 @@ export async function uploadEvidenceToVault(params: {
 }
 ```
 
-### 4.3 Evidence Router (`server/routers/evidence.ts`)
+### 4.3 Evidence Router (`backend/src/routers/evidence.ts`)
 ```typescript
 import { router, studentProcedure } from "../_core/trpc";
 import { z } from "zod";

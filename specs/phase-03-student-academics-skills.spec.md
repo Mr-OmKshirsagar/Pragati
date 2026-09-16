@@ -3,13 +3,13 @@
 ## 1. Metadata
 - **Phase**: 03
 - **Title**: Student Profile, Academic Records & Continuous Assessment Engine
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: Phase 01, Phase 02
 - **Target Files**:
-  - `frontend/server/services/studentService.ts`
-  - `frontend/server/services/academicService.ts`
-  - `frontend/server/services/skillService.ts`
-  - `frontend/server/routers/student.ts`
+  - `backend/src/services/studentService.ts`
+  - `backend/src/services/academicService.ts`
+  - `backend/src/services/skillService.ts`
+  - `backend/src/routers/student.ts`
   - `frontend/client/src/pages/Progress.tsx`
   - `frontend/client/src/pages/Skills.tsx`
 
@@ -44,7 +44,7 @@ When a student completes an assessment:
 
 ## 4. tRPC Router & Service Contracts
 
-### 4.1 Student Router (`server/routers/student.ts`)
+### 4.1 Student Router (`backend/src/routers/student.ts`)
 ```typescript
 import { router, studentProcedure, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
@@ -148,7 +148,7 @@ export interface SkillProfileResponse {
 ---
 
 ## 7. Definition of Done
-- [ ] Student profile, academics, and skills services implemented with Drizzle ORM.
-- [ ] tRPC queries registered and verified.
-- [ ] `Progress.tsx` and `Skills.tsx` connected to real backend endpoints.
-- [ ] Tests passing for assessment submission and score trajectory updates.
+- [x] Student profile, academics, and skills services implemented with Drizzle ORM.
+- [x] tRPC queries registered and verified.
+- [x] `Progress.tsx` and `Skills.tsx` connected to real backend endpoints.
+- [x] Tests passing for assessment submission and score trajectory updates.

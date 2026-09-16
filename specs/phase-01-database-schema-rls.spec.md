@@ -3,12 +3,12 @@
 ## 1. Metadata
 - **Phase**: 01
 - **Title**: Supabase PostgreSQL Schema, Drizzle ORM Models & RLS Policies
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: Phase 00
 - **Target Files**:
-  - `frontend/drizzle/schema.ts`
-  - `frontend/drizzle/migrations/0001_initial_pragati_schema.sql`
-  - `frontend/server/scripts/seed.ts`
+  - `backend/drizzle/schema.ts`
+  - `backend/drizzle/migrations/0001_initial_pragati_schema.sql`
+  - `backend/scripts/seed.ts`
 
 ---
 
@@ -60,7 +60,7 @@ Define the complete relational schema in `drizzle/schema.ts` for PostgreSQL, gen
 
 ---
 
-## 4. Drizzle ORM Schema (`frontend/drizzle/schema.ts`)
+## 4. Drizzle ORM Schema (`backend/drizzle/schema.ts`)
 The schema must use `pgTable`, `uuid`, `text`, `varchar`, `integer`, `numeric`, `boolean`, `timestamp`, and `jsonb` from `drizzle-orm/pg-core`.
 
 ```typescript
@@ -271,7 +271,7 @@ CREATE POLICY "Students manage own evidence" ON evidence_documents FOR ALL USING
 
 ---
 
-## 6. Seed Data Specifications (`server/scripts/seed.ts`)
+## 6. Seed Data Specifications (`backend/scripts/seed.ts`)
 The seed script must populate:
 - **Institution**: Northstar Institute of Technology (`NIT-001`).
 - **Department**: Computer Science and Engineering (`CSE`).
@@ -286,15 +286,16 @@ The seed script must populate:
 
 ## 7. Verification Commands
 ```bash
-cd frontend
+cd backend
 npx drizzle-kit generate
-npx tsx server/scripts/seed.ts
+npx tsx scripts/seed.ts
 ```
 
 ---
 
 ## 8. Definition of Done
-- [ ] `drizzle/schema.ts` completely models all 26 tables using PostgreSQL types.
-- [ ] SQL migration file generated in `drizzle/migrations/`.
-- [ ] RLS policies script created.
-- [ ] Seed script executes idempotently and seeds the demo environment.
+- [x] `drizzle/schema.ts` completely models all 26 tables using PostgreSQL types.
+- [x] SQL migration file generated in `drizzle/migrations/`.
+- [x] RLS policies script created and applied (26/26 tables secured).
+- [x] Seed script executes idempotently and seeds the demo environment.
+- [x] Automated test suite in `tests/phase-01.test.ts` passing (6/6).

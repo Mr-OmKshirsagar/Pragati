@@ -4,10 +4,44 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 
+import { z } from "zod";
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
+    demoLogin: publicProcedure
+      .input(z.object({ role: z.enum(["STUDENT", "FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]) }))
+      .mutation(({ input }) => {
+        const personaNames: Record<string, string> = {
+          STUDENT: "Rahul Sharma",
+          FACULTY: "Dr. Anand Verma",
+          HOD: "Prof. Sunita Rao",
+          TNP_COORDINATOR: "Vikram Malhotra",
+          ADMIN: "Platform Administrator",
+        };
+        return {
+          success: true,
+          token: `demo_${input.role}`,
+          user: {
+            id: "10000000-0000-0000-0000-000000000005",
+            name: personaNames[input.role] || "Demo User",
+            email: `${input.role.toLowerCase()}@northstar.edu`,
+            role: input.role,
+            institutionId: "NIT-001",
+            departmentId: "CSE",
+            studentProfile:
+              input.role === "STUDENT"
+                ? {
+                    id: "student-rahul-sharma",
+                    enrollmentNumber: "CSE2024042",
+                    program: "B.Tech Computer Science and Engineering",
+                    currentSemester: 6,
+                  }
+                : undefined,
+          },
+        };
+      }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -19,7 +53,238 @@ export const appRouter = router({
     opportunities: publicProcedure.query(() => opportunitiesData),
     progress: publicProcedure.query(() => progressData),
     skills: publicProcedure.query(() => skillsData),
+    getProfile: publicProcedure.query(() => ({
+      id: "student-rahul-sharma",
+      userId: "10000000-0000-0000-0000-000000000005",
+      name: "Rahul Sharma",
+      email: "student@northstar.edu",
+      avatarUrl: null,
+      enrollmentNumber: "CSE2024042",
+      program: "B.Tech Computer Science and Engineering",
+      section: "A",
+      currentSemester: 6,
+      admissionYear: 2021,
+      graduationYear: 2025,
+      institution: { id: "inst-nit-001", name: "Northstar Institute of Technology", code: "NIT-001" },
+      department: { id: "dept-cse-001", name: "Computer Science and Engineering", code: "CSE" },
+      mentor: { id: "faculty-anand-verma", name: "Dr. Anand Verma", email: "faculty@northstar.edu" },
+    })),
+    getAcademics: publicProcedure.query(() => ({
+      cgpa: 8.42,
+      totalCredits: 100,
+      activeBacklogsCount: 1,
+      semesters: [
+        { semester: 1, academicYear: "2021-22", sgpa: 8.5, cgpa: 8.5, totalCredits: 20, subjects: [] },
+        { semester: 2, academicYear: "2021-22", sgpa: 8.4, cgpa: 8.45, totalCredits: 20, subjects: [] },
+        { semester: 3, academicYear: "2022-23", sgpa: 8.6, cgpa: 8.5, totalCredits: 20, subjects: [] },
+        { semester: 4, academicYear: "2022-23", sgpa: 8.1, cgpa: 8.4, totalCredits: 20, subjects: [] },
+        { semester: 5, academicYear: "2023-24", sgpa: 8.5, cgpa: 8.42, totalCredits: 20, subjects: [] },
+      ],
+      backlogs: [
+        { id: "backlog-os", subjectCode: "CS401", subjectName: "Operating Systems", semester: 4, status: "ACTIVE" as const },
+      ],
+    })),
+    getSkills: publicProcedure.query(() => ({
+      skills: [
+        { id: "s1", name: "Data Structures & Algorithms", category: "Core Technical", latestScore: 61, delta: -9, scoreHistory: [78, 70, 61], verified: true },
+        { id: "s2", name: "Python", category: "Programming Languages", latestScore: 84, delta: 5, scoreHistory: [72, 79, 84], verified: true },
+        { id: "s3", name: "DBMS", category: "Data & Storage", latestScore: 72, delta: 3, scoreHistory: [64, 69, 72], verified: true },
+        { id: "s4", name: "Object-Oriented Programming", category: "Software Engineering", latestScore: 81, delta: 5, scoreHistory: [68, 76, 81], verified: true },
+        { id: "s5", name: "Operating Systems", category: "Systems & Architecture", latestScore: 61, delta: -9, scoreHistory: [78, 70, 61], verified: true },
+        { id: "s6", name: "Computer Networks", category: "Systems & Architecture", latestScore: 69, delta: 5, scoreHistory: [59, 64, 69], verified: true },
+      ],
+    })),
+    getAssessments: publicProcedure.query(() => [
+      { id: "assess-dsa-1", name: "DSA Assessment Cycle 1", maxScore: 100, durationMinutes: 60, status: "PUBLISHED" },
+      { id: "assess-dsa-2", name: "DSA Assessment Cycle 2", maxScore: 100, durationMinutes: 60, status: "PUBLISHED" },
+      { id: "assess-dsa-3", name: "DSA Assessment Cycle 3", maxScore: 100, durationMinutes: 60, status: "PUBLISHED" },
+    ]),
+    submitAssessment: publicProcedure
+      .input(
+        z.object({
+          assessmentId: z.string(),
+          answers: z.record(z.string(), z.any()).optional(),
+          score: z.number().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        success: true,
+        submissionId: "demo-sub-id",
+        assessmentName: "DSA Assessment",
+        score: input.score ?? 85,
+        attemptNumber: 1,
+        submittedAt: new Date().toISOString(),
+      })),
+    getInterventions: publicProcedure.query(() => [
+      {
+        id: "interv-01",
+        studentId: "student-rahul-sharma",
+        skillGapId: "gap-dsa-01",
+        assignedTo: "10000000-0000-0000-0000-000000000001",
+        assignedFacultyName: "Dr. Anand Verma",
+        type: "MENTORING" as const,
+        description:
+          "1-on-1 mentoring session to review core concepts in Data Structures & Algorithms and address backlog concepts.",
+        status: "SCHEDULED" as const,
+        startDate: new Date(),
+        endDate: null,
+        outcome: null,
+        skillGap: {
+          id: "gap-dsa-01",
+          skillName: "Data Structures & Algorithms",
+          severity: "HIGH",
+          status: "IN_REVIEW",
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]),
+  }),
+  skillGap: router({
+    getMyGaps: publicProcedure.query(() => [
+      {
+        id: "gap-dsa-01",
+        studentId: "student-rahul-sharma",
+        skillId: "s1",
+        skillName: "Data Structures & Algorithms",
+        ruleId: "RULE_GAP_01",
+        severity: "HIGH" as const,
+        status: "OPEN" as const,
+        reason: {
+          score_history: [78, 70, 61],
+          active_backlogs: 1,
+          backlog_subject: "Operating Systems",
+          trigger_text: "Two consecutive score drops accompanied by an active backlog.",
+        },
+        createdAt: new Date(),
+        resolvedAt: null,
+      },
+    ]),
+    explainGap: publicProcedure
+      .input(z.object({ skillGapId: z.string() }))
+      .query(() => ({
+        explanation:
+          "Data Structures & Algorithms assessment scores declined across consecutive cycles (78 → 70 → 61) while an active backlog in Operating Systems remains unresolved.",
+        recommendedAction:
+          "Schedule a 1-on-1 faculty mentoring session to review core concepts in Data Structures & Algorithms and Operating Systems remediation.",
+        source: "ai" as const,
+      })),
+    getDepartmentGaps: publicProcedure
+      .input(z.object({ departmentId: z.string().optional() }).optional())
+      .query(() => []),
+    createAssessment: publicProcedure
+      .input(
+        z.object({
+          name: z.string(),
+          departmentId: z.string().optional(),
+          skillIds: z.array(z.string()),
+          maxScore: z.number().optional(),
+          durationMinutes: z.number().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        id: "new-assessment-id",
+        name: input.name,
+        skillIds: input.skillIds,
+        maxScore: input.maxScore ?? 100,
+        durationMinutes: input.durationMinutes ?? 60,
+        status: "PUBLISHED",
+        createdAt: new Date(),
+      })),
+  }),
+  faculty: router({
+    getWards: publicProcedure.query(() => [
+      {
+        studentProfileId: "student-rahul-sharma",
+        userId: "10000000-0000-0000-0000-000000000005",
+        name: "Rahul Sharma",
+        email: "student@northstar.edu",
+        enrollmentNumber: "CSE2024042",
+        program: "B.Tech Computer Science and Engineering",
+        currentSemester: 6,
+        cgpa: 8.42,
+        activeBacklogsCount: 1,
+        activeGapsCount: 1,
+        activeInterventionsCount: 1,
+        status: "NEEDS_ATTENTION" as "NEEDS_ATTENTION" | "ON_TRACK",
+        activeGaps: [
+          {
+            id: "gap-dsa-01",
+            skillId: "s1",
+            skillName: "Data Structures & Algorithms",
+            severity: "HIGH",
+            status: "IN_REVIEW",
+            reason: {
+              score_history: [78, 70, 61],
+              active_backlogs: 1,
+              trigger_text:
+                "Two consecutive score drops accompanied by an active backlog.",
+            },
+          },
+        ],
+        recentInterventions: [
+          {
+            id: "interv-01",
+            type: "MENTORING",
+            description:
+              "1-on-1 mentoring session to review core concepts in Data Structures & Algorithms",
+            status: "SCHEDULED",
+            startDate: new Date(),
+            outcome: null,
+          },
+        ],
+      },
+    ]),
+    createIntervention: publicProcedure
+      .input(
+        z.object({
+          studentId: z.string(),
+          skillGapId: z.string().optional(),
+          type: z
+            .enum(["MENTORING", "REMEDIAL_CLASS", "ASSIGNMENT", "PEER_TUTORING"])
+            .default("MENTORING"),
+          description: z.string().min(5),
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        success: true,
+        intervention: {
+          id: "new-interv-id",
+          studentId: input.studentId,
+          skillGapId: input.skillGapId ?? null,
+          type: input.type,
+          description: input.description,
+          status: "SCHEDULED",
+          startDate: input.startDate ? new Date(input.startDate) : new Date(),
+          endDate: input.endDate ? new Date(input.endDate) : null,
+          outcome: null,
+          createdAt: new Date(),
+        },
+      })),
+    recordOutcome: publicProcedure
+      .input(
+        z.object({
+          interventionId: z.string(),
+          outcome: z.string().min(5),
+          status: z.enum(["COMPLETED", "CANCELLED"]).default("COMPLETED"),
+        })
+      )
+      .mutation(({ input }) => ({
+        success: true,
+        intervention: {
+          id: input.interventionId,
+          outcome: input.outcome,
+          status: input.status,
+          updatedAt: new Date(),
+        },
+      })),
+    getWardInterventions: publicProcedure
+      .input(z.object({ studentProfileId: z.string() }))
+      .query(() => []),
   }),
 });
 
 export type AppRouter = typeof appRouter;
+

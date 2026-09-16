@@ -6,9 +6,9 @@
 - **Status**: Ready for Implementation
 - **Dependencies**: Phase 01, Phase 03, Phase 07
 - **Target Files**:
-  - `frontend/server/rules/eligibilityEngine.ts`
-  - `frontend/server/services/tnpService.ts`
-  - `frontend/server/routers/placement.ts`
+  - `backend/src/rules/eligibilityEngine.ts`
+  - `backend/src/services/tnpService.ts`
+  - `backend/src/routers/placement.ts`
   - `frontend/client/src/components/EligibilityCheckerModal.tsx`
   - `frontend/client/src/pages/TnpDrives.tsx`
 
@@ -134,7 +134,7 @@ export function evaluateStudentEligibility(driveId: string, rule: RuleAST, stude
 
 ---
 
-## 5. tRPC Router Contracts (`server/routers/placement.ts`)
+## 5. tRPC Router Contracts (`backend/src/routers/placement.ts`)
 
 ```typescript
 import { router, studentProcedure, tnpProcedure } from "../_core/trpc";

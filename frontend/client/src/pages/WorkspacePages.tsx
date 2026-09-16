@@ -1,4 +1,5 @@
 import PragatiFrame from "@/components/PragatiFrame";
+import { trpc } from "@/lib/trpc";
 import { ArrowRight, Award, BookOpenCheck, BriefcaseBusiness, Check, Clock3, FileCheck2, GraduationCap, Route, ShieldCheck, Sparkles, Target, UsersRound } from "lucide-react";
 
 const pageCopy: Record<string, { eyebrow: string; title: string; description: string }> = {
@@ -22,4 +23,112 @@ function InternshipPage() { return <div className="grid gap-5 lg:grid-cols-[0.9f
 
 function PassportPage() { return <section className="overflow-hidden rounded-[24px] bg-[#172446] p-6 text-white shadow-[0_20px_45px_rgba(39,62,151,0.17)] sm:p-8"><div className="flex flex-col justify-between gap-6 md:flex-row"><div><div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#bec8ff]"><Route className="h-4 w-4" /> Career Passport</div><h2 className="text-3xl font-extrabold tracking-[-0.05em]">Rahul Sharma</h2><p className="mt-2 text-sm text-[#b5c0e3]">B.Tech Computer Science · Northstar Institute of Technology · Class of 2027</p></div><div className="flex gap-2"><button className="rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#3048a8]">Export Passport</button><button className="rounded-xl border border-white/15 px-4 py-2.5 text-xs font-bold text-white">Share Passport</button></div></div><div className="mt-10 grid gap-3 sm:grid-cols-4">{[["Academics", "8.42 CGPA"], ["Skills", "7 verified"], ["Achievements", "9 verified"], ["Internship", "68% evidence"]].map(([label, value]) => <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#a8b5db]">{label}</div><div className="mt-2 text-sm font-bold text-white">{value}</div></div>)}</div></section>; }
 
-function MentoringPage() { return <div className="grid gap-5 lg:grid-cols-[1fr_0.8fr]"><section className="premium-card p-6"><div className="mb-5 flex items-center justify-between"><div><div className="text-sm font-extrabold text-[#263653]">Open interventions</div><div className="mt-1 text-xs text-[#8995aa]">Human action attached to rule-generated findings</div></div><button className="rounded-xl bg-[#3048a8] px-3.5 py-2.5 text-xs font-bold text-white">Request session</button></div><div className="rounded-2xl border border-[#f1d7a7] bg-[#fffaf1] p-4"><div className="flex items-center gap-2 text-xs font-bold text-[#a96d1c]"><Sparkles className="h-4 w-4" /> OS skill gap · Faculty attention requested</div><p className="mt-2 text-xs leading-5 text-[#7e6545]">Your score fell from 70% to 61% across two assessment cycles. A mentoring session is recommended.</p><button className="mt-4 flex items-center gap-1.5 text-xs font-bold text-[#9a6318]">View intervention plan <ArrowRight className="h-3.5 w-3.5" /></button></div></section><section className="premium-card p-6"><div className="mb-5 flex items-center gap-2"><UsersRound className="h-4 w-4 text-[#5268cb]" /><div className="text-sm font-extrabold text-[#263653]">Your support network</div></div><div className="space-y-4">{[["Dr. Meera Nair", "Faculty mentor", "Available Thursday"], ["Arjun Menon", "Peer learning partner", "2 sessions completed"]].map(([name, role, note]) => <div key={name} className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#e9edfb] text-xs font-bold text-[#3048a8]">{name.split(" ").map(part => part[0]).join("")}</span><div><div className="text-xs font-bold text-[#52617d]">{name}</div><div className="text-[10px] text-[#8995aa]">{role} · {note}</div></div></div>)}</div></section></div>; }
+function MentoringPage() {
+  const interventionsQuery = trpc.student.getInterventions.useQuery();
+  const interventions = interventionsQuery.data ?? [];
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">
+      <section className="premium-card p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <div className="text-sm font-extrabold text-[#263653]">Assigned Interventions</div>
+            <div className="mt-1 text-xs text-[#8995aa]">Faculty-directed actions and closed-loop mentorship</div>
+          </div>
+          <span className="rounded-full bg-[#eef2fd] px-3 py-1 text-xs font-bold text-[#3048a8]">
+            {interventions.length} tracked
+          </span>
+        </div>
+
+        {interventions.length === 0 ? (
+          <div className="rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-6 text-center">
+            <Sparkles className="mx-auto h-6 w-6 text-[#94a3b8]" />
+            <div className="mt-2 text-xs font-bold text-[#475569]">No active interventions</div>
+            <p className="mt-1 text-xs text-[#64748b]">
+              You currently have no pending faculty interventions. Maintain your strong performance!
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {interventions.map((item: any) => {
+              const isCompleted = item.status === "COMPLETED";
+              const isScheduled = item.status === "SCHEDULED";
+              return (
+                <div
+                  key={item.id}
+                  className={`rounded-2xl border p-4 transition ${
+                    isCompleted
+                      ? "border-[#d8efe8] bg-[#f7fcf9]"
+                      : isScheduled
+                      ? "border-[#f1d7a7] bg-[#fffaf1]"
+                      : "border-[#e2e8f0] bg-white"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#182643]">
+                      <Sparkles className={`h-4 w-4 ${isCompleted ? "text-[#13876f]" : "text-[#a96d1c]"}`} />
+                      <span>{item.skillGap?.skillName ? `${item.skillGap.skillName} · ` : ""}{item.type}</span>
+                    </div>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider ${
+                        isCompleted
+                          ? "bg-[#e5f7f2] text-[#13876f]"
+                          : isScheduled
+                          ? "bg-[#fff1dc] text-[#bd7a27]"
+                          : "bg-[#eef1f6] text-[#6c7890]"
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-xs leading-5 text-[#52617d]">
+                    {item.description}
+                  </p>
+
+                  {item.outcome && (
+                    <div className="mt-3 rounded-xl border border-[#d8efe8] bg-white p-2.5 text-xs text-[#13876f]">
+                      <span className="font-bold">Faculty Session Notes: </span>
+                      {item.outcome}
+                    </div>
+                  )}
+
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#e8ecf4] pt-2 text-[11px] text-[#8995aa]">
+                    <span>Assigned by: <strong className="text-[#3a4968]">{item.assignedFacultyName || "Dr. Anand Verma"}</strong></span>
+                    {item.startDate && (
+                      <span>Date: {new Date(item.startDate).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="premium-card p-6">
+        <div className="mb-5 flex items-center gap-2">
+          <UsersRound className="h-4 w-4 text-[#5268cb]" />
+          <div className="text-sm font-extrabold text-[#263653]">Your support network</div>
+        </div>
+        <div className="space-y-4">
+          {[
+            ["Dr. Anand Verma", "Assigned Faculty Mentor", "Available Monday & Thursday"],
+            ["Prof. Sunita Rao", "Head of Department (CSE)", "Office Hours: Wed 2-4 PM"],
+            ["Arjun Menon", "Peer learning partner", "2 sessions completed"],
+          ].map(([name, role, note]) => (
+            <div key={name} className="flex items-center gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#e9edfb] text-xs font-bold text-[#3048a8]">
+                {name.split(" ").map((part) => part[0]).join("")}
+              </span>
+              <div>
+                <div className="text-xs font-bold text-[#52617d]">{name}</div>
+                <div className="text-[10px] text-[#8995aa]">{role} · {note}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
