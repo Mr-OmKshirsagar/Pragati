@@ -6,8 +6,8 @@
 - **Status**: Ready for Implementation
 - **Dependencies**: Phase 01, Phase 02, Phase 04
 - **Target Files**:
-  - `frontend/server/services/interventionService.ts`
-  - `frontend/server/routers/faculty.ts`
+  - `backend/src/services/interventionService.ts`
+  - `backend/src/routers/faculty.ts`
   - `frontend/client/src/pages/FacultyWards.tsx`
   - `frontend/client/src/components/InterventionModal.tsx`
 
@@ -59,7 +59,7 @@ Build the faculty ward monitoring interface and closed-loop intervention workflo
 
 ---
 
-## 4. tRPC Router & Service Contracts (`server/routers/faculty.ts`)
+## 4. tRPC Router & Service Contracts (`backend/src/routers/faculty.ts`)
 
 ```typescript
 import { router, facultyProcedure } from "../_core/trpc";

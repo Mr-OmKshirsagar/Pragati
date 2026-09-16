@@ -18,8 +18,8 @@ Provide the definitive, step-by-step verification script for evaluating the end-
 ## 3. Pre-Demo Seed Verification Checklist
 Before starting the demonstration, ensure the database is seeded:
 ```bash
-cd frontend
-npx tsx server/scripts/seed.ts
+cd backend
+npx tsx scripts/seed.ts
 ```
 **Verify Seed State**:
 - [x] Hero Student: Rahul Sharma (`student@northstar.edu`, password: `Password123!`)
@@ -136,7 +136,7 @@ npx tsx server/scripts/seed.ts
 ## 5. Verification Commands & Sign-off
 ```bash
 # Run full automated regression test suite prior to demo
-cd frontend && npm run test
+cd backend && npm run test
 ```
 
 ## 6. Definition of Done

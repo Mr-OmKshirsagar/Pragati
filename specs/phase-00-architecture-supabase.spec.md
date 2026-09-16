@@ -6,41 +6,45 @@
 - **Status**: Ready for Implementation
 - **Dependencies**: None
 - **Target Files**:
-  - `frontend/.env.example`
+  - `backend/.env.example`
+  - `backend/.env`
+  - `backend/package.json`
+  - `backend/src/db.ts`
+  - `backend/src/_core/supabase.ts`
+  - `backend/drizzle.config.ts`
   - `frontend/package.json`
-  - `frontend/server/db.ts`
-  - `frontend/server/_core/supabase.ts`
-  - `frontend/drizzle.config.ts`
 
 ---
 
 ## 2. Objective & Scope
-Establish the operational runtime, environment variables, Supabase connection infrastructure, and PostgreSQL Drizzle ORM configuration for PRAGATI. Replace the legacy MySQL template configuration with Supabase PostgreSQL.
+Establish the operational runtime, environment variables, Supabase connection infrastructure, and PostgreSQL Drizzle ORM configuration for PRAGATI in the dedicated `backend/` workspace. Connect the decoupled `frontend/` client to the backend services.
 
 ---
 
 ## 3. Architecture & Decisions
+- **Decoupled Workspaces**:
+  - `backend/`: Hosts Express + tRPC API, Supabase Admin client, Drizzle ORM, rule engines, seed scripts, and automated tests.
+  - `frontend/`: Hosts React 19 SPA, Vite build, Tailwind CSS v4, and UI components.
 - **Database**: Supabase PostgreSQL (hosted or local via Supabase CLI).
 - **Client Libraries**:
   - `@supabase/supabase-js` (v2.48+) for storage, auth token validation, and realtime channels.
-  - `drizzle-orm` (v0.38+) with `postgres` driver (`postgres` package) for strongly-typed relational queries.
-- **Fail-Safe Startup**: If `SUPABASE_URL` or `DATABASE_URL` is temporarily missing in local development, the backend must log a structured warning and provide health degradation rather than crashing unhandled.
+  - `drizzle-orm` with `postgres` driver (`postgres` package) for strongly-typed relational queries.
+- **Fail-Safe Startup**: If `SUPABASE_URL` or `DATABASE_URL` is temporarily missing in local development, the backend logs a structured warning and provides graceful degradation rather than crashing unhandled.
 
 ---
 
 ## 4. Step-by-Step Implementation Tasks
 
-### 4.1 Update Dependencies in `frontend/package.json`
-Remove MySQL dependencies and install Supabase & PostgreSQL packages:
+### 4.1 Initialize & Configure `backend/package.json`
+In the `backend/` directory, set up the Node.js TypeScript service:
 ```bash
-cd frontend
-npm remove mysql2
-npm install @supabase/supabase-js postgres
-npm install -D @types/pg
+cd backend
+npm init -y
+npm install @supabase/supabase-js postgres drizzle-orm express @trpc/server zod dotenv cors
+npm install -D typescript @types/node @types/express @types/pg tsx drizzle-kit vitest
 ```
 
-### 4.2 Configure Environment Variables
-Create `frontend/.env.example` and `.env`:
+### 4.2 Configure Environment Variables (`backend/.env.example` & `backend/.env`)
 ```env
 # Server
 PORT=3000
@@ -60,7 +64,7 @@ GEMINI_API_KEY=your-gemini-api-key
 GEMINI_MODEL=gemini-1.5-flash
 ```
 
-### 4.3 Configure Drizzle for PostgreSQL (`frontend/drizzle.config.ts`)
+### 4.3 Configure Drizzle for PostgreSQL (`backend/drizzle.config.ts`)
 ```typescript
 import { defineConfig } from "drizzle-kit";
 
@@ -74,7 +78,7 @@ export default defineConfig({
 });
 ```
 
-### 4.4 Implement Supabase Client Wrapper (`frontend/server/_core/supabase.ts`)
+### 4.4 Implement Supabase Client Wrapper (`backend/src/_core/supabase.ts`)
 ```typescript
 import { createClient } from "@supabase/supabase-js";
 
@@ -93,7 +97,7 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 });
 ```
 
-### 4.5 Implement Database Access Layer (`frontend/server/db.ts`)
+### 4.5 Implement Database Access Layer (`backend/src/db.ts`)
 ```typescript
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
@@ -120,13 +124,13 @@ export async function getDb() {
 ## 5. Verification & Acceptance Tests
 1. Run TypeScript check:
    ```bash
-   cd frontend && npm run check
+   cd backend && npx tsc --noEmit
    ```
 2. Run database connection smoke test:
    ```bash
-   npx tsx -e "import { getDb } from './server/db'; getDb().then(db => console.log('DB Ready:', !!db));"
+   cd backend && npx tsx -e "import { getDb } from './src/db'; getDb().then(db => console.log('DB Ready:', !!db));"
    ```
-3. Ensure server starts without throwing unhandled exceptions:
+3. Ensure backend dev server starts without throwing unhandled exceptions:
    ```bash
    npm run dev
    ```
@@ -134,7 +138,7 @@ export async function getDb() {
 ---
 
 ## 6. Definition of Done
-- [ ] Dependencies updated (`mysql2` removed, `postgres` & `@supabase/supabase-js` installed).
-- [ ] `drizzle.config.ts` configured for `postgresql`.
-- [ ] Supabase admin client initialized with graceful fallback logging.
+- [ ] Dependencies configured in `backend/package.json`.
+- [ ] `backend/drizzle.config.ts` configured for `postgresql`.
+- [ ] Supabase admin client initialized in `backend/src/_core/supabase.ts`.
 - [ ] Type check passes cleanly with zero errors.

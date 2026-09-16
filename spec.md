@@ -781,25 +781,41 @@ d:\Project\Pragati\
 │   ├── phase-11-security-audit-testing.spec.md
 │   └── phase-12-demo-flow-validation.spec.md
 ├── brain/                           # Architectural rules & design records
-├── frontend/                        # Integrated Full-Stack Workspace
-│   ├── client/                      # React 19 Frontend
+├── backend/                         # Dedicated Backend Service (Express + tRPC + Supabase)
+│   ├── src/                         # Backend source code
+│   │   ├── _core/                   # Server bootstrap, context, Supabase client, storage
+│   │   ├── db.ts                    # Supabase Client & PostgreSQL connection
+│   │   ├── routers/                 # tRPC root & domain procedure routers
+│   │   │   ├── auth.ts              # Session & profile resolution
+│   │   │   ├── student.ts           # Student academics, skills, assessments
+│   │   │   ├── faculty.ts           # Wards, interventions, mentoring
+│   │   │   ├── tnp.ts               # Placement drives, rules, evaluations
+│   │   │   ├── evidence.ts          # SHA-256 evidence metadata
+│   │   │   └── dashboard.ts         # Multi-role aggregates & Career Passport
+│   │   ├── services/                # Pure business logic services
+│   │   └── rules/                   # Deterministic engines (Gap & Placement)
+│   ├── drizzle/                     # PostgreSQL Migrations & Schema
+│   │   ├── schema.ts                # Drizzle ORM PostgreSQL tables
+│   │   └── migrations/              # Generated SQL migrations
+│   ├── scripts/                     # Seed & maintenance scripts
+│   │   └── seed.ts                  # Idempotent master seed fixture
+│   ├── tests/                       # Vitest automated test suites
+│   ├── drizzle.config.ts            # Drizzle configuration
+│   ├── package.json                 # Backend dependencies
+│   └── .env                         # Backend environment variables
+├── frontend/                        # Dedicated Frontend Client (React 19 + Vite + Tailwind)
+│   ├── client/                      # React 19 Frontend SPA
 │   │   ├── src/
 │   │   │   ├── components/          # Reusable UI & Institutional primitives
 │   │   │   ├── contexts/            # Theme & Supabase Auth context
 │   │   │   ├── hooks/               # tRPC & state hooks
 │   │   │   ├── pages/               # Role-specific views & Dashboards
 │   │   │   └── App.tsx              # Wouter routing & layout shells
-│   ├── server/                      # Express + tRPC Backend
-│   │   ├── _core/                   # Server bootstrap & context
-│   │   ├── db.ts                    # Supabase Client & PostgreSQL connection
-│   │   ├── routers.ts               # tRPC root procedure routing
-│   │   ├── services/                # Pure business logic services
-│   │   └── rules/                   # Deterministic engines (Gap & Placement)
-│   ├── shared/                      # Isomorphic TypeScript models & Zod schemas
-│   │   └── pragati.ts               # Complete type definitions
-│   └── drizzle/                     # PostgreSQL Migrations & Schema
-│       ├── schema.ts                # Drizzle ORM PostgreSQL tables
-│       └── migrations/              # Generated SQL migrations
+│   │   └── index.html               # Main HTML entry
+│   ├── package.json                 # Frontend dependencies
+│   └── vite.config.ts               # Vite configuration
+└── shared/                          # Isomorphic TypeScript models & Zod schemas
+    └── pragati.ts                   # Complete type definitions
 ```
 
 ---

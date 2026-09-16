@@ -29,6 +29,25 @@ graph TD
 
 ---
 
+## 🏗️ Decoupled Workspace Architecture
+
+PRAGATI separates client presentation from server domain engines into two dedicated directories:
+
+```text
+d:\Project\Pragati\
+├── backend/               # Express + tRPC + Drizzle ORM + Supabase PostgreSQL
+│   ├── src/               # Services, rules engines, tRPC routers, context
+│   ├── drizzle/           # PostgreSQL schema & generated migrations
+│   ├── scripts/           # Idempotent database seed fixtures
+│   └── tests/             # Automated security, RBAC & rule tests
+├── frontend/              # React 19 + Vite + Tailwind CSS v4 + Radix UI
+│   └── client/src/        # Components, pages, hooks, contexts
+├── shared/                # Isomorphic data models & Zod schemas
+└── specs/                 # Phase-wise implementation specifications
+```
+
+---
+
 ## 📋 Directory Manifest
 
 | Spec File | Phase Title | Primary Focus & Deliverables |

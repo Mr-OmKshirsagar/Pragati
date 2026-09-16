@@ -6,8 +6,8 @@
 - **Status**: Ready for Implementation
 - **Dependencies**: Phase 01, Phase 02, Phase 03, Phase 05, Phase 07, Phase 09
 - **Target Files**:
-  - `frontend/server/services/dashboardService.ts`
-  - `frontend/server/routers/dashboard.ts`
+  - `backend/src/services/dashboardService.ts`
+  - `backend/src/routers/dashboard.ts`
   - `frontend/client/src/pages/Home.tsx`
   - `frontend/client/src/pages/CareerPassport.tsx`
   - `frontend/client/src/pages/HodAnalytics.tsx`
@@ -59,7 +59,7 @@ Enables Department Heads (HODs) to monitor macro academic health:
 
 ---
 
-## 6. tRPC Dashboard Router (`server/routers/dashboard.ts`)
+## 6. tRPC Dashboard Router (`backend/src/routers/dashboard.ts`)
 
 ```typescript
 import { router, studentProcedure, facultyProcedure, requireRole } from "../_core/trpc";

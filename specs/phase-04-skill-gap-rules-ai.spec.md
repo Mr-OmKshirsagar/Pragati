@@ -6,9 +6,9 @@
 - **Status**: Ready for Implementation
 - **Dependencies**: Phase 01, Phase 03
 - **Target Files**:
-  - `frontend/server/rules/skillGapEngine.ts`
-  - `frontend/server/services/aiService.ts`
-  - `frontend/server/routers/skillGap.ts`
+  - `backend/src/rules/skillGapEngine.ts`
+  - `backend/src/services/aiService.ts`
+  - `backend/src/routers/skillGap.ts`
   - `frontend/client/src/components/SkillGapAlert.tsx`
 
 ---
@@ -48,7 +48,7 @@ Where:
 
 ---
 
-## 4. Assistive AI Service (`server/services/aiService.ts`)
+## 4. Assistive AI Service (`backend/src/services/aiService.ts`)
 
 ### 4.1 Strict Ethical Guardrails
 - **AI Never Decides**: AI does not approve interventions, evaluate placement eligibility, or grade students.
@@ -118,7 +118,7 @@ Provide a concise 2-sentence explanation of this performance decline and a 1-sen
 
 ---
 
-## 5. tRPC Router Integration (`server/routers/skillGap.ts`)
+## 5. tRPC Router Integration (`backend/src/routers/skillGap.ts`)
 ```typescript
 import { router, studentProcedure, facultyProcedure } from "../_core/trpc";
 import { z } from "zod";
