@@ -116,6 +116,59 @@ export const appRouter = router({
         submittedAt: new Date().toISOString(),
       })),
   }),
+  skillGap: router({
+    getMyGaps: publicProcedure.query(() => [
+      {
+        id: "gap-dsa-01",
+        studentId: "student-rahul-sharma",
+        skillId: "s1",
+        skillName: "Data Structures & Algorithms",
+        ruleId: "RULE_GAP_01",
+        severity: "HIGH" as const,
+        status: "OPEN" as const,
+        reason: {
+          score_history: [78, 70, 61],
+          active_backlogs: 1,
+          backlog_subject: "Operating Systems",
+          trigger_text: "Two consecutive score drops accompanied by an active backlog.",
+        },
+        createdAt: new Date(),
+        resolvedAt: null,
+      },
+    ]),
+    explainGap: publicProcedure
+      .input(z.object({ skillGapId: z.string() }))
+      .query(() => ({
+        explanation:
+          "Data Structures & Algorithms assessment scores declined across consecutive cycles (78 → 70 → 61) while an active backlog in Operating Systems remains unresolved.",
+        recommendedAction:
+          "Schedule a 1-on-1 faculty mentoring session to review core concepts in Data Structures & Algorithms and Operating Systems remediation.",
+        source: "ai" as const,
+      })),
+    getDepartmentGaps: publicProcedure
+      .input(z.object({ departmentId: z.string().optional() }).optional())
+      .query(() => []),
+    createAssessment: publicProcedure
+      .input(
+        z.object({
+          name: z.string(),
+          departmentId: z.string().optional(),
+          skillIds: z.array(z.string()),
+          maxScore: z.number().optional(),
+          durationMinutes: z.number().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        id: "new-assessment-id",
+        name: input.name,
+        skillIds: input.skillIds,
+        maxScore: input.maxScore ?? 100,
+        durationMinutes: input.durationMinutes ?? 60,
+        status: "PUBLISHED",
+        createdAt: new Date(),
+      })),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
+

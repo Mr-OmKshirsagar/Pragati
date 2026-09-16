@@ -180,6 +180,14 @@ export async function submitAssessment({
     }
   }
 
+  // 6. Trigger skill gap evaluation hook (Phase 04)
+  try {
+    const { evaluateAndSyncStudentGaps } = await import("../rules/skillGapEngine");
+    await evaluateAndSyncStudentGaps(studentId);
+  } catch (err) {
+    console.warn("[SkillService] Skill gap evaluation error:", err);
+  }
+
   return {
     success: true,
     submissionId: submission.id,

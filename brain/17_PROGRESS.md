@@ -56,14 +56,17 @@ Last Updated:
 
 ---
 
-# PHASE 4 — ASSESSMENTS
+# PHASE 4 — ASSESSMENTS & SKILL-GAP RULE ENGINE (COMPLETED)
 
-* [ ] Assessment creation
-* [ ] Assessment submission
-* [ ] Score storage
-* [ ] Skill mapping
-* [ ] Skill history
-* [ ] Skill-gap rule engine
+* [x] Faculty assessment creation (`assessmentService.ts`, `skillGapRouter.createAssessment`)
+* [x] Continuous assessment submission & automated gap sync hook
+* [x] Immutable score storage & attempt progression (`assessment_submissions`)
+* [x] Skill mapping taxonomy (`assessments.skill_ids`)
+* [x] Time-series skill progression history (`skill_history`)
+* [x] Deterministic skill-gap rule engine (`RULE_GAP_01` evaluating drops + active backlogs)
+* [x] Assistive AI explanation service with Google Gemini & zero-crash fallback (`aiService.ts`)
+* [x] Transparent UI alert with rule/AI badges (`SkillGapAlert.tsx` on student dashboard)
+* [x] Automated test suite passing (`backend/tests/phase-04.test.ts` - 36/36 tests passing)
 
 ---
 
