@@ -12,6 +12,7 @@ import Opportunities from "./pages/Opportunities";
 import Progress from "./pages/Progress";
 import Skills from "./pages/Skills";
 import { WorkspacePage } from "./pages/WorkspacePages";
+import FacultyWards from "./pages/FacultyWards";
 import { Route, Switch } from "wouter";
 
 const Internship = () => <WorkspacePage kind="internship" />;
@@ -32,6 +33,8 @@ function Router() {
       <Route path="/internship" component={Internship} />
       <Route path="/career-passport" component={Passport} />
       <Route path="/mentoring" component={Mentoring} />
+      <Route path="/faculty" component={FacultyWards} />
+      <Route path="/faculty/wards" component={FacultyWards} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

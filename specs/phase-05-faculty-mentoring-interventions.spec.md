@@ -3,7 +3,7 @@
 ## 1. Metadata
 - **Phase**: 05
 - **Title**: Faculty Ward Roster, Closed-Loop Mentoring & Gap Resolution
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: Phase 01, Phase 02, Phase 04
 - **Target Files**:
   - `backend/src/services/interventionService.ts`
@@ -165,7 +165,7 @@ export async function checkInterventionResolution(studentId: string, skillId: st
 ---
 
 ## 7. Definition of Done
-- [ ] Faculty ward query enforces strict teacher-guardian scope.
-- [ ] Intervention creation and outcome recording persisted in Supabase PostgreSQL.
-- [ ] Follow-up assessment triggers automatic closed-loop gap resolution.
-- [ ] Faculty UI rendered and tested.
+- [x] Faculty ward query enforces strict teacher-guardian scope.
+- [x] Intervention creation and outcome recording persisted in Supabase PostgreSQL.
+- [x] Follow-up assessment triggers automatic closed-loop gap resolution.
+- [x] Faculty UI rendered and tested.

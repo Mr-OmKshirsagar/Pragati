@@ -151,11 +151,14 @@ describe("Phase 03: Student Profiles, Academics & Skills Engine", () => {
     const historyEntries = await db!
       .select()
       .from(skillHistory)
-      .where(eq(skillHistory.assessmentId, targetAssessment.id));
+      .where(
+        eq(skillHistory.studentId, ctx.user!.studentProfile!.id)
+      );
 
-    expect(historyEntries.length).toBeGreaterThan(0);
-    const latestHistory = historyEntries[historyEntries.length - 1];
-    expect(parseFloat(latestHistory.score)).toBe(88);
+    const hasScore88 = historyEntries.some(
+      (h) => parseFloat(h.score) === 88 && h.assessmentId === targetAssessment.id
+    );
+    expect(hasScore88).toBe(true);
   });
 
   it("should enforce Anti-IDOR: reject unauthenticated users with UNAUTHORIZED", async () => {

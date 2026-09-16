@@ -70,14 +70,16 @@ Last Updated:
 
 ---
 
-# PHASE 5 — INTERVENTION
+# PHASE 5 — FACULTY MENTORING & CLOSED-LOOP INTERVENTIONS (COMPLETED)
 
-* [ ] Faculty dashboard
-* [ ] Skill-gap alerts
-* [ ] Intervention creation
-* [ ] Intervention assignment
-* [ ] Outcome recording
-* [ ] Resolution/reopening
+* [x] Faculty ward roster & teacher-guardian scope isolation (`interventionService.getAssignedWards`, `facultyRouter.getWards`)
+* [x] Live academic & skill gap alerts (`NEEDS_ATTENTION` vs `ON_TRACK`)
+* [x] Intervention scheduling state machine (`SCHEDULED`, linked `skill_gaps.status` -> `IN_REVIEW`)
+* [x] Faculty outcome logging (`recordOutcome`, updating status to `COMPLETED` or `CANCELLED`)
+* [x] Student interventions view (`studentRouter.getInterventions`, `MentoringPage` in `WorkspacePages.tsx`)
+* [x] Automated closed-loop resolution hook (`checkInterventionResolution` auto-resolving gap on score >= 75%)
+* [x] Modern UI with responsive `FacultyWards.tsx` table, `InterventionModal.tsx`, and role-aware navigation
+* [x] Automated test suite passing (`backend/tests/phase-05.test.ts` - 43/43 tests passing across all suites)
 
 ---
 

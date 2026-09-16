@@ -172,4 +172,10 @@ export const studentRouter = router({
 
     return { skills: formattedSkills };
   }),
+
+  // 8. Student Interventions Query (Anti-IDOR: resolves from ctx.user.studentProfile.id)
+  getInterventions: studentProcedure.query(async ({ ctx }) => {
+    const { getStudentInterventions } = await import("../services/interventionService");
+    return getStudentInterventions(ctx.user.studentProfile.id);
+  }),
 });

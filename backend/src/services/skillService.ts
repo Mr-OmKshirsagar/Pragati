@@ -188,6 +188,18 @@ export async function submitAssessment({
     console.warn("[SkillService] Skill gap evaluation error:", err);
   }
 
+  // 7. Trigger closed-loop intervention resolution hook (Phase 05)
+  try {
+    const { checkInterventionResolution } = await import("./interventionService");
+    if (Array.isArray(skillIds)) {
+      for (const sId of skillIds) {
+        await checkInterventionResolution(studentId, sId, finalScore);
+      }
+    }
+  } catch (err) {
+    console.warn("[SkillService] Closed-loop resolution hook error:", err);
+  }
+
   return {
     success: true,
     submissionId: submission.id,

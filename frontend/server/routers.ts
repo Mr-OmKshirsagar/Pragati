@@ -115,6 +115,30 @@ export const appRouter = router({
         attemptNumber: 1,
         submittedAt: new Date().toISOString(),
       })),
+    getInterventions: publicProcedure.query(() => [
+      {
+        id: "interv-01",
+        studentId: "student-rahul-sharma",
+        skillGapId: "gap-dsa-01",
+        assignedTo: "10000000-0000-0000-0000-000000000001",
+        assignedFacultyName: "Dr. Anand Verma",
+        type: "MENTORING" as const,
+        description:
+          "1-on-1 mentoring session to review core concepts in Data Structures & Algorithms and address backlog concepts.",
+        status: "SCHEDULED" as const,
+        startDate: new Date(),
+        endDate: null,
+        outcome: null,
+        skillGap: {
+          id: "gap-dsa-01",
+          skillName: "Data Structures & Algorithms",
+          severity: "HIGH",
+          status: "IN_REVIEW",
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]),
   }),
   skillGap: router({
     getMyGaps: publicProcedure.query(() => [
@@ -167,6 +191,98 @@ export const appRouter = router({
         status: "PUBLISHED",
         createdAt: new Date(),
       })),
+  }),
+  faculty: router({
+    getWards: publicProcedure.query(() => [
+      {
+        studentProfileId: "student-rahul-sharma",
+        userId: "10000000-0000-0000-0000-000000000005",
+        name: "Rahul Sharma",
+        email: "student@northstar.edu",
+        enrollmentNumber: "CSE2024042",
+        program: "B.Tech Computer Science and Engineering",
+        currentSemester: 6,
+        cgpa: 8.42,
+        activeBacklogsCount: 1,
+        activeGapsCount: 1,
+        activeInterventionsCount: 1,
+        status: "NEEDS_ATTENTION" as "NEEDS_ATTENTION" | "ON_TRACK",
+        activeGaps: [
+          {
+            id: "gap-dsa-01",
+            skillId: "s1",
+            skillName: "Data Structures & Algorithms",
+            severity: "HIGH",
+            status: "IN_REVIEW",
+            reason: {
+              score_history: [78, 70, 61],
+              active_backlogs: 1,
+              trigger_text:
+                "Two consecutive score drops accompanied by an active backlog.",
+            },
+          },
+        ],
+        recentInterventions: [
+          {
+            id: "interv-01",
+            type: "MENTORING",
+            description:
+              "1-on-1 mentoring session to review core concepts in Data Structures & Algorithms",
+            status: "SCHEDULED",
+            startDate: new Date(),
+            outcome: null,
+          },
+        ],
+      },
+    ]),
+    createIntervention: publicProcedure
+      .input(
+        z.object({
+          studentId: z.string(),
+          skillGapId: z.string().optional(),
+          type: z
+            .enum(["MENTORING", "REMEDIAL_CLASS", "ASSIGNMENT", "PEER_TUTORING"])
+            .default("MENTORING"),
+          description: z.string().min(5),
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        success: true,
+        intervention: {
+          id: "new-interv-id",
+          studentId: input.studentId,
+          skillGapId: input.skillGapId ?? null,
+          type: input.type,
+          description: input.description,
+          status: "SCHEDULED",
+          startDate: input.startDate ? new Date(input.startDate) : new Date(),
+          endDate: input.endDate ? new Date(input.endDate) : null,
+          outcome: null,
+          createdAt: new Date(),
+        },
+      })),
+    recordOutcome: publicProcedure
+      .input(
+        z.object({
+          interventionId: z.string(),
+          outcome: z.string().min(5),
+          status: z.enum(["COMPLETED", "CANCELLED"]).default("COMPLETED"),
+        })
+      )
+      .mutation(({ input }) => ({
+        success: true,
+        intervention: {
+          id: input.interventionId,
+          outcome: input.outcome,
+          status: input.status,
+          updatedAt: new Date(),
+        },
+      })),
+    getWardInterventions: publicProcedure
+      .input(z.object({ studentProfileId: z.string() }))
+      .query(() => []),
   }),
 });
 
