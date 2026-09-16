@@ -3,7 +3,7 @@
 ## 1. Metadata
 - **Phase**: 01
 - **Title**: Supabase PostgreSQL Schema, Drizzle ORM Models & RLS Policies
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: Phase 00
 - **Target Files**:
   - `backend/drizzle/schema.ts`
@@ -294,7 +294,8 @@ npx tsx scripts/seed.ts
 ---
 
 ## 8. Definition of Done
-- [ ] `drizzle/schema.ts` completely models all 26 tables using PostgreSQL types.
-- [ ] SQL migration file generated in `drizzle/migrations/`.
-- [ ] RLS policies script created.
-- [ ] Seed script executes idempotently and seeds the demo environment.
+- [x] `drizzle/schema.ts` completely models all 26 tables using PostgreSQL types.
+- [x] SQL migration file generated in `drizzle/migrations/`.
+- [x] RLS policies script created and applied (26/26 tables secured).
+- [x] Seed script executes idempotently and seeds the demo environment.
+- [x] Automated test suite in `tests/phase-01.test.ts` passing (6/6).

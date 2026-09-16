@@ -20,12 +20,14 @@ Last Updated:
 
 ---
 
-# PHASE 1 — DATABASE SCHEMA & RLS
+# PHASE 1 — DATABASE SCHEMA & RLS (COMPLETED)
 
-* [ ] Full 26-table PostgreSQL DDL schema
-* [ ] Database migrations (`drizzle-kit generate & migrate`)
-* [ ] Supabase Row Level Security (RLS) policies
-* [ ] Institutional seed fixtures (`scripts/seed.ts`)
+* [x] Full 26-table PostgreSQL DDL schema (`backend/drizzle/schema.ts`)
+* [x] Database migrations generated (`backend/drizzle/migrations/0000_amused_dust.sql`)
+* [x] Schema pushed to live Supabase PostgreSQL (`drizzle-kit push`)
+* [x] Supabase Row Level Security (RLS) policies enabled on 26/26 tables (`backend/drizzle/rls_policies.sql`)
+* [x] Idempotent institutional seed fixtures populated (`backend/scripts/seed.ts`)
+* [x] Automated test suite passing (`backend/tests/phase-01.test.ts`)
 
 ---
 
