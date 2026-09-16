@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Menu,
   Route,
-  Settings2,
   Target,
   TrendingUp,
   UsersRound,
@@ -38,12 +37,6 @@ const facultyWorkspace: NavItem[] = [
   { label: "Mentoring Logs", path: "/mentoring", icon: Route },
 ];
 
-const support: NavItem[] = [
-  { label: "Mentoring", path: "/mentoring", icon: UsersRound },
-  { label: "Notifications", path: "/progress#notifications", icon: Bell },
-  { label: "Settings", path: "/progress#settings", icon: Settings2 },
-];
-
 export default function PragatiFrame({ children, title, activePath }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [, navigate] = useLocation();
@@ -68,12 +61,6 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
             <NavGroup
               label={isFaculty ? "Faculty Desk" : "Workspace"}
               items={items}
-              activePath={activePath}
-              onNavigate={nav}
-            />
-            <NavGroup
-              label="Support"
-              items={support}
               activePath={activePath}
               onNavigate={nav}
             />
@@ -197,8 +184,7 @@ function MobileNav({ items, activePath, onClose }: { items: NavItem[]; activePat
           </button>
         </div>
         <div className="px-3 overflow-y-auto">
-          <NavGroup label="Workspace" items={items} activePath={activePath} onNavigate={onCloseAndNavigate(onClose)} />
-          <NavGroup label="Support" items={support} activePath={activePath} onNavigate={onCloseAndNavigate(onClose)} />
+          <NavGroup label={items === facultyWorkspace ? "Faculty Desk" : "Workspace"} items={items} activePath={activePath} onNavigate={onCloseAndNavigate(onClose)} />
         </div>
       </aside>
     </div>
