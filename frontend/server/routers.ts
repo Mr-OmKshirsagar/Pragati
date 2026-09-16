@@ -428,6 +428,118 @@ export const appRouter = router({
       .input(z.object({ studentProfileId: z.string() }))
       .query(() => []),
   }),
+  evidence: router({
+    getMyEvidence: publicProcedure.query(() => [
+      {
+        id: "ev-01",
+        studentId: "student-rahul-sharma",
+        achievementId: null,
+        filename: "TechCorp_OfferLetter.pdf",
+        storageBucket: "evidence-vault",
+        storagePath:
+          "NIT-001/student-rahul-sharma/1726500000000-TechCorp_OfferLetter.pdf",
+        mimeType: "application/pdf",
+        fileSize: 245000,
+        sha256Hash:
+          "3b9c7a4e8d2f105b6c3e7a9f1d4c2b8e0a6d5f4c3b2a1e9d8c7b6a5f4e3d2c1b",
+        verificationStatus: "INSTITUTION_VERIFIED" as const,
+        uploadedAt: new Date(),
+        downloadUrl: "/mock-storage/TechCorp_OfferLetter.pdf",
+      },
+    ]),
+    registerEvidence: publicProcedure
+      .input(
+        z.object({
+          filename: z.string(),
+          storagePath: z.string(),
+          mimeType: z.enum(["application/pdf", "image/png", "image/jpeg"]),
+          fileSize: z.number(),
+          sha256Hash: z.string(),
+          achievementId: z.string().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        id: "new-ev-id",
+        studentId: "student-rahul-sharma",
+        achievementId: input.achievementId ?? null,
+        filename: input.filename,
+        storageBucket: "evidence-vault",
+        storagePath: input.storagePath,
+        mimeType: input.mimeType,
+        fileSize: input.fileSize,
+        sha256Hash: input.sha256Hash,
+        verificationStatus: "SELF_REPORTED" as const,
+        uploadedAt: new Date(),
+      })),
+    uploadAndRegister: publicProcedure
+      .input(
+        z.object({
+          filename: z.string(),
+          mimeType: z.enum(["application/pdf", "image/png", "image/jpeg"]),
+          base64Data: z.string(),
+          clientHash: z.string().optional(),
+          achievementId: z.string().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        id: "new-ev-id",
+        studentId: "student-rahul-sharma",
+        achievementId: input.achievementId ?? null,
+        filename: input.filename,
+        storageBucket: "evidence-vault",
+        storagePath: `NIT-001/student-rahul-sharma/${Date.now()}-${input.filename}`,
+        mimeType: input.mimeType,
+        fileSize: Math.round(input.base64Data.length * 0.75),
+        sha256Hash:
+          input.clientHash ||
+          "3b9c7a4e8d2f105b6c3e7a9f1d4c2b8e0a6d5f4c3b2a1e9d8c7b6a5f4e3d2c1b",
+        verificationStatus: "SELF_REPORTED" as const,
+        uploadedAt: new Date(),
+      })),
+    verifyIntegrity: publicProcedure
+      .input(
+        z.object({
+          evidenceId: z.string(),
+          base64Data: z.string().optional(),
+        })
+      )
+      .query(({ input }) => ({
+        evidenceId: input.evidenceId,
+        filename: "TechCorp_OfferLetter.pdf",
+        storedHash:
+          "3b9c7a4e8d2f105b6c3e7a9f1d4c2b8e0a6d5f4c3b2a1e9d8c7b6a5f4e3d2c1b",
+        computedHash:
+          "3b9c7a4e8d2f105b6c3e7a9f1d4c2b8e0a6d5f4c3b2a1e9d8c7b6a5f4e3d2c1b",
+        isIntact: true,
+        status: "VERIFIED" as const,
+        message:
+          "Cryptographic integrity verified: Stored SHA-256 matches exact document byte sequence.",
+      })),
+    simulateTamper: publicProcedure
+      .input(
+        z
+          .object({
+            originalText: z.string().optional(),
+            tamperedText: z.string().optional(),
+          })
+          .optional()
+      )
+      .mutation(() => ({
+        documentName: "TechCorp_OfferLetter.pdf",
+        originalText: "Monthly Stipend: INR 45,000",
+        tamperedText: "Monthly Stipend: INR 95,000",
+        originalHash:
+          "3b9c7a4e8d2f105b6c3e7a9f1d4c2b8e0a6d5f4c3b2a1e9d8c7b6a5f4e3d2c1b",
+        tamperedHash:
+          "e81a4b2c1d3e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a",
+        isMatch: false,
+        status: "TAMPER_DETECTED" as const,
+        alertMessage:
+          "INTEGRITY FAILURE: Document bytes altered. SHA-256 hash mismatch detected.",
+        educationalNote:
+          "SHA-256 cryptographic hashing detects any bit-level tampering. Institutional authenticity requires faculty sign-off.",
+      })),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
