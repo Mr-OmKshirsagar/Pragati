@@ -1,4 +1,4 @@
-﻿# PRAGATI — DEVELOPMENT PROGRESS
+# PRAGATI — DEVELOPMENT PROGRESS
 
 Last Updated:
 `YYYY-MM-DD HH:MM`
@@ -7,12 +7,12 @@ Last Updated:
 
 # PHASE 0 — ARCHITECTURE
 
-* [ ] Repository audit
-* [ ] Technology decisions
-* [ ] System architecture
-* [ ] Database schema
-* [ ] API contract
-* [ ] Folder structure
+* [x] Repository audit
+* [x] Technology decisions (Supabase PostgreSQL, Supabase Auth/Storage/Realtime, React 19, Vite, Express + tRPC)
+* [x] System architecture & master spec.md
+* [x] Database schema & RLS policies
+* [x] API contract & tRPC routers
+* [x] Folder structure & specs/ directory (13 phase-wise specs)
 
 ---
 
@@ -177,11 +177,11 @@ Last Updated:
 
 Current Phase:
 
-`PHASE 0`
+`PHASE 1`
 
 Current Task:
 
-`Repository audit`
+`Supabase PostgreSQL Foundation & Database Migrations (specs/phase-01-database-schema-rls.spec.md)`
 
 ---
 
