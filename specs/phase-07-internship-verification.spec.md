@@ -6,8 +6,8 @@
 - **Status**: Ready for Implementation
 - **Dependencies**: Phase 01, Phase 02, Phase 06
 - **Target Files**:
-  - `frontend/server/services/internshipService.ts`
-  - `frontend/server/routers/internship.ts`
+  - `backend/src/services/internshipService.ts`
+  - `backend/src/routers/internship.ts`
   - `frontend/client/src/pages/WorkspacePages.tsx`
   - `frontend/client/src/pages/FacultyReview.tsx`
   - `frontend/client/src/components/InternshipCheckinModal.tsx`
@@ -61,7 +61,7 @@ $$\text{EvidenceCompleteness} = \frac{\text{CompletedMilestones}}{\text{TotalReq
 
 ---
 
-## 5. tRPC Router & Service Contracts (`server/routers/internship.ts`)
+## 5. tRPC Router & Service Contracts (`backend/src/routers/internship.ts`)
 
 ```typescript
 import { router, studentProcedure, facultyProcedure } from "../_core/trpc";

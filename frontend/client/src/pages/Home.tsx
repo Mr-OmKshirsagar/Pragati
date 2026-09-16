@@ -1,4 +1,5 @@
 import { trpc } from "@/lib/trpc";
+import SkillGapAlert from "@/components/SkillGapAlert";
 import type { StudentDashboard } from "@shared/pragati";
 import {
   Activity,
@@ -192,7 +193,7 @@ export default function Home() {
 
               <div className="mt-5 grid gap-5 xl:grid-cols-[1.18fr_0.82fr]">
                 <SkillProfile data={data} />
-                <SkillGap data={data} />
+                <SkillGapAlert />
               </div>
 
               <div className="mt-5 grid gap-5 xl:grid-cols-[0.92fr_1.08fr]">

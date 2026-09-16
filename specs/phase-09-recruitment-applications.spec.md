@@ -6,8 +6,8 @@
 - **Status**: Ready for Implementation
 - **Dependencies**: Phase 01, Phase 02, Phase 08
 - **Target Files**:
-  - `frontend/server/services/applicationService.ts`
-  - `frontend/server/routers/recruitment.ts`
+  - `backend/src/services/applicationService.ts`
+  - `backend/src/routers/recruitment.ts`
   - `frontend/client/src/pages/Opportunities.tsx`
   - `frontend/client/src/pages/TnpApplicants.tsx`
 
@@ -55,7 +55,7 @@ The unique compound index on `(student_id, recruitment_drive_id)` in the `applic
 
 ---
 
-## 5. tRPC Router Contracts (`server/routers/recruitment.ts`)
+## 5. tRPC Router Contracts (`backend/src/routers/recruitment.ts`)
 
 ```typescript
 import { router, studentProcedure, tnpProcedure, publicProcedure } from "../_core/trpc";

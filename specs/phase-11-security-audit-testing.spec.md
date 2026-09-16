@@ -6,11 +6,11 @@
 - **Status**: Ready for Implementation
 - **Dependencies**: Phase 01 through Phase 10
 - **Target Files**:
-  - `frontend/server/services/auditService.ts`
-  - `frontend/server/tests/auth_rbac.test.ts`
-  - `frontend/server/tests/eligibility_engine.test.ts`
-  - `frontend/server/tests/evidence_hashing.test.ts`
-  - `frontend/vitest.config.ts`
+  - `backend/src/services/auditService.ts`
+  - `backend/tests/auth_rbac.test.ts`
+  - `backend/tests/eligibility_engine.test.ts`
+  - `backend/tests/evidence_hashing.test.ts`
+  - `backend/vitest.config.ts`
 
 ---
 
@@ -31,7 +31,7 @@ Harden the entire platform against security risks (IDOR, privilege escalation, f
 
 ---
 
-## 4. Immutable Audit Logging (`server/services/auditService.ts`)
+## 4. Immutable Audit Logging (`backend/src/services/auditService.ts`)
 
 Every sensitive institutional decision must write a permanent audit trail entry:
 
@@ -76,10 +76,10 @@ export async function logAuditEvent(params: {
 
 ## 5. Automated Test Suites (Vitest)
 
-### 5.1 RBAC & IDOR Test Suite (`server/tests/auth_rbac.test.ts`)
+### 5.1 RBAC & IDOR Test Suite (`backend/tests/auth_rbac.test.ts`)
 ```typescript
 import { describe, it, expect } from "vitest";
-import { evaluateStudentEligibility } from "../rules/eligibilityEngine";
+import { evaluateStudentEligibility } from "../src/rules/eligibilityEngine";
 
 describe("Security & Authorization Suite", () => {
   it("should prevent a STUDENT role from executing faculty verification procedures", async () => {
@@ -94,10 +94,10 @@ describe("Security & Authorization Suite", () => {
 });
 ```
 
-### 5.2 Deterministic Eligibility Engine Test (`server/tests/eligibility_engine.test.ts`)
+### 5.2 Deterministic Eligibility Engine Test (`backend/tests/eligibility_engine.test.ts`)
 ```typescript
 import { describe, it, expect } from "vitest";
-import { evaluateStudentEligibility, RuleAST } from "../rules/eligibilityEngine";
+import { evaluateStudentEligibility, RuleAST } from "../src/rules/eligibilityEngine";
 
 describe("Deterministic Eligibility Engine", () => {
   const sampleRule: RuleAST = {
@@ -143,7 +143,7 @@ describe("Deterministic Eligibility Engine", () => {
 });
 ```
 
-### 5.3 Cryptographic Hashing Test (`server/tests/evidence_hashing.test.ts`)
+### 5.3 Cryptographic Hashing Test (`backend/tests/evidence_hashing.test.ts`)
 ```typescript
 import { describe, it, expect } from "vitest";
 import crypto from "crypto";
@@ -175,7 +175,7 @@ describe("SHA-256 File Integrity Check", () => {
 
 ## 6. Verification Commands
 ```bash
-cd frontend
+cd backend
 npm run test
 ```
 

@@ -1,11 +1,14 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
+import PersonaSwitcher from "./components/PersonaSwitcher";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Achievements from "./pages/Achievements";
 import AuthPage from "./pages/Auth";
+import FacultyWards from "./pages/FacultyWards";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Opportunities from "./pages/Opportunities";
 import Progress from "./pages/Progress";
@@ -26,6 +29,7 @@ function Router() {
       <Route path="/login">{() => <AuthPage initialMode="login" />}</Route>
       <Route path="/register">{() => <AuthPage initialMode="register" />}</Route>
       <Route path="/auth">{() => <AuthPage initialMode="login" />}</Route>
+      <Route path="/login-personas" component={Login} />
       <Route path="/progress" component={Progress} />
       <Route path="/skills" component={Skills} />
       <Route path="/achievements" component={Achievements} />
@@ -33,6 +37,8 @@ function Router() {
       <Route path="/internship" component={Internship} />
       <Route path="/career-passport" component={Passport} />
       <Route path="/mentoring" component={Mentoring} />
+      <Route path="/faculty" component={FacultyWards} />
+      <Route path="/faculty/wards" component={FacultyWards} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
@@ -47,6 +53,7 @@ export default function App() {
           <TooltipProvider>
             <Toaster />
             <Router />
+            <PersonaSwitcher />
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>

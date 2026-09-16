@@ -16,11 +16,12 @@ import {
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import UserNav from "./UserNav";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Props = { children: React.ReactNode; title: string; activePath: string };
 type NavItem = { label: string; path: string; icon: typeof LayoutDashboard };
 
-const workspace: NavItem[] = [
+const studentWorkspace: NavItem[] = [
   { label: "Overview", path: "/overview", icon: LayoutDashboard },
   { label: "My Progress", path: "/progress", icon: TrendingUp },
   { label: "Skills & Assessments", path: "/skills", icon: Activity },
@@ -29,6 +30,14 @@ const workspace: NavItem[] = [
   { label: "Opportunities", path: "/opportunities", icon: Target },
   { label: "Career Passport", path: "/career-passport", icon: Route },
 ];
+
+const facultyWorkspace: NavItem[] = [
+  { label: "Assigned Wards", path: "/faculty/wards", icon: UsersRound },
+  { label: "Overview", path: "/overview", icon: LayoutDashboard },
+  { label: "Skills & Assessments", path: "/skills", icon: Activity },
+  { label: "Mentoring Logs", path: "/mentoring", icon: Route },
+];
+
 const support: NavItem[] = [
   { label: "Mentoring", path: "/mentoring", icon: UsersRound },
   { label: "Notifications", path: "/progress#notifications", icon: Bell },
@@ -38,6 +47,10 @@ const support: NavItem[] = [
 export default function PragatiFrame({ children, title, activePath }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [, navigate] = useLocation();
+  const { user } = useAuth();
+  const isFaculty = user?.role === "FACULTY";
+  const items = isFaculty ? facultyWorkspace : studentWorkspace;
+
   const nav = (item: NavItem) => {
     if (item.path.includes("#")) {
       navigate(item.path.split("#")[0]);
@@ -45,14 +58,25 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
     }
     setMobileOpen(false);
   };
+
   return (
     <div className="min-h-screen bg-[#f5f7fb] text-[#15223b]">
       <div className="grid min-h-screen lg:grid-cols-[246px_1fr]">
         <aside className="sticky top-0 self-start hidden h-screen bg-[#172446] text-white lg:grid lg:grid-rows-[auto_1fr_auto] overflow-hidden z-40">
           <Brand />
           <div className="overflow-y-auto px-3 pb-6">
-            <NavGroup label="Workspace" items={workspace} activePath={activePath} onNavigate={nav} />
-            <NavGroup label="Support" items={support} activePath={activePath} onNavigate={nav} />
+            <NavGroup
+              label={isFaculty ? "Faculty Desk" : "Workspace"}
+              items={items}
+              activePath={activePath}
+              onNavigate={nav}
+            />
+            <NavGroup
+              label="Support"
+              items={support}
+              activePath={activePath}
+              onNavigate={nav}
+            />
           </div>
           <HelpCard />
         </aside>
@@ -64,7 +88,7 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
                   <Menu className="h-5 w-5" />
                 </button>
                 <div className="hidden grid-flow-col auto-cols-max items-center gap-2 text-[11px] font-semibold text-[#71809a] sm:grid">
-                  <span>Student workspace</span>
+                  <span>{isFaculty ? "Faculty workspace" : "Student workspace"}</span>
                   <span className="text-[#b0bacb]">/</span>
                   <span className="text-[#3048a8]">{title}</span>
                 </div>
@@ -87,7 +111,13 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
               </div>
             </div>
           </header>
-          {mobileOpen && <MobileNav activePath={activePath} onClose={() => setMobileOpen(false)} />}
+          {mobileOpen && (
+            <MobileNav
+              items={items}
+              activePath={activePath}
+              onClose={() => setMobileOpen(false)}
+            />
+          )}
           {children}
         </div>
       </div>
@@ -155,7 +185,7 @@ function HelpCard() {
   );
 }
 
-function MobileNav({ activePath, onClose }: { activePath: string; onClose: () => void }) {
+function MobileNav({ items, activePath, onClose }: { items: NavItem[]; activePath: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <button aria-label="Close navigation" onClick={onClose} className="absolute inset-0 bg-[#07112d]/50 backdrop-blur-sm" />
@@ -167,7 +197,7 @@ function MobileNav({ activePath, onClose }: { activePath: string; onClose: () =>
           </button>
         </div>
         <div className="px-3 overflow-y-auto">
-          <NavGroup label="Workspace" items={workspace} activePath={activePath} onNavigate={onCloseAndNavigate(onClose)} />
+          <NavGroup label="Workspace" items={items} activePath={activePath} onNavigate={onCloseAndNavigate(onClose)} />
           <NavGroup label="Support" items={support} activePath={activePath} onNavigate={onCloseAndNavigate(onClose)} />
         </div>
       </aside>

@@ -1,13 +1,16 @@
 import PragatiFrame from "@/components/PragatiFrame";
 import { trpc } from "@/lib/trpc";
 import type { SkillDetail } from "@shared/pragati";
-import { ArrowDownRight, ArrowUpRight, BookOpenCheck, CheckCircle2, ChevronRight, Clock3, FileCheck2, Search, ShieldCheck, Sparkles, Target, X } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, BookOpenCheck, CheckCircle2, ChevronRight, Clock3, FileCheck2, PlusCircle, Search, ShieldCheck, Sparkles, Target, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export default function Skills() {
   const query = trpc.student.skills.useQuery();
+  const assessmentsQuery = trpc.student.getAssessments.useQuery();
   const [selected, setSelected] = useState<SkillDetail | null>(null);
   const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const skills = useMemo(() => (query.data?.skills ?? []).filter(item => item.label.toLowerCase().includes(search.toLowerCase())), [query.data, search]);
   if (query.isLoading) return <SkillsSkeleton />;
   if (query.isError || !query.data) return <div className="grid min-h-screen place-items-center bg-[#f5f7fb] text-sm text-[#64718a]">We couldn&apos;t load Skills &amp; Assessments.</div>;
@@ -21,18 +24,27 @@ export default function Skills() {
               <h1 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#182643] sm:text-[34px]">Skills &amp; Assessments</h1>
               <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6c7890]">Explore verified capability scores, assessment history, related gaps, and the interventions that move a skill forward.</p>
             </div>
-            <div className="grid grid-cols-[auto_1fr] items-center gap-2 rounded-xl border border-[#dfe5ef] bg-white px-3 py-2.5 text-xs font-medium text-[#6e7b93] shadow-sm">
-              <ShieldCheck className="h-4 w-4 text-[#16a889]" />
-              <span>8 skills tracked</span>
+            <div className="grid grid-flow-col auto-cols-max items-center gap-3">
+              <div className="grid grid-cols-[auto_1fr] items-center gap-2 rounded-xl border border-[#dfe5ef] bg-white px-3 py-2.5 text-xs font-medium text-[#6e7b93] shadow-sm">
+                <ShieldCheck className="h-4 w-4 text-[#16a889]" />
+                <span>{skills.length} skills tracked</span>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="grid grid-flow-col auto-cols-max items-center gap-2 rounded-xl bg-[#3048a8] px-4 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#263a8a] active:scale-95"
+              >
+                <PlusCircle className="h-4 w-4" />
+                <span>Take Assessment</span>
+              </button>
             </div>
           </header>
 
           <div className="mb-5 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
             {[
-              ["Skills tracked", "08", "all core areas"],
-              ["Institution verified", "07", "latest cycle"],
-              ["Assessments", "06", "this term"],
-              ["Open skill gaps", "02", "needs attention"],
+              ["Skills tracked", `0${skills.length}`, "all core areas"],
+              ["Institution verified", `0${skills.filter(s => s.history.length > 0).length}`, "latest cycle"],
+              ["Assessments", `${assessmentsQuery.data?.length ?? 3}`, "available"],
+              ["Open skill gaps", `0${skills.filter(s => s.trend === "down").length}`, "needs attention"],
             ].map(([label, value, helper], index) => (
               <div key={label} className="premium-card p-4 sm:p-5">
                 <div className="mb-3 grid h-9 w-9 place-items-center rounded-xl bg-[#edf0ff] text-[#5268cb]">
@@ -106,6 +118,13 @@ export default function Skills() {
         </div>
       </main>
       {selected && <SkillDrawer skill={selected} onClose={() => setSelected(null)} />}
+      {isModalOpen && (
+        <TakeAssessmentModal
+          assessments={assessmentsQuery.data ?? []}
+          onClose={() => setIsModalOpen(false)}
+          onSubmitted={() => query.refetch()}
+        />
+      )}
     </PragatiFrame>
   );
 }
@@ -250,3 +269,115 @@ function SkillDrawer({ skill, onClose }: { skill: SkillDetail; onClose: () => vo
 }
 
 function SkillsSkeleton() { return <div className="min-h-screen bg-[#f5f7fb] p-6"><div className="mx-auto max-w-6xl animate-pulse space-y-5"><div className="h-16 rounded-2xl bg-white" /><div className="h-32 rounded-2xl bg-[#dfe5f4]" /><div className="h-80 rounded-2xl bg-white" /></div></div>; }
+
+function TakeAssessmentModal({
+  assessments,
+  onClose,
+  onSubmitted,
+}: {
+  assessments: any[];
+  onClose: () => void;
+  onSubmitted: () => void;
+}) {
+  const [selectedId, setSelectedId] = useState(assessments[0]?.id || "");
+  const [score, setScore] = useState(85);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const submitMutation = trpc.student.submitAssessment.useMutation();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedId) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await submitMutation.mutateAsync({
+        assessmentId: selectedId,
+        score,
+        answers: { simulated: true },
+      });
+      setSuccessMsg(`Submitted successfully! Score: ${res.score}% recorded.`);
+      setTimeout(() => {
+        onSubmitted();
+        onClose();
+      }, 1200);
+    } catch (err: any) {
+      alert(err.message || "Failed to submit assessment");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-[#07112d]/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#e5eaf2] pb-4">
+          <div className="eyebrow">Continuous Assessment</div>
+          <button onClick={onClose} className="rounded-lg p-1 text-[#64748b] hover:bg-[#f1f5f9]">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-[#1e293b] mb-1.5">Select Assessment</label>
+            <select
+              value={selectedId}
+              onChange={(e) => setSelectedId(e.target.value)}
+              className="w-full rounded-xl border border-[#cbd5e1] p-2.5 text-xs font-semibold text-[#1e293b] outline-none focus:ring-2 focus:ring-[#3048a8]"
+            >
+              {assessments.length === 0 && <option value="">No published assessments available</option>}
+              {assessments.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name} ({a.durationMinutes || 60} mins)
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="text-xs font-bold text-[#1e293b]">Simulated Assessment Score</label>
+              <span className="font-mono text-sm font-bold text-[#3048a8]">{score}%</span>
+            </div>
+            <input
+              type="range"
+              min={40}
+              max={100}
+              value={score}
+              onChange={(e) => setScore(Number(e.target.value))}
+              className="w-full accent-[#3048a8]"
+            />
+            <div className="flex justify-between text-[10px] text-[#94a3b8] mt-1">
+              <span>40% (Needs Work)</span>
+              <span>75% (Target)</span>
+              <span>100% (Exemplary)</span>
+            </div>
+          </div>
+          {successMsg && (
+            <div className="rounded-xl bg-[#ecfdf5] p-3 text-xs font-bold text-[#059669] flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" /> {successMsg}
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl px-4 py-2 text-xs font-semibold text-[#64748b] hover:bg-[#f1f5f9]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !selectedId}
+              className="rounded-xl bg-[#3048a8] px-5 py-2 text-xs font-bold text-white shadow-md transition hover:bg-[#253782] disabled:opacity-50"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Attempt"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
