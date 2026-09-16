@@ -22,7 +22,6 @@ import {
   MoreHorizontal,
   Route,
   Search,
-  Settings2,
   Share2,
   ShieldCheck,
   Sparkles,
@@ -46,12 +45,6 @@ const navigation: { label: string; icon: IconType }[] = [
   { label: "Internship evidence", icon: BriefcaseBusiness },
   { label: "Opportunities", icon: Target },
   { label: "Career Passport", icon: Route },
-];
-
-const utilityNavigation: { label: string; icon: IconType }[] = [
-  { label: "Mentoring", icon: UsersRound },
-  { label: "Notifications", icon: Bell },
-  { label: "Settings", icon: Settings2 },
 ];
 
 const routeByLabel: Record<string, string> = {
@@ -107,12 +100,6 @@ export default function Home() {
             <div className="mb-3 px-3 pt-2 text-[10.5px] font-bold uppercase tracking-[0.09em] text-[#8b99bd]">Workspace</div>
             <nav aria-label="Primary navigation" className="grid gap-1">
               {navigation.map(item => (
-                <SidebarNavItem key={item.label} item={item} active={activeSection === item.label} onClick={() => navigate(item.label)} />
-              ))}
-            </nav>
-            <div className="mb-3 mt-9 px-3 text-[10.5px] font-bold uppercase tracking-[0.09em] text-[#8b99bd]">Workspace tools</div>
-            <nav aria-label="Utility navigation" className="grid gap-1">
-              {utilityNavigation.map(item => (
                 <SidebarNavItem key={item.label} item={item} active={activeSection === item.label} onClick={() => navigate(item.label)} />
               ))}
             </nav>
