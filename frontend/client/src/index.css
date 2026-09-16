@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.9rem;
+  --background: #f5f7fb;
+  --foreground: #15223b;
+  --card: #ffffff;
+  --card-foreground: #15223b;
+  --popover: #ffffff;
+  --popover-foreground: #15223b;
+  --primary: #3048a8;
+  --primary-foreground: #ffffff;
+  --secondary: #edf1fa;
+  --secondary-foreground: #304063;
+  --muted: #eef2f7;
+  --muted-foreground: #69758d;
+  --accent: #e9edfb;
+  --accent-foreground: #263879;
+  --destructive: #c24152;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f2;
+  --input: #dce3ef;
+  --ring: #6d7ee0;
+  --chart-1: #3048a8;
+  --chart-2: #7b61d9;
+  --chart-3: #16a889;
+  --chart-4: #e39a44;
+  --chart-5: #d75f76;
+  --sidebar: #172446;
+  --sidebar-foreground: #d6def3;
+  --sidebar-primary: #8292ee;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #25345e;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255,255,255,0.09);
+  --sidebar-ring: #8292ee;
+}
+
+.dark {
+  --background: #0d1428;
+  --foreground: #eff3ff;
+  --card: #151e37;
+  --card-foreground: #eff3ff;
+  --popover: #151e37;
+  --popover-foreground: #eff3ff;
+  --primary: #91a1ff;
+  --primary-foreground: #141b36;
+  --secondary: #202a48;
+  --secondary-foreground: #dbe2ff;
+  --muted: #202a48;
+  --muted-foreground: #a8b3d0;
+  --accent: #26335a;
+  --accent-foreground: #eff3ff;
+  --destructive: #ee7184;
+  --destructive-foreground: #2c0b14;
+  --border: rgba(255,255,255,0.1);
+  --input: rgba(255,255,255,0.14);
+  --ring: #91a1ff;
+  --sidebar: #0b1125;
+  --sidebar-foreground: #d6def3;
+  --sidebar-primary: #a1afff;
+  --sidebar-primary-foreground: #141b36;
+  --sidebar-accent: #182448;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-ring: #91a1ff;
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html { font-family: "Inter", ui-sans-serif, system-ui, sans-serif; }
+  body { @apply bg-background text-foreground; min-width: 320px; }
+  button:not(:disabled), [role="button"]:not([aria-disabled="true"]), a[href], select:not(:disabled), input:not(:disabled) { @apply cursor-pointer; }
+}
+
+@layer components {
+  .container { width: 100%; margin-inline: auto; padding-inline: 1rem; }
+  .flex { min-height: 0; min-width: 0; }
+  .premium-card { @apply rounded-2xl border bg-card text-card-foreground shadow-[0_16px_42px_rgba(31,49,102,0.06)]; }
+  .eyebrow { @apply text-[10px] font-bold uppercase tracking-[0.19em] text-slate-500; }
+  .dashboard-grid { background-image: linear-gradient(rgba(90,111,169,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(90,111,169,0.035) 1px, transparent 1px); background-size: 32px 32px; }
+  .hero-glow { background: radial-gradient(circle at 72% 20%, rgba(109,126,224,0.20), transparent 34%), linear-gradient(135deg, #1a2853 0%, #314bb2 100%); }
+  .hero-enter { animation: fade-in 300ms cubic-bezier(0.23,1,0.32,1) both; }
+  .motion-enter { animation: slide-up 420ms cubic-bezier(0.23,1,0.32,1) both; }
+  .motion-delay-1 { animation-delay: 60ms; }
+  .motion-delay-2 { animation-delay: 120ms; }
+  .motion-delay-3 { animation-delay: 180ms; }
+  .motion-delay-4 { animation-delay: 240ms; }
+  .pulse-soft { animation: pulse-soft 2.6s ease-in-out infinite; }
+  .ring-track { stroke: rgba(255,255,255,0.16); }
+  .ring-progress { stroke: #9daaff; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; }
+  .progress-fill { transform-origin: left center; animation: grow-progress 850ms cubic-bezier(0.23,1,0.32,1) both; }
+  .kpi-value { display: inline-block; animation: count-in 550ms cubic-bezier(0.23,1,0.32,1) both; }
+}
+
+@keyframes slide-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulse-soft { 0%, 100% { opacity: .65; transform: scale(.96); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes grow-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes count-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (min-width: 640px) { .container { padding-inline: 1.5rem; } }
+@media (min-width: 1024px) { .container { max-width: 1440px; padding-inline: 2.5rem; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.001ms !important; }
+}
