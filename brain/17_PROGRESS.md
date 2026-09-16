@@ -1,0 +1,208 @@
+﻿# PRAGATI — DEVELOPMENT PROGRESS
+
+Last Updated:
+`YYYY-MM-DD HH:MM`
+
+---
+
+# PHASE 0 — ARCHITECTURE
+
+* [ ] Repository audit
+* [ ] Technology decisions
+* [ ] System architecture
+* [ ] Database schema
+* [ ] API contract
+* [ ] Folder structure
+
+---
+
+# PHASE 1 — FOUNDATION
+
+* [ ] PostgreSQL
+* [ ] Database migrations
+* [ ] Seed system
+* [ ] Environment configuration
+* [ ] Health endpoint
+
+---
+
+# PHASE 2 — AUTHENTICATION
+
+* [ ] Login
+* [ ] Password hashing
+* [ ] JWT/session
+* [ ] RBAC
+* [ ] Protected routes
+* [ ] IDOR protection
+
+---
+
+# PHASE 3 — STUDENT
+
+* [ ] Student profile
+* [ ] Academic records
+* [ ] CGPA
+* [ ] Backlogs
+* [ ] Skills
+* [ ] Achievements
+
+---
+
+# PHASE 4 — ASSESSMENTS
+
+* [ ] Assessment creation
+* [ ] Assessment submission
+* [ ] Score storage
+* [ ] Skill mapping
+* [ ] Skill history
+* [ ] Skill-gap rule engine
+
+---
+
+# PHASE 5 — INTERVENTION
+
+* [ ] Faculty dashboard
+* [ ] Skill-gap alerts
+* [ ] Intervention creation
+* [ ] Intervention assignment
+* [ ] Outcome recording
+* [ ] Resolution/reopening
+
+---
+
+# PHASE 6 — EVIDENCE
+
+* [ ] File upload
+* [ ] File validation
+* [ ] SHA-256
+* [ ] Evidence metadata
+* [ ] Verification states
+* [ ] Audit logging
+
+---
+
+# PHASE 7 — INTERNSHIP
+
+* [ ] Internship creation
+* [ ] Internship lifecycle
+* [ ] Check-ins
+* [ ] Offer letter
+* [ ] Completion certificate
+* [ ] Faculty verification
+
+---
+
+# PHASE 8 — PLACEMENT
+
+* [ ] Recruitment drive
+* [ ] Rule builder
+* [ ] Eligibility evaluator
+* [ ] Eligibility reasons
+* [ ] Publish drive
+* [ ] Student application
+
+---
+
+# PHASE 9 — AI
+
+* [ ] AI provider
+* [ ] Prompt versioning
+* [ ] Skill-gap explanation
+* [ ] Faculty summary
+* [ ] AI fallback
+* [ ] AI rate limiting
+
+---
+
+# PHASE 10 — PERFORMANCE
+
+* [ ] Redis
+* [ ] Dashboard caching
+* [ ] Cache invalidation
+* [ ] Rate limiting
+* [ ] Query optimization
+
+---
+
+# PHASE 11 — FRONTEND
+
+* [ ] Student dashboard
+* [ ] Faculty dashboard
+* [ ] HOD dashboard
+* [ ] T&P dashboard
+* [ ] Admin dashboard
+* [ ] Career Passport
+
+---
+
+# PHASE 12 — TESTING
+
+* [ ] Unit tests
+* [ ] API tests
+* [ ] RBAC tests
+* [ ] IDOR tests
+* [ ] File security tests
+* [ ] Eligibility tests
+* [ ] End-to-end tests
+
+---
+
+# PHASE 13 — DEPLOYMENT
+
+* [ ] Production build
+* [ ] Database deployment
+* [ ] Redis deployment
+* [ ] Object storage
+* [ ] HTTPS
+* [ ] Environment variables
+* [ ] Health checks
+
+---
+
+# PHASE 14 — DEMO
+
+* [ ] Seed demo users
+* [ ] Seed demo students
+* [ ] Seed hero student
+* [ ] Test complete journey
+* [ ] Test SHA-256 demonstration
+* [ ] Test eligibility
+* [ ] Test recruitment
+* [ ] Final security check
+* [ ] Final backup
+
+---
+
+# CURRENT STATUS
+
+Current Phase:
+
+`PHASE 0`
+
+Current Task:
+
+`Repository audit`
+
+---
+
+# KNOWN ISSUES
+
+None yet.
+
+---
+
+# BLOCKERS
+
+None yet.
+
+---
+
+# TECHNICAL DEBT
+
+None yet.
+
+---
+
+# RULE
+
+Never mark `[x]` unless the feature has been implemented AND tested.
