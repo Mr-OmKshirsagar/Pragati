@@ -139,14 +139,17 @@ Last Updated:
 
 ---
 
-# PHASE 7 — INTERNSHIP
+# PHASE 7 — INTERNSHIP (COMPLETED)
 
-* [ ] Internship creation
-* [ ] Internship lifecycle
-* [ ] Check-ins
-* [ ] Offer letter
-* [ ] Completion certificate
-* [ ] Faculty verification
+* [x] Internship creation & active tracking (`internships` table, default `IN_PROGRESS` and `PENDING`)
+* [x] Evidence Completeness metric calculation formula (Offer Letter 25%, Check-in 25%, Report 25%, Certificate 25%)
+* [x] Periodic bi-weekly check-in submission (`internship_checkins` table & `InternshipCheckinModal.tsx`)
+* [x] Cryptographic SHA-256 evidence document linking to internship milestones (`internship_evidence`)
+* [x] Strict Anti-IDOR enforcement across all student-facing queries and mutations
+* [x] Faculty review queue & verification desk with auditable sign-off (`verifyInternship`)
+* [x] Institutional verification compliance: updates to `COMPLETED` and `INSTITUTION_VERIFIED`, inserts audit entries into `verifications` and `audit_logs`
+* [x] Interactive UI views in `WorkspacePages.tsx` for `StudentInternshipPage` and `FacultyInternshipPage`
+* [x] Automated test suite passing (`backend/tests/phase-07.test.ts` - 73/73 tests passing across all 8 suites)
 
 ---
 

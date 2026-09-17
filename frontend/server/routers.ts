@@ -991,7 +991,183 @@ export const appRouter = router({
           "SHA-256 cryptographic hashing detects any bit-level tampering. Institutional authenticity requires faculty sign-off.",
       })),
   }),
+  internship: router({
+    getMyInternship: publicProcedure.query(() => ({
+      id: "internship-01",
+      studentId: "student-rahul-sharma",
+      companyName: "Atlas Labs",
+      role: "Product Engineering Intern",
+      startDate: "2026-06-01",
+      endDate: "2026-11-30",
+      stipend: "45000.00",
+      status: "IN_PROGRESS" as "APPLIED" | "OFFERED" | "IN_PROGRESS" | "COMPLETED" | "TERMINATED",
+      supervisorName: "Sarah Jenkins",
+      supervisorEmail: "s.jenkins@atlaslabs.io",
+      verificationStatus: "PENDING" as "SELF_REPORTED" | "PENDING" | "INSTITUTION_VERIFIED" | "ISSUER_VERIFIED" | "REJECTED",
+      completeness: 50,
+      milestones: {
+        hasOfferLetter: true,
+        hasCheckin: true,
+        hasReport: false,
+        hasCertificate: false,
+      },
+      evidence: [
+        {
+          id: "ie-01",
+          internshipId: "internship-01",
+          evidenceType: "OFFER_LETTER" as const,
+          status: "INSTITUTION_VERIFIED" as const,
+          createdAt: new Date(),
+          documentId: "ev-01",
+          filename: "TechCorp_OfferLetter.pdf",
+          storagePath: "NIT-001/student-rahul-sharma/TechCorp_OfferLetter.pdf",
+          mimeType: "application/pdf",
+          fileSize: 245000,
+          sha256Hash: "3b9c7a4e8d2f105b6c3e7a9f1d4c2b8e0a6d5f4c3b2a1e9d8c7b6a5f4e3d2c1b",
+          verificationStatus: "INSTITUTION_VERIFIED" as const,
+          downloadUrl: "/mock-storage/TechCorp_OfferLetter.pdf",
+        },
+      ],
+      checkins: [
+        {
+          id: "chk-01",
+          internshipId: "internship-01",
+          studentId: "student-rahul-sharma",
+          checkInDate: "2026-07-15",
+          summary: "Completed backend API integration and added comprehensive test coverage for Phase 6.",
+          status: "SUBMITTED",
+          createdAt: new Date(),
+        },
+      ],
+    })),
+    createInternship: publicProcedure
+      .input(
+        z.object({
+          companyName: z.string().min(2),
+          role: z.string().min(2),
+          startDate: z.string(),
+          endDate: z.string().optional(),
+          stipend: z.number().optional(),
+          supervisorName: z.string().optional(),
+          supervisorEmail: z.string().email().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        id: "internship-new",
+        studentId: "student-rahul-sharma",
+        companyName: input.companyName,
+        role: input.role,
+        startDate: input.startDate,
+        endDate: input.endDate ?? null,
+        stipend: input.stipend ? input.stipend.toString() : null,
+        status: "IN_PROGRESS" as const,
+        supervisorName: input.supervisorName ?? null,
+        supervisorEmail: input.supervisorEmail ?? null,
+        verificationStatus: "PENDING" as const,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
+    submitCheckin: publicProcedure
+      .input(
+        z.object({
+          internshipId: z.string(),
+          summary: z.string().min(5),
+          checkInDate: z.string().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        id: `chk-${Date.now()}`,
+        internshipId: input.internshipId,
+        studentId: "student-rahul-sharma",
+        checkInDate: input.checkInDate || new Date().toISOString().split("T")[0],
+        summary: input.summary,
+        status: "SUBMITTED" as const,
+        reviewedBy: null,
+        createdAt: new Date(),
+      })),
+    linkEvidence: publicProcedure
+      .input(
+        z.object({
+          internshipId: z.string(),
+          evidenceDocumentId: z.string(),
+          evidenceType: z.enum([
+            "OFFER_LETTER",
+            "CHECK_IN",
+            "COMPLETION_CERTIFICATE",
+            "INTERNSHIP_REPORT",
+            "SUPERVISOR_CONFIRMATION",
+            "SKILL_CERTIFICATE",
+          ]),
+        })
+      )
+      .mutation(({ input }) => ({
+        id: `ie-${Date.now()}`,
+        internshipId: input.internshipId,
+        evidenceDocumentId: input.evidenceDocumentId,
+        evidenceType: input.evidenceType,
+        status: "PENDING" as const,
+        createdAt: new Date(),
+      })),
+    getReviewQueue: publicProcedure.query(() => [
+      {
+        id: "internship-01",
+        studentId: "student-rahul-sharma",
+        studentName: "Rahul Sharma",
+        studentEmail: "student@northstar.edu",
+        enrollmentNumber: "CSE2024042",
+        companyName: "Atlas Labs",
+        role: "Product Engineering Intern",
+        startDate: "2026-06-01",
+        endDate: "2026-11-30",
+        stipend: "45000.00",
+        status: "IN_PROGRESS" as "APPLIED" | "OFFERED" | "IN_PROGRESS" | "COMPLETED" | "TERMINATED",
+        verificationStatus: "PENDING" as "SELF_REPORTED" | "PENDING" | "INSTITUTION_VERIFIED" | "ISSUER_VERIFIED" | "REJECTED",
+        createdAt: new Date(),
+        completeness: 50,
+        evidenceCount: 1,
+        checkinCount: 1,
+        evidence: [
+          {
+            id: "ie-01",
+            evidenceType: "OFFER_LETTER" as const,
+            status: "INSTITUTION_VERIFIED" as const,
+            filename: "TechCorp_OfferLetter.pdf",
+            storagePath: "NIT-001/student-rahul-sharma/TechCorp_OfferLetter.pdf",
+            sha256Hash: "3b9c7a4e8d2f105b6c3e7a9f1d4c2b8e0a6d5f4c3b2a1e9d8c7b6a5f4e3d2c1b",
+            uploadedAt: new Date(),
+          },
+        ],
+        checkins: [
+          {
+            id: "chk-01",
+            internshipId: "internship-01",
+            studentId: "student-rahul-sharma",
+            checkInDate: "2026-07-15",
+            summary: "Completed backend API integration and added comprehensive test coverage for Phase 6.",
+            status: "SUBMITTED",
+            createdAt: new Date(),
+          },
+        ],
+      },
+    ]),
+    verifyInternship: publicProcedure
+      .input(
+        z.object({
+          internshipId: z.string(),
+          status: z.enum(["INSTITUTION_VERIFIED", "REJECTED"]),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        success: true,
+        internshipId: input.internshipId,
+        verificationStatus: input.status,
+        status: input.status === "INSTITUTION_VERIFIED" ? "COMPLETED" : "IN_PROGRESS",
+        verifiedAt: new Date().toISOString(),
+      })),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
+
 
