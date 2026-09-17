@@ -207,12 +207,22 @@ Last Updated:
 
 ---
 
-# PHASE 12 — DEMO FLOW VALIDATION
+# PHASE 12 — DEMO FLOW VALIDATION (COMPLETED)
 
-* [ ] Hero candidate walkthrough (Rahul Sharma Year 3 CSE)
-* [ ] Skill gap detection to mentor intervention resolution
-* [ ] Verified internship to 1-click recruitment offer
-* [ ] Evaluator tamper demonstration
+* [x] Scene 01: Rahul Sharma Dashboard Overview & 4-Pillar Scorecard (Academic 30%, Skills 30%, Internship 20%, Evidence 20%)
+* [x] Scene 02: Deterministic Skill-Gap Trigger (Operating Systems drop 78 -> 70 -> 61 + 1 active backlog)
+* [x] Scene 03: Assistive AI Explanation Generation (Google Gemini diagnosis with deterministic fallback guarantee)
+* [x] Scene 04: Faculty Closed-Loop Intervention Scheduling (Dr. Anand Verma on `/faculty/wards`)
+* [x] Scene 05: Progress Measurement & Gap Resolution (Follow-up score 61 -> 78 flips status to `RESOLVED`)
+* [x] Scene 06: Internship Lifecycle & Milestones (Evidence completeness formula: Offer, Check-in, Report, Certificate)
+* [x] Scene 07: Cryptographic SHA-256 Tamper Demo (1-byte mutation triggers immediate tamper detection alert)
+* [x] Scene 08: Faculty Institutional Verification & Audit Logging (`INSTITUTION_VERIFIED` with permanent audit trail)
+* [x] Scene 09: T&P Placement Rule Builder & AST Inspection (ABC Technologies benchmark rules)
+* [x] Scene 10: Deterministic Candidate Eligibility Run (Rahul PASS vs Peer Priya FAIL on DSA)
+* [x] Scene 11: 1-Click Transparent Application & Invariant Enforcement (`APPLIED` status and duplicate rejection)
+* [x] Scene 12: Verifiable Portable Career Passport Generation (Institutional seal, academic ledger, 64-char SHA-256 hash)
+* [x] Comprehensive 12-scene automated Vitest suite passing (`backend/tests/phase-12.test.ts` - 12/12 tests)
+* [x] 100% test pass rate across all 15 backend test suites (**150/150 tests passing**) with zero regressions
 
 ---
 
@@ -232,11 +242,11 @@ Last Updated:
 
 Current Phase:
 
-`PHASE 12`
+`ALL PHASES COMPLETED (HACKATHON HERO DEMO READY)`
 
 Current Task:
 
-`Hackathon Hero Demo Flow Validation (specs/phase-12-demo-flow-validation.spec.md)`
+`Ready for Evaluator Demonstration & Presentation (specs/phase-12-demo-flow-validation.spec.md)`
 
 ---
 
