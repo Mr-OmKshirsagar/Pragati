@@ -167,24 +167,29 @@ Last Updated:
 
 ---
 
-# PHASE 9 — AI
+# PHASE 9 — RECRUITMENT DRIVES & 1-CLICK TRANSPARENT APPLICATIONS (COMPLETED)
 
-* [ ] AI provider
-* [ ] Prompt versioning
-* [ ] Skill-gap explanation
-* [ ] Faculty summary
-* [ ] AI fallback
-* [ ] AI rate limiting
+* [x] Recruitment drive publishing & retrieval (`applicationService.getPublishedDrives`, `recruitmentRouter.getActiveDrives`)
+* [x] Strict server-side eligibility re-evaluation gatekeeper (`RULE_VIOLATION` with itemized failure reasons)
+* [x] Idempotent duplicate submission prevention via database unique constraint on `(student_id, recruitment_drive_id)` (`DUPLICATE_APPLICATION`)
+* [x] Student application history retrieval (`getMyApplications`)
+* [x] T&P Coordinator candidate pipeline roster query (`getDriveApplicants`) with candidate profile snapshots
+* [x] Candidate recruitment stage state machine (`APPLIED` -> `SHORTLISTED` -> `INTERVIEWING` -> `OFFERED` / `REJECTED`)
+* [x] Immutable compliance ledger audit logging (`audit_logs`) and in-app milestone notifications (`notifications`)
+* [x] Modern UI integration in `EligibilityCheckerModal.tsx`, `Opportunities.tsx`, and `AdminPlacement.tsx` (Candidate Pipeline Modal)
+* [x] Comprehensive automated test suite passing (`backend/tests/phase-09.test.ts` - 13/13 tests passing, 103/103 across all 10 suites)
 
 ---
 
-# PHASE 10 — PERFORMANCE
+# PHASE 10 — DASHBOARDS & PORTABLE CAREER PASSPORT (COMPLETED)
 
-* [ ] Redis
-* [ ] Dashboard caching
-* [ ] Cache invalidation
-* [ ] Rate limiting
-* [ ] Query optimization
+* [x] Pure deterministic Career Readiness Scorecard formula: $(A \times 0.30) + (S \times 0.30) + (I \times 0.20) + (E \times 0.20)$
+* [x] Transparent explainability banner rendered on dashboard with official formula quote
+* [x] High-performance data aggregation service (`dashboardService.ts` with `getAggregatedStudentDashboard`, `generateCareerPassport`, `getDepartmentAnalytics`)
+* [x] tRPC `dashboardRouter` (`getStudentDashboard`, `getCareerPassport`, `getHodAnalytics`) with strict role-based access control
+* [x] Portable Career Passport (`CareerPassport.tsx`): Tamper-evident transcript with Northstar Institute of Technology seal, certified academic progression, verified skill trajectory, verified TechCorp internship with faculty sign-off (Dr. Anand Verma), SHA-256 cryptographic hashes, and clean `@media print` layout
+* [x] HOD Department Analytics Hub (`HodDashboard.tsx`): Cohort skill heatmap matrix (S3–S6 vs Core Skills), intervention velocity tracking, and placement readiness distribution
+* [x] Full automated Vitest test suite passing (`backend/tests/phase-10.test.ts` - 8/8 tests passing, 111/111 across all 11 test suites)
 
 ---
 
@@ -241,11 +246,11 @@ Last Updated:
 
 Current Phase:
 
-`PHASE 1`
+`PHASE 11`
 
 Current Task:
 
-`Supabase PostgreSQL Foundation & Database Migrations (specs/phase-01-database-schema-rls.spec.md)`
+`Security Hardening, Audit Logging & Test Suites (specs/phase-11-security-audit-testing.spec.md)`
 
 ---
 

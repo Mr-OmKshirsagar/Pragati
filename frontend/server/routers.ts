@@ -1353,6 +1353,365 @@ export const appRouter = router({
         createdAt: new Date(),
       })),
   }),
+  recruitment: router({
+    getActiveDrives: publicProcedure.query(() => [
+      {
+        id: "drive-abc-tech",
+        companyName: "ABC Technologies",
+        jobTitle: "Associate Software Engineer",
+        description: "Core software engineering role.",
+        ctcOrStipend: "14.5 LPA",
+        applicationDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        status: "PUBLISHED" as const,
+        totalApplicants: 12,
+        rule: {
+          operator: "AND" as const,
+          conditions: [
+            { field: "cgpa", operator: ">=" as const, value: 7.5 },
+            { field: "active_backlogs", operator: "=" as const, value: 0 },
+            { field: "skill.DSA", operator: ">=" as const, value: 70 },
+            { field: "skill.Python", operator: ">=" as const, value: 65 },
+            { field: "internship_status", operator: "=" as const, value: "COMPLETED" },
+          ],
+        },
+      },
+    ]),
+    applyToDrive: publicProcedure
+      .input(z.object({ driveId: z.string() }))
+      .mutation(({ input }) => ({
+        application: {
+          id: "app-demo-1",
+          studentId: "student-rahul-sharma",
+          recruitmentDriveId: input.driveId,
+          status: "APPLIED" as const,
+          appliedAt: new Date(),
+        },
+        drive: {
+          id: input.driveId,
+          companyName: "ABC Technologies",
+          jobTitle: "Associate Software Engineer",
+          ctcOrStipend: "14.5 LPA",
+        },
+        evaluation: {
+          studentId: "student-rahul-sharma",
+          driveId: input.driveId,
+          eligible: true,
+          reasons: ["All criteria passed"],
+          criteriaResults: [],
+        },
+      })),
+    getMyApplications: publicProcedure.query(() => [
+      {
+        id: "app-1",
+        recruitmentDriveId: "drive-abc-tech",
+        status: "APPLIED" as "APPLIED" | "SHORTLISTED" | "INTERVIEWING" | "OFFERED" | "REJECTED",
+        appliedAt: new Date(),
+        companyName: "ABC Technologies",
+        jobTitle: "Associate Software Engineer",
+        description: "Core software engineering role.",
+        ctcOrStipend: "14.5 LPA",
+        applicationDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        driveStatus: "PUBLISHED" as const,
+      },
+    ]),
+    getDriveApplicants: publicProcedure
+      .input(z.object({ driveId: z.string() }))
+      .query(({ input }) => [
+        {
+          applicationId: "app-1",
+          status: "APPLIED" as "APPLIED" | "SHORTLISTED" | "INTERVIEWING" | "OFFERED" | "REJECTED",
+          appliedAt: new Date(),
+          studentId: "student-rahul-sharma",
+          enrollmentNumber: "CSE2024042",
+          program: "B.Tech Computer Science and Engineering",
+          currentSemester: 6,
+          studentName: "Rahul Sharma",
+          studentEmail: "rahul.sharma@northstar.edu",
+          snapshot: {
+            id: "student-rahul-sharma",
+            name: "Rahul Sharma",
+            cgpa: 8.42,
+            activeBacklogs: 0,
+            skills: { DSA: 78, Python: 84 },
+            internshipStatus: "COMPLETED" as const,
+          },
+        },
+      ]),
+    updateApplicantStatus: publicProcedure
+      .input(
+        z.object({
+          applicationId: z.string(),
+          status: z.enum([
+            "APPLIED",
+            "SHORTLISTED",
+            "INTERVIEWING",
+            "OFFERED",
+            "REJECTED",
+          ]),
+          remarks: z.string().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        id: input.applicationId,
+        status: input.status,
+        updatedAt: new Date(),
+      })),
+  }),
+  dashboard: router({
+    getStudentDashboard: publicProcedure.query(() => ({
+      student: {
+        id: "student-rahul-sharma",
+        name: "Rahul Sharma",
+        email: "student@northstar.edu",
+        enrollmentNumber: "CS-2023-0842",
+        program: "B.Tech Computer Science and Engineering",
+        institution: "Northstar Institute of Technology",
+        semester: 6,
+        admissionYear: 2023,
+        graduationYear: 2027,
+      },
+      metrics: {
+        cgpa: 8.42,
+        totalCredits: 132,
+        activeBacklogs: 0,
+        verifiedSkillsCount: 5,
+        totalSkillsCount: 6,
+        internshipStatus: "COMPLETED",
+        internshipCompleteness: 100,
+        totalEvidenceDocuments: 10,
+        verifiedEvidenceDocuments: 9,
+      },
+      readinessScorecard: {
+        readinessScore: 87.26,
+        methodologyExplanation:
+          "A deterministic weighted average of four transparent progress indicators: (Academic 30%) + (Skill Coverage 30%) + (Internship 20%) + (Verified Evidence 20%). It is not an AI-generated employability score.",
+        formula: "ReadinessScore = (A * 0.30) + (S * 0.30) + (I * 0.20) + (E * 0.20)",
+        breakdown: {
+          academic: {
+            rawCgpa: 8.42,
+            percentage: 84.2,
+            weight: 0.3,
+            weightedContribution: 25.26,
+          },
+          skills: {
+            totalCoreSkills: 5,
+            skillsAboveThreshold: 4,
+            percentage: 80,
+            weight: 0.3,
+            weightedContribution: 24,
+          },
+          internship: {
+            completeness: 100,
+            weight: 0.2,
+            weightedContribution: 20,
+          },
+          evidence: {
+            totalClaims: 10,
+            verifiedClaims: 9,
+            percentage: 90,
+            weight: 0.2,
+            weightedContribution: 18,
+          },
+        },
+      },
+      academics: {
+        cgpa: 8.42,
+        totalCredits: 132,
+        activeBacklogsCount: 0,
+        semesters: [] as any[],
+      },
+      skills: [] as any[],
+      internship: null as any,
+      skillGap: {
+        skill: "Operating Systems",
+        severity: "MEDIUM",
+        reason: "OS score dropped by 9% across two assessment cycles.",
+        detectedAt: "2026-09-17T12:00:00.000Z",
+      },
+      applications: [] as any[],
+    })),
+    getCareerPassport: publicProcedure.query(() => ({
+      passportId: "PASS-NIT-CSE-CS20230842",
+      generatedAt: "2026-09-17T12:00:00.000Z",
+      institution: {
+        name: "Northstar Institute of Technology",
+        code: "NIT",
+        department: "Department of Computer Science & Engineering",
+        sealText: "OFFICIAL INSTITUTIONAL SEAL · VERIFIED PORTABLE CAREER DOSSIER",
+      },
+      student: {
+        id: "student-rahul-sharma",
+        name: "Rahul Sharma",
+        email: "student@northstar.edu",
+        enrollmentNumber: "CS-2023-0842",
+        program: "B.Tech Computer Science and Engineering",
+        institution: "Northstar Institute of Technology",
+        semester: 6,
+        admissionYear: 2023,
+        graduationYear: 2027,
+      },
+      readinessScorecard: {
+        readinessScore: 87.26,
+        methodologyExplanation:
+          "A deterministic weighted average of four transparent progress indicators: (Academic 30%) + (Skill Coverage 30%) + (Internship 20%) + (Verified Evidence 20%). It is not an AI-generated employability score.",
+        formula: "ReadinessScore = (A * 0.30) + (S * 0.30) + (I * 0.20) + (E * 0.20)",
+        breakdown: {
+          academic: { rawCgpa: 8.42, percentage: 84.2, weight: 0.3, weightedContribution: 25.26 },
+          skills: { totalCoreSkills: 5, skillsAboveThreshold: 4, percentage: 80, weight: 0.3, weightedContribution: 24 },
+          internship: { completeness: 100, weight: 0.2, weightedContribution: 20 },
+          evidence: { totalClaims: 10, verifiedClaims: 9, percentage: 90, weight: 0.2, weightedContribution: 18 },
+        },
+      },
+      academicLedger: {
+        cumulativeCgpa: 8.42,
+        totalCredits: 132,
+        activeBacklogs: 0,
+        backlogStatus: "ZERO_ACTIVE_BACKLOGS" as const,
+        verifiedStatus: "INSTITUTION_VERIFIED" as const,
+        semesters: [
+          { semester: 1, semesterLabel: "Semester 1", academicYear: "2023-24", sgpa: 8.2, cgpa: 8.2, creditsEarned: 22, status: "COMPLETED" },
+          { semester: 2, semesterLabel: "Semester 2", academicYear: "2023-24", sgpa: 8.5, cgpa: 8.35, creditsEarned: 22, status: "COMPLETED" },
+          { semester: 3, semesterLabel: "Semester 3", academicYear: "2024-25", sgpa: 8.4, cgpa: 8.37, creditsEarned: 22, status: "COMPLETED" },
+          { semester: 4, semesterLabel: "Semester 4", academicYear: "2024-25", sgpa: 8.1, cgpa: 8.3, creditsEarned: 22, status: "COMPLETED" },
+          { semester: 5, semesterLabel: "Semester 5", academicYear: "2025-26", sgpa: 8.6, cgpa: 8.36, creditsEarned: 22, status: "COMPLETED" },
+          { semester: 6, semesterLabel: "Semester 6", academicYear: "2025-26", sgpa: 8.7, cgpa: 8.42, creditsEarned: 22, status: "COMPLETED" },
+        ],
+      },
+      verifiedSkills: [
+        { skillName: "Python Programming", category: "Software Development", score: 84, proficiency: "EXPERT" as const, lastAssessed: "Assessment Cycle 3", assessmentCycles: 3, verified: true },
+        { skillName: "Data Structures & Algorithms", category: "Core Technical", score: 78, proficiency: "PROFICIENT" as const, lastAssessed: "Assessment Cycle 3", assessmentCycles: 3, verified: true },
+        { skillName: "Object-Oriented Programming", category: "Software Development", score: 81, proficiency: "EXPERT" as const, lastAssessed: "Assessment Cycle 3", assessmentCycles: 3, verified: true },
+        { skillName: "Database Management Systems", category: "Core Technical", score: 72, proficiency: "PROFICIENT" as const, lastAssessed: "Assessment Cycle 3", assessmentCycles: 3, verified: true },
+      ],
+      verifiedInternship: {
+        companyName: "TechCorp Innovations",
+        role: "Software Engineering Intern",
+        duration: "8 Weeks (Jun 2026 - Aug 2026)",
+        startDate: "2026-06-01",
+        endDate: "2026-08-01",
+        status: "COMPLETED",
+        verificationStatus: "INSTITUTION_VERIFIED",
+        mentorSignOff: {
+          facultyName: "Dr. Anand Verma",
+          designation: "Associate Professor & Faculty Placement Advisor",
+          signedAt: "16 Sep 2026",
+          notes: "Approved with complete institutional compliance and milestone verification.",
+        },
+        cryptographicEvidence: [
+          {
+            documentType: "PDF_DOCUMENT",
+            title: "TechCorp_Offer_Letter.pdf",
+            sha256Hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            verified: true,
+            verifiedAt: "2026-09-16",
+          },
+          {
+            documentType: "PDF_DOCUMENT",
+            title: "TechCorp_Completion_Certificate.pdf",
+            sha256Hash: "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9",
+            verified: true,
+            verifiedAt: "2026-09-16",
+          },
+        ],
+      },
+      placementDrives: [
+        {
+          companyName: "ABC Technologies",
+          jobTitle: "Associate Software Engineer",
+          ctcOrStipend: "14.5 LPA",
+          status: "SHORTLISTED",
+          appliedAt: new Date().toISOString(),
+        },
+      ],
+      verificationStamp: {
+        sha256IntegrityHash: "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0",
+        signatureAuthority: "Dean of Academic Affairs & Faculty Placement Board",
+        verificationUrl: "https://pragati.nit.ac.in/verify/PASS-NIT-CSE-CS20230842",
+      },
+    })),
+    getHodAnalytics: publicProcedure.query(() => ({
+      department: {
+        id: "dept-cse-001",
+        name: "Department of Computer Science & Engineering",
+        code: "CSE",
+        totalStudents: 120,
+        facultyCount: 14,
+        averageCgpa: 8.15,
+      },
+      skillHeatmap: {
+        semesters: ["Sem 3", "Sem 4", "Sem 5", "Sem 6"],
+        skills: [
+          {
+            skillName: "Data Structures & Algorithms",
+            category: "Core Technical",
+            semesterAverages: [
+              { semester: "Sem 3", averageScore: 72, status: "MODERATE" as const },
+              { semester: "Sem 4", averageScore: 68, status: "MODERATE" as const },
+              { semester: "Sem 5", averageScore: 76, status: "EXCELLENT" as const },
+              { semester: "Sem 6", averageScore: 78, status: "EXCELLENT" as const },
+            ],
+          },
+          {
+            skillName: "Operating Systems",
+            category: "Systems",
+            semesterAverages: [
+              { semester: "Sem 3", averageScore: 65, status: "MODERATE" as const },
+              { semester: "Sem 4", averageScore: 59, status: "CRITICAL" as const },
+              { semester: "Sem 5", averageScore: 64, status: "CRITICAL" as const },
+              { semester: "Sem 6", averageScore: 71, status: "MODERATE" as const },
+            ],
+          },
+          {
+            skillName: "Database Management Systems",
+            category: "Core Technical",
+            semesterAverages: [
+              { semester: "Sem 3", averageScore: 75, status: "EXCELLENT" as const },
+              { semester: "Sem 4", averageScore: 79, status: "EXCELLENT" as const },
+              { semester: "Sem 5", averageScore: 82, status: "EXCELLENT" as const },
+              { semester: "Sem 6", averageScore: 84, status: "EXCELLENT" as const },
+            ],
+          },
+          {
+            skillName: "Python Programming",
+            category: "Software Development",
+            semesterAverages: [
+              { semester: "Sem 3", averageScore: 80, status: "EXCELLENT" as const },
+              { semester: "Sem 4", averageScore: 83, status: "EXCELLENT" as const },
+              { semester: "Sem 5", averageScore: 85, status: "EXCELLENT" as const },
+              { semester: "Sem 6", averageScore: 88, status: "EXCELLENT" as const },
+            ],
+          },
+          {
+            skillName: "Computer Networks",
+            category: "Systems",
+            semesterAverages: [
+              { semester: "Sem 3", averageScore: 68, status: "MODERATE" as const },
+              { semester: "Sem 4", averageScore: 67, status: "MODERATE" as const },
+              { semester: "Sem 5", averageScore: 70, status: "MODERATE" as const },
+              { semester: "Sem 6", averageScore: 75, status: "EXCELLENT" as const },
+            ],
+          },
+        ],
+      },
+      interventionVelocity: {
+        flaggedGaps: 18,
+        scheduledInterventions: 16,
+        completedInterventions: 14,
+        resolutionRate: 77.8,
+        breakdown: [
+          { category: "Systems (OS/CN)", flagged: 9, resolved: 7 },
+          { category: "Algorithms & Data Structures", flagged: 6, resolved: 5 },
+          { category: "Core Databases", flagged: 3, resolved: 2 },
+        ],
+      },
+      placementReadinessDistribution: {
+        totalEligible: 101,
+        tier1Eligible: { count: 46, percentage: 38, label: "Tier 1 (10+ LPA)" as const },
+        tier2Eligible: { count: 55, percentage: 46, label: "Tier 2 (6-10 LPA)" as const },
+        remedialRequired: { count: 19, percentage: 16, label: "Remedial Needed (<65)" as const },
+      },
+    })),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
