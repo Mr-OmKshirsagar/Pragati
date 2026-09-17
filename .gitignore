@@ -38,6 +38,7 @@ Thumbs.db
 coverage/
 .nyc_output/
 
+
 # Additional markdown files
 specs/phase-13-multi-tenant-superadmin-governance.spec.md 
 specs/phase-14-hierarchical-enrollment-approvals.spec.md 
