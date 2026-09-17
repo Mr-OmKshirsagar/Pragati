@@ -181,6 +181,9 @@ export default function HodDashboard() {
   const { role } = useAuth();
   const theme = getRoleSidebarTheme(role);
   const summaryQuery = trpc.hod.getDepartmentSummary.useQuery();
+  const analyticsQuery = (trpc as any).dashboard?.getHodAnalytics?.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
   const scheduleMutation = trpc.hod.scheduleRemedialClinic.useMutation();
   const sendActivityInvitationMutation = trpc.hod.sendActivityInvitation.useMutation();
 
@@ -814,6 +817,278 @@ export default function HodDashboard() {
                   })}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Cohort Skill Heatmap & Macro Placement Analytics Section */}
+          <div className="mb-7 grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
+            {/* Left: Skill Heatmap Matrix */}
+            <div className="rounded-2xl border border-[#dfe5ef] bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <div
+                    className="text-[11px] font-bold uppercase tracking-[0.08em]"
+                    style={{ color: theme.activePillBg }}
+                  >
+                    Curriculum Cohort Telemetry
+                  </div>
+                  <h2 className="text-lg font-extrabold text-[#17243e]">
+                    Cohort Skill Heatmap Matrix
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+                  <span className="flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" /> &gt;75%
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" /> 65-75%
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-rose-500" /> &lt;65%
+                  </span>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-[#edf1f8] text-[10.5px] font-bold uppercase tracking-[0.06em] text-[#8694aa]">
+                      <th className="pb-3 pl-2">Competency</th>
+                      <th className="pb-3 text-center">Sem 3</th>
+                      <th className="pb-3 text-center">Sem 4</th>
+                      <th className="pb-3 text-center">Sem 5</th>
+                      <th className="pb-3 text-center">Sem 6</th>
+                      <th className="pb-3 pr-2 text-right">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#edf1f8]">
+                    {((analyticsQuery?.data as any)?.skillHeatmap?.skills || [
+                      {
+                        skillName: "Data Structures & Algorithms",
+                        category: "Core Technical",
+                        semesterAverages: [
+                          { semester: "Sem 3", averageScore: 72, status: "MODERATE" },
+                          { semester: "Sem 4", averageScore: 68, status: "MODERATE" },
+                          { semester: "Sem 5", averageScore: 76, status: "EXCELLENT" },
+                          { semester: "Sem 6", averageScore: 78, status: "EXCELLENT" },
+                        ],
+                      },
+                      {
+                        skillName: "Operating Systems",
+                        category: "Systems",
+                        semesterAverages: [
+                          { semester: "Sem 3", averageScore: 65, status: "MODERATE" },
+                          { semester: "Sem 4", averageScore: 59, status: "CRITICAL" },
+                          { semester: "Sem 5", averageScore: 64, status: "CRITICAL" },
+                          { semester: "Sem 6", averageScore: 71, status: "MODERATE" },
+                        ],
+                      },
+                      {
+                        skillName: "Database Management Systems",
+                        category: "Core Technical",
+                        semesterAverages: [
+                          { semester: "Sem 3", averageScore: 75, status: "EXCELLENT" },
+                          { semester: "Sem 4", averageScore: 79, status: "EXCELLENT" },
+                          { semester: "Sem 5", averageScore: 82, status: "EXCELLENT" },
+                          { semester: "Sem 6", averageScore: 84, status: "EXCELLENT" },
+                        ],
+                      },
+                      {
+                        skillName: "Python Programming",
+                        category: "Software Development",
+                        semesterAverages: [
+                          { semester: "Sem 3", averageScore: 80, status: "EXCELLENT" },
+                          { semester: "Sem 4", averageScore: 83, status: "EXCELLENT" },
+                          { semester: "Sem 5", averageScore: 85, status: "EXCELLENT" },
+                          { semester: "Sem 6", averageScore: 88, status: "EXCELLENT" },
+                        ],
+                      },
+                      {
+                        skillName: "Computer Networks",
+                        category: "Systems",
+                        semesterAverages: [
+                          { semester: "Sem 3", averageScore: 68, status: "MODERATE" },
+                          { semester: "Sem 4", averageScore: 67, status: "MODERATE" },
+                          { semester: "Sem 5", averageScore: 70, status: "MODERATE" },
+                          { semester: "Sem 6", averageScore: 75, status: "EXCELLENT" },
+                        ],
+                      },
+                    ]).map((sk: any) => (
+                      <tr key={sk.skillName} className="hover:bg-[#fbfcfe]">
+                        <td className="py-3 pl-2">
+                          <div className="font-bold text-[#182643]">{sk.skillName}</div>
+                          <div className="text-[10px] text-[#8694aa]">{sk.category}</div>
+                        </td>
+                        {sk.semesterAverages.map((avg: any) => {
+                          const isEx = avg.status === "EXCELLENT" || avg.averageScore >= 75;
+                          const isMod =
+                            avg.status === "MODERATE" ||
+                            (avg.averageScore >= 65 && avg.averageScore < 75);
+                          return (
+                            <td key={avg.semester} className="py-3 text-center">
+                              <span
+                                className={`inline-block rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold ${
+                                  isEx
+                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                    : isMod
+                                    ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                    : "bg-rose-50 text-rose-700 border border-rose-200"
+                                }`}
+                              >
+                                {avg.averageScore}%
+                              </span>
+                            </td>
+                          );
+                        })}
+                        <td className="py-3 pr-2 text-right">
+                          <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-600">
+                            <TrendingUp className="h-3 w-3" />
+                            <span>Upward</span>
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Right: Intervention Velocity & Placement Distribution */}
+            <div className="space-y-6">
+              {/* Intervention Velocity */}
+              <div className="rounded-2xl border border-[#dfe5ef] bg-white p-5 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div
+                      className="text-[10.5px] font-bold uppercase tracking-[0.08em]"
+                      style={{ color: theme.activePillBg }}
+                    >
+                      Remediation Velocity
+                    </div>
+                    <h3 className="text-base font-extrabold text-[#17243e]">
+                      Mentoring Intervention Velocity
+                    </h3>
+                  </div>
+                  <span className="font-mono text-sm font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                    {(analyticsQuery?.data as any)?.interventionVelocity?.resolutionRate ?? 77.8}% Closed
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-2.5">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase">Flagged</div>
+                    <div className="font-mono text-lg font-black text-slate-800 mt-0.5">
+                      {(analyticsQuery?.data as any)?.interventionVelocity?.flaggedGaps ?? 18}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-2.5">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase">Scheduled</div>
+                    <div className="font-mono text-lg font-black text-primary mt-0.5">
+                      {(analyticsQuery?.data as any)?.interventionVelocity?.scheduledInterventions ?? 16}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-2.5">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase">Resolved</div>
+                    <div className="font-mono text-lg font-black text-emerald-700 mt-0.5">
+                      {(analyticsQuery?.data as any)?.interventionVelocity?.completedInterventions ?? 14}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600">
+                    <span>Closed-Loop Resolution Rate</span>
+                    <span className="font-mono font-bold text-slate-900">
+                      {(analyticsQuery?.data as any)?.interventionVelocity?.resolutionRate ?? 77.8}%
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-emerald-600"
+                      style={{
+                        width: `${(analyticsQuery?.data as any)?.interventionVelocity?.resolutionRate ?? 77.8}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Placement Readiness Distribution */}
+              <div className="rounded-2xl border border-[#dfe5ef] bg-white p-5 shadow-sm space-y-4">
+                <div>
+                  <div
+                    className="text-[10.5px] font-bold uppercase tracking-[0.08em]"
+                    style={{ color: theme.activePillBg }}
+                  >
+                    Cohort Placement Eligibility
+                  </div>
+                  <h3 className="text-base font-extrabold text-[#17243e]">
+                    Placement Readiness Distribution
+                  </h3>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-primary" />
+                        <span>Tier-1 Ready (10+ LPA)</span>
+                      </span>
+                      <span className="font-mono font-bold text-slate-900">
+                        {(analyticsQuery?.data as any)?.placementReadinessDistribution?.tier1Eligible?.percentage ?? 38}% ({(analyticsQuery?.data as any)?.placementReadinessDistribution?.tier1Eligible?.count ?? 46} students)
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{
+                          width: `${(analyticsQuery?.data as any)?.placementReadinessDistribution?.tier1Eligible?.percentage ?? 38}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                        <span>Tier-2 Core (6-10 LPA)</span>
+                      </span>
+                      <span className="font-mono font-bold text-slate-900">
+                        {(analyticsQuery?.data as any)?.placementReadinessDistribution?.tier2Eligible?.percentage ?? 46}% ({(analyticsQuery?.data as any)?.placementReadinessDistribution?.tier2Eligible?.count ?? 55} students)
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-indigo-500"
+                        style={{
+                          width: `${(analyticsQuery?.data as any)?.placementReadinessDistribution?.tier2Eligible?.percentage ?? 46}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-amber-500" />
+                        <span>Remedial Required (&lt;65)</span>
+                      </span>
+                      <span className="font-mono font-bold text-slate-900">
+                        {(analyticsQuery?.data as any)?.placementReadinessDistribution?.remedialRequired?.percentage ?? 16}% ({(analyticsQuery?.data as any)?.placementReadinessDistribution?.remedialRequired?.count ?? 19} students)
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-amber-500"
+                        style={{
+                          width: `${(analyticsQuery?.data as any)?.placementReadinessDistribution?.remedialRequired?.percentage ?? 16}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

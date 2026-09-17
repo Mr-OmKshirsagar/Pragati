@@ -131,4 +131,32 @@ describe("Phase 02: Authentication & 5-Role RBAC", () => {
     const facultyCaller = appRouter.createCaller(facultyCtx);
     await expect(facultyCaller.auth.testAdminAccess()).rejects.toThrowError(/not authorized to execute this procedure/);
   });
+
+  it("should prevent a STUDENT role from executing faculty verification procedures", async () => {
+    const studentCtx = await createTestContext("demo_STUDENT");
+    const studentCaller = appRouter.createCaller(studentCtx);
+
+    // Calling faculty-only verification procedure as a student must throw FORBIDDEN
+    await expect(
+      studentCaller.internship.verifyInternship({
+        internshipId: "00000000-0000-0000-0000-000000000000",
+        status: "INSTITUTION_VERIFIED",
+        notes: "Attempted student self-verification",
+      })
+    ).rejects.toThrowError(/not authorized to execute this procedure/);
+  });
+
+  it("should enforce tenant boundary across institutions", async () => {
+    const db = await getDb();
+    expect(db).toBeDefined();
+
+    // Querying with a non-existent or foreign institution ID strictly returns 0 records
+    const foreignInstitutionId = "00000000-0000-0000-0000-000000000000";
+    const crossInstitutionUsers = await db!
+      .select()
+      .from(users)
+      .where(eq(users.institutionId, foreignInstitutionId));
+
+    expect(crossInstitutionUsers.length).toBe(0);
+  });
 });

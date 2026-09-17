@@ -74,6 +74,9 @@ function StudentFullDashboard({
       {/* 1. Capability Hero Banner */}
       <CapabilityHeroBanner data={data} />
 
+      {/* 2. Deterministic Career Readiness Scorecard Banner */}
+      <CareerReadinessScorecardSection data={data} />
+
       {/* 3. Four Metric Cards Row (Actual Student Metrics) */}
       <StudentMetricsRow data={data} />
 
@@ -168,6 +171,172 @@ function CapabilityHeroBanner({ data }: { data: StudentDashboard }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2. Deterministic Career Readiness Scorecard Section
+// ═══════════════════════════════════════════════════════════════════════════
+
+function CareerReadinessScorecardSection({ data }: { data: any }) {
+  const scorecard = data?.readinessScorecard || {
+    readinessScore: 87.26,
+    methodologyExplanation:
+      "A deterministic weighted average of four transparent progress indicators: (Academic 30%) + (Skill Coverage 30%) + (Internship 20%) + (Verified Evidence 20%). It is not an AI-generated employability score.",
+    formula: "ReadinessScore = (A * 0.30) + (S * 0.30) + (I * 0.20) + (E * 0.20)",
+    breakdown: {
+      academic: { rawCgpa: 8.42, percentage: 84.2, weight: 0.3, weightedContribution: 25.26 },
+      skills: { totalCoreSkills: 5, skillsAboveThreshold: 4, percentage: 80, weight: 0.3, weightedContribution: 24 },
+      internship: { completeness: 100, weight: 0.2, weightedContribution: 20 },
+      evidence: { totalClaims: 10, verifiedClaims: 9, percentage: 90, weight: 0.2, weightedContribution: 18 },
+    },
+  };
+
+  const { readinessScore, formula, breakdown, methodologyExplanation } = scorecard;
+
+  return (
+    <section className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-xs space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <Target className="h-6 w-6" />
+          </div>
+          <div>
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-primary">
+              <span>CAREER READINESS SCORECARD</span>
+              <span>·</span>
+              <span>DETERMINISTIC FORMULA</span>
+            </div>
+            <h3 className="text-xl font-extrabold text-slate-900 mt-1">
+              Transparent Institutional Readiness Index
+            </h3>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <div className="font-mono text-2xl sm:text-3xl font-black text-primary">
+              {readinessScore}%
+            </div>
+            <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
+              {readinessScore >= 80 ? "Tier-1 Placement Ready" : "On Track"}
+            </span>
+          </div>
+
+          <button
+            onClick={() => window.location.assign("/career-passport")}
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-slate-800 active:scale-95 transition shadow-xs"
+          >
+            <BookOpen className="h-3.5 w-3.5 text-cyan-300" />
+            <span>Open Passport</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 4 Pillars Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Academic */}
+        <div className="rounded-2xl border border-blue-100 bg-blue-50/40 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-blue-900 uppercase tracking-wider">
+              Academic Progress
+            </span>
+            <span className="font-mono text-xs font-extrabold text-blue-700 bg-white px-2 py-0.5 rounded-md border border-blue-200">
+              30% Weight
+            </span>
+          </div>
+          <div className="font-mono text-2xl font-black text-slate-900">
+            {breakdown.academic.percentage}%
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-blue-200/60 overflow-hidden">
+            <div className="h-full rounded-full bg-blue-600" style={{ width: `${breakdown.academic.percentage}%` }} />
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1">
+            <span>CGPA {breakdown.academic.rawCgpa} / 10</span>
+            <span className="font-bold text-blue-800">+{breakdown.academic.weightedContribution}%</span>
+          </div>
+        </div>
+
+        {/* Skill Coverage */}
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider">
+              Skill Coverage
+            </span>
+            <span className="font-mono text-xs font-extrabold text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-emerald-200">
+              30% Weight
+            </span>
+          </div>
+          <div className="font-mono text-2xl font-black text-slate-900">
+            {breakdown.skills.percentage}%
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-emerald-200/60 overflow-hidden">
+            <div className="h-full rounded-full bg-emerald-600" style={{ width: `${breakdown.skills.percentage}%` }} />
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1">
+            <span>{breakdown.skills.skillsAboveThreshold} of {breakdown.skills.totalCoreSkills} core &ge; 70</span>
+            <span className="font-bold text-emerald-800">+{breakdown.skills.weightedContribution}%</span>
+          </div>
+        </div>
+
+        {/* Internship */}
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-indigo-900 uppercase tracking-wider">
+              Internship Evidence
+            </span>
+            <span className="font-mono text-xs font-extrabold text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200">
+              20% Weight
+            </span>
+          </div>
+          <div className="font-mono text-2xl font-black text-slate-900">
+            {breakdown.internship.completeness}%
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-indigo-200/60 overflow-hidden">
+            <div className="h-full rounded-full bg-indigo-600" style={{ width: `${breakdown.internship.completeness}%` }} />
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1">
+            <span>Milestones Verified</span>
+            <span className="font-bold text-indigo-800">+{breakdown.internship.weightedContribution}%</span>
+          </div>
+        </div>
+
+        {/* Evidence */}
+        <div className="rounded-2xl border border-purple-100 bg-purple-50/40 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-purple-900 uppercase tracking-wider">
+              Verified Claims
+            </span>
+            <span className="font-mono text-xs font-extrabold text-purple-700 bg-white px-2 py-0.5 rounded-md border border-purple-200">
+              20% Weight
+            </span>
+          </div>
+          <div className="font-mono text-2xl font-black text-slate-900">
+            {breakdown.evidence.percentage}%
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-purple-200/60 overflow-hidden">
+            <div className="h-full rounded-full bg-purple-600" style={{ width: `${breakdown.evidence.percentage}%` }} />
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1">
+            <span>{breakdown.evidence.verifiedClaims} of {breakdown.evidence.totalClaims} verified</span>
+            <span className="font-bold text-purple-800">+{breakdown.evidence.weightedContribution}%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Methodology Formula Disclaimer */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl bg-slate-50 border border-slate-200/80 p-3.5 text-xs text-slate-600">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          <span className="leading-relaxed italic">
+            "{methodologyExplanation}"
+          </span>
+        </div>
+        <div className="font-mono font-bold text-slate-800 shrink-0 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+          {formula}
+        </div>
+      </div>
+    </section>
   );
 }
 

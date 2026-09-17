@@ -1,10 +1,16 @@
 import { z } from "zod";
 import { router, studentProcedure } from "../_core/trpc";
 import * as academicService from "../services/academicService";
+import * as dashboardService from "../services/dashboardService";
 import * as skillService from "../services/skillService";
 import * as studentService from "../services/studentService";
 
 export const studentRouter = router({
+  // 0. Student Dashboard Query (with deterministic Career Readiness Scorecard)
+  dashboard: studentProcedure.query(async ({ ctx }) => {
+    return dashboardService.getAggregatedStudentDashboard(ctx.user.studentProfile.id);
+  }),
+
   // 1. Student Profile Query
   getProfile: studentProcedure.query(async ({ ctx }) => {
     return studentService.getStudentProfile(ctx.user.studentProfile.id);

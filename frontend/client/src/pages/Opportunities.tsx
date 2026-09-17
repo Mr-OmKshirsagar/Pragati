@@ -1,4 +1,5 @@
 import PragatiFrame from "@/components/PragatiFrame";
+import EligibilityCheckerModal from "@/components/EligibilityCheckerModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
 import type { Opportunity } from "@shared/pragati";
@@ -40,6 +41,13 @@ export default function Opportunities() {
   const { role } = useAuth();
   const utils = trpc.useUtils();
   const query = trpc.student.opportunities.useQuery();
+  const benchmarkQuery = (trpc as any).placement?.getBenchmarkDrive?.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+  const myApplicationsQuery = (trpc as any).recruitment?.getMyApplications?.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
   const createMutation = trpc.tnp.createPlacement.useMutation({
     onSuccess: () => {
       utils.student.opportunities.invalidate();
@@ -51,6 +59,11 @@ export default function Opportunities() {
   const [selected, setSelected] = useState<Opportunity | null>(null);
   const [appliedIds, setAppliedIds] = useState<string[]>([]);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [eligibilityModalDrive, setEligibilityModalDrive] = useState<{
+    id: string;
+    companyName: string;
+    roleName: string;
+  } | null>(null);
   const canManageOpportunities = role === "TNP_COORDINATOR" || role === "ADMIN";
 
   const opportunities = query.data?.opportunities ?? [];
@@ -116,6 +129,65 @@ export default function Opportunities() {
                 <Plus className="h-4 w-4" />
                 Upload internship data
               </button>
+            </div>
+          )}
+
+          {benchmarkQuery?.data && (
+            <div className="mb-5 relative overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white p-5 sm:p-6 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="space-y-1.5">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-100/90 border border-blue-200 px-3 py-0.5 text-[11px] font-bold text-blue-800">
+                    <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                    <span>DETERMINISTIC AST ELIGIBILITY ENGINE · 14.5 LPA</span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-extrabold text-[#1c2a47]">
+                    {benchmarkQuery.data.drive.companyName} — {benchmarkQuery.data.drive.jobTitle}
+                  </h3>
+                  <p className="text-xs text-[#5a6780] max-w-2xl leading-relaxed">
+                    Institutional Benchmark Recruitment Drive. Rules: <span className="font-semibold text-slate-800">CGPA ≥ 7.5</span>, <span className="font-semibold text-slate-800">Active Backlogs = 0</span>, <span className="font-semibold text-slate-800">DSA ≥ 70</span>, <span className="font-semibold text-slate-800">Python ≥ 65</span>, and <span className="font-semibold text-slate-800">Internship = COMPLETED</span>.
+                  </p>
+                </div>
+                <div className="shrink-0 flex items-center gap-2">
+                  {myApplicationsQuery?.data?.some(
+                    (app: any) =>
+                      app.recruitmentDriveId === benchmarkQuery.data.drive.id ||
+                      app.companyName?.toLowerCase() === "abc technologies"
+                  ) ? (
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-100 border border-emerald-300 px-3.5 py-2 text-xs font-bold text-emerald-800 shadow-2xs">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                        <span>Application Submitted</span>
+                      </span>
+                      <button
+                        onClick={() =>
+                          setEligibilityModalDrive({
+                            id: benchmarkQuery.data.drive.id,
+                            companyName: benchmarkQuery.data.drive.companyName,
+                            roleName: benchmarkQuery.data.drive.jobTitle,
+                          })
+                        }
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                      >
+                        <span>Review Criteria</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        setEligibilityModalDrive({
+                          id: benchmarkQuery.data.drive.id,
+                          companyName: benchmarkQuery.data.drive.companyName,
+                          roleName: benchmarkQuery.data.drive.jobTitle,
+                        })
+                      }
+                      className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition"
+                    >
+                      <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                      <span>Check &amp; Apply</span>
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -208,6 +280,18 @@ export default function Opportunities() {
               description: `${values.company} is now listed in opportunities.`,
             });
             setUploadOpen(false);
+          }}
+        />
+      )}
+      {eligibilityModalDrive && (
+        <EligibilityCheckerModal
+          driveId={eligibilityModalDrive.id}
+          companyName={eligibilityModalDrive.companyName}
+          roleName={eligibilityModalDrive.roleName}
+          onClose={() => setEligibilityModalDrive(null)}
+          onApply={() => {
+            toast.success(`Application submitted for ${eligibilityModalDrive.companyName}!`);
+            setEligibilityModalDrive(null);
           }}
         />
       )}

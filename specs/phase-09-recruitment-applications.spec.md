@@ -3,13 +3,13 @@
 ## 1. Metadata
 - **Phase**: 09
 - **Title**: Recruitment Drive Publishing & 1-Click Transparent Applications
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: Phase 01, Phase 02, Phase 08
 - **Target Files**:
   - `backend/src/services/applicationService.ts`
   - `backend/src/routers/recruitment.ts`
   - `frontend/client/src/pages/Opportunities.tsx`
-  - `frontend/client/src/pages/TnpApplicants.tsx`
+  - `frontend/client/src/pages/admin/AdminPlacement.tsx`
 
 ---
 
@@ -120,7 +120,7 @@ export const recruitmentRouter = router({
 ---
 
 ## 8. Definition of Done
-- [ ] Published drives queried from Supabase PostgreSQL.
-- [ ] Server re-evaluates eligibility on application submission.
-- [ ] Idempotent unique constraint enforced.
-- [ ] `Opportunities.tsx` UI reflects live application states.
+- [x] Published drives queried from Supabase PostgreSQL.
+- [x] Server re-evaluates eligibility on application submission.
+- [x] Idempotent unique constraint enforced.
+- [x] `Opportunities.tsx` UI reflects live application states.

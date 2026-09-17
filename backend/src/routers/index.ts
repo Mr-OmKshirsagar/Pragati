@@ -7,7 +7,10 @@ import { studentRouter } from "./student";
 import { tnpRouter } from "./tnp";
 import { subjectRouter } from "./subject";
 import { internshipRouter } from "./internship";
+import { placementRouter } from "./placement";
+import { recruitmentRouter } from "./recruitment";
 import { analyticsRouter } from "./analytics";
+import { dashboardRouter } from "./dashboard";
 import { searchRouter } from "./search";
 
 export const appRouter = router({
@@ -19,7 +22,10 @@ export const appRouter = router({
   tnp: tnpRouter,
   subject: subjectRouter,
   internship: internshipRouter,
+  placement: placementRouter,
+  recruitment: recruitmentRouter,
   analytics: analyticsRouter,
+  dashboard: dashboardRouter,
   search: searchRouter,
 });
 

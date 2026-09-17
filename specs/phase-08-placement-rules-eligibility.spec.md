@@ -3,7 +3,7 @@
 ## 1. Metadata
 - **Phase**: 08
 - **Title**: AST Placement Rule Builder & Transparent Deterministic Eligibility Engine
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: Phase 01, Phase 03, Phase 07
 - **Target Files**:
   - `backend/src/rules/eligibilityEngine.ts`
@@ -190,7 +190,7 @@ Rendered when a student clicks *"Check My Eligibility"* on an opportunity card:
 ---
 
 ## 8. Definition of Done
-- [ ] Rule AST parser and pure evaluator function implemented and tested.
-- [ ] Evaluated results and reasons persisted to `eligibility_evaluations`.
-- [ ] `EligibilityCheckerModal.tsx` renders clear, color-coded itemized reasons.
-- [ ] T&P roster evaluation endpoint functions in bulk.
+- [x] Rule AST parser and pure evaluator function implemented and tested.
+- [x] Evaluated results and reasons persisted to `eligibility_evaluations`.
+- [x] `EligibilityCheckerModal.tsx` renders clear, color-coded itemized reasons.
+- [x] T&P roster evaluation endpoint functions in bulk.

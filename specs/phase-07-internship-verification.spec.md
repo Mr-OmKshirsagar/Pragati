@@ -3,13 +3,12 @@
 ## 1. Metadata
 - **Phase**: 07
 - **Title**: Smart Internship Lifecycle Management & Faculty Verification Review
-- **Status**: Ready for Implementation
+- **Status**: Completed
 - **Dependencies**: Phase 01, Phase 02, Phase 06
 - **Target Files**:
   - `backend/src/services/internshipService.ts`
   - `backend/src/routers/internship.ts`
   - `frontend/client/src/pages/WorkspacePages.tsx`
-  - `frontend/client/src/pages/FacultyReview.tsx`
   - `frontend/client/src/components/InternshipCheckinModal.tsx`
 
 ---
@@ -100,6 +99,29 @@ export const internshipRouter = router({
       return internshipService.addCheckin(ctx.user.studentProfile.id, input);
     }),
 
+  linkEvidence: studentProcedure
+    .input(
+      z.object({
+        internshipId: z.string().uuid(),
+        evidenceDocumentId: z.string().uuid(),
+        evidenceType: z.enum([
+          "OFFER_LETTER",
+          "CHECK_IN",
+          "COMPLETION_CERTIFICATE",
+          "INTERNSHIP_REPORT",
+          "SUPERVISOR_CONFIRMATION",
+          "SKILL_CERTIFICATE",
+        ]),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return internshipService.linkEvidenceToInternship(ctx.user.studentProfile.id, input);
+    }),
+
+  getReviewQueue: facultyProcedure.query(async ({ ctx }) => {
+    return internshipService.getFacultyReviewQueue(ctx.user.id);
+  }),
+
   verifyInternship: facultyProcedure
     .input(
       z.object({
@@ -111,7 +133,9 @@ export const internshipRouter = router({
     .mutation(async ({ input, ctx }) => {
       return internshipService.verifyInternship({
         verifierId: ctx.user.id,
-        ...input,
+        internshipId: input.internshipId,
+        status: input.status,
+        notes: input.notes,
       });
     }),
 });
@@ -119,15 +143,18 @@ export const internshipRouter = router({
 
 ---
 
-## 6. UI Views
+## 6. Frontend UI Components
 
-### 6.1 Student View (`WorkspacePages.tsx?kind=internship`)
-- **Header**: Company (TechCorp), Role (Software Engineering Intern), Status Badge (`IN_PROGRESS` or `COMPLETED`).
-- **Milestone Progress Bar**: 75% / 100% with checkmarks next to completed evidence.
-- **Check-in Feed**: History of submitted progress updates.
-- **Upload Dropzone**: Upload Completion Certificate with live SHA-256 calculation.
+### 6.1 Student Active Internship Tracker (`WorkspacePages.tsx`)
+- **Visual Progress Bar**: Real-time calculated completeness percentage.
+- **Milestone Cards**:
+  - `Offer Letter` (Upload status, SHA-256 hash preview).
+  - `Bi-Weekly Check-in` (Chronological feed of submitted logs + modal trigger).
+  - `Internship Report` (Draft upload + status).
+  - `Completion Certificate` (Upload trigger, disabled until required duration met).
+- **Prohibition Indicator**: Explains why student cannot click "Verify" directly.
 
-### 6.2 Faculty Review Desk (`FacultyReview.tsx`)
+### 6.2 Faculty Review Desk (`WorkspacePages.tsx`)
 - **Queue Table**: Pending student internships awaiting sign-off.
 - **Evidence Inspector**:
   - Displays document filename, storage preview link, and cryptographic SHA-256 hash.
@@ -151,7 +178,7 @@ export const internshipRouter = router({
 ---
 
 ## 8. Definition of Done
-- [ ] Internship lifecycle CRUD implemented in Supabase PostgreSQL.
-- [ ] Check-ins and evidence milestones properly associated.
-- [ ] Faculty verification desk enforces mentor permissions and creates audit entries.
-- [ ] Hero student TechCorp demo flow test passes.
+- [x] Internship lifecycle CRUD implemented in Supabase PostgreSQL.
+- [x] Check-ins and evidence milestones properly associated.
+- [x] Faculty verification desk enforces mentor permissions and creates audit entries.
+- [x] Hero student TechCorp demo flow test passes.
