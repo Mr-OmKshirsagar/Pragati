@@ -1,7 +1,7 @@
 # PRAGATI — DEVELOPMENT PROGRESS
 
 Last Updated:
-`2026-09-16 15:08 IST`
+`2026-09-17 18:45 IST`
 
 ---
 
@@ -93,6 +93,49 @@ Last Updated:
 * [x] Interactive evaluator tamper demonstration (`TamperDemoModal.tsx` showing avalanche effect)
 * [x] Modern drag-and-drop file upload modal (`EvidenceUploadModal.tsx`) connected in `Achievements.tsx`
 * [x] Automated test suite passing (`backend/tests/phase-06.test.ts` - 54/54 tests passing across all 7 suites)
+
+---
+
+# PHASE 6.5 — SUBJECT ENROLLMENT & TEACHER TRACKING (COMPLETED) ✅
+
+* [x] Database schema: 6 new tables (`faculty_subject_assignments`, `subject_enrollments`, `subject_attendance`, `assignments`, `assignment_submissions`, `subject_announcements`)
+* [x] Service layer: 20+ async functions for teacher operations (`subjectService.ts`, 245 lines)
+* [x] Router with 20+ endpoints (`subjectRouter`, 420 lines) with full RBAC enforcement
+* [x] Faculty procedures: View subjects, manage enrollment, track attendance, create/grade assignments, post announcements
+* [x] Student procedures: View enrolled subjects, submit assignments, check attendance %, view grades
+* [x] Admin procedures: Assign faculty, enroll/drop students, manage enrollments
+* [x] Analytics engine: Per-subject performance dashboard & at-risk student identification
+* [x] TypeScript compilation: All errors fixed ✅
+* [x] Database migration: Generated & applied to Supabase
+* [x] Router registration in appRouter
+* [x] Frontend integration guide created
+
+---
+
+# PHASE 6.6 — INTERNSHIP EVIDENCE UPLOAD (COMPLETED) ✅
+
+* [x] Database tables ready: `internships`, `internship_evidence`, `internship_checkins`, `evidence_documents`
+* [x] Service layer: 16 comprehensive functions (`internshipService.ts`)
+  * Internship lifecycle: create, list, update status
+  * Evidence upload: SHA-256 dual-layer validation, file restrictions (PDF/PNG/JPEG, 10MB max)
+  * Evidence management: get, filter by type, delete
+  * Check-ins: record weekly/milestone updates
+  * Verification: submit for faculty review, approve/reject, get status
+  * Analytics: student internship summary, department stats
+* [x] Router with 21+ endpoints (`internshipRouter`) with full RBAC
+  * 12 Student endpoints: Upload evidence, manage internships, record check-ins
+  * 4 Faculty endpoints: View/verify internships
+  * 2 Admin endpoints: Statistics, status management
+* [x] Evidence upload features:
+  * ✅ Students can upload offers, completion certs, reports, etc.
+  * ✅ 6 evidence types supported (OFFER_LETTER, COMPLETION_CERTIFICATE, INTERNSHIP_REPORT, SUPERVISOR_CONFIRMATION, SKILL_CERTIFICATE, CHECK_IN)
+  * ✅ SHA-256 cryptographic validation (client + server)
+  * ✅ File restrictions enforced (10MB max, PDF/PNG/JPEG only)
+  * ✅ Access control enforced (students see only own evidence)
+* [x] TypeScript compilation: All errors fixed ✅
+* [x] Router registered in appRouter
+* [x] Documentation: INTERNSHIP_EVIDENCE_FEATURE.md with 400+ lines
+* [x] Code examples provided for React components
 
 ---
 

@@ -1,4 +1,5 @@
 import { ROLE_CONFIG, type PragatiRole, type PragatiUser, usePragatiAuth } from "@/contexts/AuthContext";
+import { getRoleSidebarTheme } from "@/lib/roleTheme";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowRight,
@@ -33,6 +34,80 @@ const ROLES: { role: PragatiRole; icon: React.ComponentType<{ className?: string
   { role: "ADMIN", icon: ShieldCheck },
 ];
 
+const STATIC_DEMO_ACCOUNTS: Record<PragatiRole, PragatiUser & { hintPassword: string }> = {
+  STUDENT: {
+    id: "user-student-1",
+    name: "Rahul Sharma",
+    email: "rahul.sharma@northstar.edu",
+    role: "STUDENT",
+    department: "Computer Science & Engineering",
+    departmentId: "CSE",
+    institutionId: "NIT-001",
+    roleId: "CS-2023-0842",
+    designation: "B.Tech CSE · Sem 6",
+    avatar: "RS",
+    hintPassword: "password123",
+    studentProfile: {
+      id: "student-rahul-sharma",
+      enrollmentNumber: "CSE2024042",
+      program: "B.Tech Computer Science and Engineering",
+      currentSemester: 6,
+    },
+  },
+  FACULTY: {
+    id: "user-faculty-1",
+    name: "Dr. Meera Nair",
+    email: "meera.nair@northstar.edu",
+    role: "FACULTY",
+    department: "Computer Science & Engineering",
+    departmentId: "CSE",
+    institutionId: "NIT-001",
+    roleId: "FAC-CS-104",
+    designation: "Associate Professor & Mentor",
+    avatar: "MN",
+    hintPassword: "password123",
+  },
+  HOD: {
+    id: "user-hod-1",
+    name: "Dr. Sunita Rao",
+    email: "sunita.rao@northstar.edu",
+    role: "HOD",
+    department: "Computer Science & Engineering",
+    departmentId: "CSE",
+    institutionId: "NIT-001",
+    roleId: "HOD-CSE-001",
+    designation: "Head of Department (CSE)",
+    avatar: "SR",
+    hintPassword: "password123",
+  },
+  TNP_COORDINATOR: {
+    id: "user-tnp-1",
+    name: "Prof. Vikram Mehta",
+    email: "vikram.mehta@northstar.edu",
+    role: "TNP_COORDINATOR",
+    department: "Training & Placement Cell",
+    departmentId: "CSE",
+    institutionId: "NIT-001",
+    roleId: "TNP-ENG-042",
+    designation: "Head of Training & Placement",
+    avatar: "VM",
+    hintPassword: "password123",
+  },
+  ADMIN: {
+    id: "user-admin-1",
+    name: "System Administrator",
+    email: "admin@northstar.edu",
+    role: "ADMIN",
+    department: "Institutional Systems & Governance",
+    departmentId: "SYS",
+    institutionId: "NIT-001",
+    roleId: "ADM-SYS-001",
+    designation: "Platform Administrator",
+    avatar: "SA",
+    hintPassword: "password123",
+  },
+};
+
 const DEPARTMENTS = [
   "Computer Science & Engineering",
   "Information Technology",
@@ -44,7 +119,7 @@ const DEPARTMENTS = [
 
 export default function AuthPage({ initialMode = "login" }: AuthProps) {
   const [, navigate] = useLocation();
-  const { login } = usePragatiAuth();
+  const { login, loginWithDemo } = usePragatiAuth();
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [selectedRole, setSelectedRole] = useState<PragatiRole>("STUDENT");
   const [showPassword, setShowPassword] = useState(false);
@@ -64,9 +139,12 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
   const demoAccountsQuery = trpc.auth.demoAccounts.useQuery();
 
   const roleConfig = ROLE_CONFIG[selectedRole];
+  const selectedTheme = getRoleSidebarTheme(selectedRole);
 
-  // Pick demo account for current role
-  const currentDemo = demoAccountsQuery.data?.find(a => a.role === selectedRole);
+  // Pick demo account for current role (with fallback to static personas)
+  const currentDemo =
+    demoAccountsQuery.data?.find(a => a.role === selectedRole) ||
+    STATIC_DEMO_ACCOUNTS[selectedRole];
 
   const fillDemoAccount = () => {
     if (currentDemo) {
@@ -150,12 +228,28 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
     }
   };
 
-  const handle1ClickDemo = (personaRole: PragatiRole) => {
-    const demo = demoAccountsQuery.data?.find(a => a.role === personaRole);
-    if (demo) {
+  const handle1ClickDemo = async (personaRole: PragatiRole) => {
+    setLoading(true);
+    try {
+      if (loginWithDemo) {
+        await loginWithDemo(personaRole);
+      } else {
+        const demo =
+          demoAccountsQuery.data?.find(a => a.role === personaRole) ||
+          STATIC_DEMO_ACCOUNTS[personaRole];
+        login(demo as PragatiUser);
+        toast.success(`Logged in as ${demo.name} (${ROLE_CONFIG[personaRole].label})`);
+      }
+      navigate(ROLE_CONFIG[personaRole].defaultPath);
+    } catch {
+      const demo =
+        demoAccountsQuery.data?.find(a => a.role === personaRole) ||
+        STATIC_DEMO_ACCOUNTS[personaRole];
       login(demo as PragatiUser);
       toast.success(`Logged in as ${demo.name} (${ROLE_CONFIG[personaRole].label})`);
       navigate(ROLE_CONFIG[personaRole].defaultPath);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -165,7 +259,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
       <header className="sticky top-0 z-20 border-b border-[#e2e8f2]/90 bg-[#f5f7fb]/90 backdrop-blur-xl">
         <div className="mx-auto grid h-[70px] max-w-[1440px] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-8">
           <Link href="/overview" className="grid grid-cols-[auto_1fr] items-center gap-3">
-            <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-[#8393ee] text-[#172446] shadow-[0_8px_20px_rgba(116,135,235,0.3)]">
+            <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-[#A598F5] text-[#1E1145] shadow-[0_8px_20px_rgba(165,152,245,0.3)]">
               <span className="text-xl font-extrabold">P</span>
               <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-[#a7e3d3]" />
             </div>
@@ -176,12 +270,12 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
           </Link>
 
           <div className="hidden sm:block text-center text-xs text-[#71809a]">
-            Role-Based Institutional Authentication · <span className="font-semibold text-[#3048a8]">RBAC v1.0</span>
+            Role-Based Institutional Authentication · <span className="font-semibold" style={{ color: selectedTheme.activePillBg }}>RBAC v1.0</span>
           </div>
 
           <Link
             href="/overview"
-            className="grid grid-cols-[auto_auto] items-center gap-1.5 rounded-xl border border-[#dfe5ef] bg-white px-3.5 py-2 text-xs font-bold text-[#52617d] shadow-sm transition hover:bg-[#f8f9fc] hover:text-[#3048a8]"
+            className="grid grid-cols-[auto_auto] items-center gap-1.5 rounded-xl border border-[#dfe5ef] bg-white px-3.5 py-2 text-xs font-bold text-[#52617d] shadow-sm transition hover:bg-[#f8f9fc] hover:text-primary"
           >
             <span>Explore Dashboard</span>
             <ArrowRight className="h-3.5 w-3.5" />
@@ -197,7 +291,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
             {/* Header / Mode Switcher */}
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
-                <div className="eyebrow mb-1 text-[#3048a8]">Institutional Access</div>
+                <div className="eyebrow mb-1" style={{ color: selectedTheme.activePillBg }}>Institutional Access</div>
                 <h1 className="text-2xl font-extrabold tracking-[-0.04em] text-[#182643] sm:text-3xl">
                   {mode === "login" ? "Sign in to PRAGATI" : "Create institutional account"}
                 </h1>
@@ -260,8 +354,15 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
               </div>
 
               {/* Role Context Hint */}
-              <div className="mt-3 grid grid-cols-[auto_1fr] items-center gap-2 rounded-xl bg-[#edf2fb] px-3 py-2 text-xs text-[#3048a8]">
-                <Sparkles className="h-4 w-4 shrink-0 text-[#3048a8]" />
+              <div
+                className="mt-3 grid grid-cols-[auto_1fr] items-center gap-2 rounded-xl px-3 py-2 text-xs transition-all duration-200"
+                style={{
+                  backgroundColor: selectedTheme.accentBg,
+                  color: selectedTheme.accentText,
+                  border: `1px solid ${selectedTheme.activePillBg}33`,
+                }}
+              >
+                <Sparkles className="h-4 w-4 shrink-0" style={{ color: selectedTheme.activePillBg }} />
                 <span>
                   <strong>{roleConfig.label}:</strong> {roleConfig.description}
                 </span>
@@ -282,7 +383,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                         placeholder="e.g. Rahul Sharma"
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-[#3048a8] focus:ring-2 focus:ring-[#cbd3f6]"
+                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
                       />
                     </div>
                   </div>
@@ -307,7 +408,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                         }
                         value={roleId}
                         onChange={e => setRoleId(e.target.value)}
-                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-[#3048a8] focus:ring-2 focus:ring-[#cbd3f6]"
+                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
                       />
                     </div>
                   </div>
@@ -321,7 +422,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                     <select
                       value={department}
                       onChange={e => setDepartment(e.target.value)}
-                      className="w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-2.5 text-xs text-[#182643] outline-none focus:border-[#3048a8] focus:ring-2 focus:ring-[#cbd3f6]"
+                      className="w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-2.5 text-xs text-[#182643] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                     >
                       {DEPARTMENTS.map(dept => (
                         <option key={dept} value={dept}>
@@ -346,7 +447,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                       }
                       value={designation}
                       onChange={e => setDesignation(e.target.value)}
-                      className="w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-2.5 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-[#3048a8] focus:ring-2 focus:ring-[#cbd3f6]"
+                      className="w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-2.5 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 </div>
@@ -375,7 +476,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                     }
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-[#3048a8] focus:ring-2 focus:ring-[#cbd3f6]"
+                    className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -392,12 +493,12 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                       placeholder="••••••••"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-10 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-[#3048a8] focus:ring-2 focus:ring-[#cbd3f6]"
+                      className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-10 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(v => !v)}
-                      className="absolute right-3 top-2.5 text-[#8b98b0] hover:text-[#3048a8]"
+                      className="absolute right-3 top-2.5 text-[#8b98b0] hover:text-primary"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -415,7 +516,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                         placeholder="••••••••"
                         value={confirmPassword}
                         onChange={e => setConfirmPassword(e.target.value)}
-                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-[#3048a8] focus:ring-2 focus:ring-[#cbd3f6]"
+                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
                       />
                     </div>
                   </div>
@@ -428,7 +529,8 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                   <button
                     type="button"
                     onClick={fillDemoAccount}
-                    className="text-[11px] font-bold text-[#3048a8] hover:underline"
+                    style={{ color: selectedTheme.activePillBg }}
+                    className="text-[11px] font-bold hover:underline"
                   >
                     Auto-fill demo credentials for {currentDemo.name}
                   </button>
@@ -440,7 +542,11 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-2 grid w-full grid-flow-col auto-cols-max items-center justify-center gap-2 rounded-xl bg-[#3048a8] py-3 text-xs font-bold text-white shadow-[0_8px_20px_rgba(48,72,168,0.25)] transition hover:bg-[#3d57be] active:scale-[0.99] disabled:opacity-50"
+                style={{
+                  backgroundColor: selectedTheme.activePillBg,
+                  boxShadow: `0 8px 20px ${selectedTheme.activePillShadow}`,
+                }}
+                className="mt-2 grid w-full grid-flow-col auto-cols-max items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold text-white transition hover:opacity-90 active:scale-[0.99] disabled:opacity-50"
               >
                 <span>
                   {loading
@@ -466,7 +572,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                       key={role}
                       type="button"
                       onClick={() => handle1ClickDemo(role)}
-                      className="grid grid-cols-[auto_1fr] items-center gap-2 rounded-xl border border-[#dfe5ef] bg-[#f8f9fc] p-2.5 text-left transition hover:border-[#3048a8] hover:bg-[#eef2fd]"
+                      className="grid grid-cols-[auto_1fr] items-center gap-2 rounded-xl border border-[#dfe5ef] bg-[#f8f9fc] p-2.5 text-left transition hover:border-primary hover:bg-primary/5"
                     >
                       <span className={`grid h-7 w-7 place-items-center rounded-lg text-xs font-bold ${cfg.avatarTone}`}>
                         {role === "STUDENT"
@@ -493,7 +599,7 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
           {/* Right Column: Platform Identity & Institutional Assurance */}
           <div className="space-y-6">
             {/* Dark Brand Card */}
-            <div className="overflow-hidden rounded-[24px] bg-[#172446] p-6 text-white shadow-[0_20px_45px_rgba(23,36,70,0.25)] sm:p-8">
+            <div className="overflow-hidden rounded-[24px] bg-[#1E1145] p-6 text-white shadow-[0_20px_45px_rgba(30,17,69,0.25)] sm:p-8">
               <div className="mb-4 inline-grid grid-cols-[auto_1fr] items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold tracking-[0.14em] text-[#a7e3d3]">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 <span>INSTITUTIONAL TRUST & RBAC</span>
@@ -563,7 +669,13 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
             {/* Support Card */}
             <div className="premium-card p-5">
               <div className="grid grid-cols-[auto_1fr] items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#edf0ff] text-[#3048a8]">
+                <div
+                  className="grid h-10 w-10 place-items-center rounded-xl transition-colors"
+                  style={{
+                    backgroundColor: selectedTheme.accentBg,
+                    color: selectedTheme.activePillBg,
+                  }}
+                >
                   <Users className="h-5 w-5" />
                 </div>
                 <div>
@@ -578,3 +690,4 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
     </div>
   );
 }
+

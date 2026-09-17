@@ -1,4 +1,4 @@
-import { trpc } from "@/lib/trpc";
+import { trpc, trpcClient } from "@/lib/trpc";
 import { COOKIE_NAME, UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
@@ -35,44 +35,6 @@ queryClient.getMutationCache().subscribe(event => {
     redirectToLoginIfUnauthorized(error);
     console.error("[API Mutation Error]", error);
   }
-});
-
-const trpcClient = trpc.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      headers() {
-        try {
-          const customToken =
-            localStorage.getItem("pragati_token") ||
-            sessionStorage.getItem("pragati_token");
-          if (customToken) {
-            return { Authorization: `Bearer ${customToken}` };
-          }
-
-          const raw = sessionStorage.getItem("manus-cookie");
-          if (raw) {
-            const prefix = `${COOKIE_NAME}=`;
-            const pair = raw.split(";").find(s => s.trim().startsWith(prefix));
-            const token = pair?.trim().slice(prefix.length);
-            if (token) {
-              return { Authorization: `Bearer ${token}` };
-            }
-          }
-        } catch {
-          // storage unavailable
-        }
-        return {};
-      },
-      fetch(input, init) {
-        return globalThis.fetch(input, {
-          ...(init ?? {}),
-          credentials: "include",
-        });
-      },
-    }),
-  ],
 });
 
 createRoot(document.getElementById("root")!).render(

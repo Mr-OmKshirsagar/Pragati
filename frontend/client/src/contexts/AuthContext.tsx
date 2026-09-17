@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { getRoleSidebarTheme } from "@/lib/roleTheme";
 
 export type PragatiRole = "STUDENT" | "FACULTY" | "HOD" | "TNP_COORDINATOR" | "ADMIN";
 export type UserRole = PragatiRole;
@@ -249,6 +250,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const role: PragatiRole = user?.role ?? "STUDENT";
   const isAuthenticated = Boolean(user);
+
+  useEffect(() => {
+    const theme = getRoleSidebarTheme(role);
+    document.documentElement.setAttribute("data-role", role);
+    document.documentElement.style.setProperty("--primary", theme.activePillBg);
+    document.documentElement.style.setProperty("--color-primary", theme.activePillBg);
+    document.documentElement.style.setProperty("--ring", theme.activePillBg);
+    document.documentElement.style.setProperty("--sidebar", theme.sidebarBg);
+    document.documentElement.style.setProperty("--sidebar-primary", theme.activePillBg);
+    document.documentElement.style.setProperty("--role-primary", theme.activePillBg);
+    document.documentElement.style.setProperty("--role-bg", theme.sidebarBg);
+  }, [role]);
 
   return (
     <AuthContext.Provider

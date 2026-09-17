@@ -52,7 +52,7 @@
   --card-foreground: #15223b;
   --popover: #ffffff;
   --popover-foreground: #15223b;
-  --primary: #3048a8;
+  --primary: #4A43B3;
   --primary-foreground: #ffffff;
   --secondary: #edf1fa;
   --secondary-foreground: #304063;
@@ -64,20 +64,99 @@
   --destructive-foreground: #ffffff;
   --border: #e2e8f2;
   --input: #dce3ef;
-  --ring: #6d7ee0;
-  --chart-1: #3048a8;
+  --ring: #4A43B3;
+  --chart-1: #4A43B3;
   --chart-2: #7b61d9;
   --chart-3: #16a889;
   --chart-4: #e39a44;
   --chart-5: #d75f76;
-  --sidebar: #172446;
+  --sidebar: #141B2A;
   --sidebar-foreground: #d6def3;
-  --sidebar-primary: #8292ee;
+  --sidebar-primary: #4A43B3;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #25345e;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255,255,255,0.09);
-  --sidebar-ring: #8292ee;
+  --sidebar-ring: #4A43B3;
+  --role-primary: #4A43B3;
+  --role-bg: #141B2A;
+  --role-accent: #EEF0FB;
+}
+
+/* ── Role-specific UI themes (Dynamic across the whole app) ── */
+[data-role="STUDENT"] {
+  --primary: #4A43B3;
+  --ring: #4A43B3;
+  --chart-1: #4A43B3;
+  --secondary: #f0f2fb;
+  --secondary-foreground: #403b99;
+  --accent: #e7eafb;
+  --accent-foreground: #403b99;
+  --sidebar: #141B2A;
+  --sidebar-primary: #4A43B3;
+  --role-primary: #4A43B3;
+  --role-bg: #141B2A;
+  --role-accent: #EEF0FB;
+}
+
+[data-role="FACULTY"] {
+  --primary: #156963;
+  --ring: #156963;
+  --chart-1: #156963;
+  --secondary: #edf9f7;
+  --secondary-foreground: #145a55;
+  --accent: #d8f4ee;
+  --accent-foreground: #145a55;
+  --sidebar: #0D2421;
+  --sidebar-primary: #156963;
+  --role-primary: #156963;
+  --role-bg: #0D2421;
+  --role-accent: #EAF7F5;
+}
+
+[data-role="HOD"] {
+  --primary: #5E53BA;
+  --ring: #5E53BA;
+  --chart-1: #5E53BA;
+  --secondary: #f4f2fc;
+  --secondary-foreground: #4e479a;
+  --accent: #ebe7fb;
+  --accent-foreground: #4e479a;
+  --sidebar: #241B46;
+  --sidebar-primary: #5E53BA;
+  --role-primary: #5E53BA;
+  --role-bg: #241B46;
+  --role-accent: #F0EEFB;
+}
+
+[data-role="TNP_COORDINATOR"] {
+  --primary: #AB6515;
+  --ring: #AB6515;
+  --chart-1: #AB6515;
+  --secondary: #fff8ea;
+  --secondary-foreground: #865417;
+  --accent: #f9edcf;
+  --accent-foreground: #865417;
+  --sidebar: #261A0D;
+  --sidebar-primary: #AB6515;
+  --role-primary: #AB6515;
+  --role-bg: #261A0D;
+  --role-accent: #FBF2E5;
+}
+
+[data-role="ADMIN"] {
+  --primary: #B22746;
+  --ring: #B22746;
+  --chart-1: #B22746;
+  --secondary: #fff2f4;
+  --secondary-foreground: #97263d;
+  --accent: #f9e2e7;
+  --accent-foreground: #97263d;
+  --sidebar: #2A1118;
+  --sidebar-primary: #B22746;
+  --role-primary: #B22746;
+  --role-bg: #2A1118;
+  --role-accent: #FAECEF;
 }
 
 .dark {
@@ -131,10 +210,25 @@
   .container { width: 100%; margin-inline: auto; padding-inline: 1rem; }
   .flex { min-height: 0; min-width: 0; }
   .premium-card { @apply rounded-2xl border bg-card text-card-foreground shadow-[0_16px_42px_rgba(31,49,102,0.06)]; }
+  .metric-card { @apply rounded-2xl border border-white/80 bg-white text-card-foreground shadow-[0_14px_34px_rgba(31,49,102,0.055)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_44px_rgba(31,49,102,0.09)]; }
   .eyebrow { @apply text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-500; }
-  .dashboard-grid { background-image: linear-gradient(rgba(90,111,169,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(90,111,169,0.035) 1px, transparent 1px); background-size: 32px 32px; }
-  .hero-glow { background: radial-gradient(circle at 72% 20%, rgba(109,126,224,0.20), transparent 34%), linear-gradient(135deg, #1a2853 0%, #314bb2 100%); }
+  .form-input { @apply w-full rounded-lg border border-[#dfe5ef] bg-white px-3 py-2.5 text-sm text-[#304063] outline-none transition placeholder:text-[#a4afbf] focus:border-primary focus:ring-2 focus:ring-primary/15; }
+  .dashboard-grid {
+    background:
+      radial-gradient(circle at 18% 4%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 30%),
+      linear-gradient(rgba(90,111,169,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(90,111,169,0.03) 1px, transparent 1px),
+      #f5f7fb;
+    background-size: auto, 34px 34px, 34px 34px, auto;
+  }
+  .hero-glow { background: radial-gradient(circle at 72% 20%, rgba(255,255,255,0.14), transparent 34%), linear-gradient(135deg, var(--sidebar) 0%, var(--primary) 100%); }
+  .overview-hero {
+    background:
+      radial-gradient(circle at 82% 18%, rgba(125,211,252,0.24), transparent 28%),
+      linear-gradient(135deg, #0b1226 0%, #24317b 52%, var(--primary) 100%);
+  }
   .hero-enter { animation: fade-in 300ms cubic-bezier(0.23,1,0.32,1) both; }
+  .fade-in { animation: fade-in 240ms cubic-bezier(0.23,1,0.32,1) both; }
   .motion-enter { animation: slide-up 420ms cubic-bezier(0.23,1,0.32,1) both; }
   .motion-delay-1 { animation-delay: 60ms; }
   .motion-delay-2 { animation-delay: 120ms; }
@@ -142,9 +236,10 @@
   .motion-delay-4 { animation-delay: 240ms; }
   .pulse-soft { animation: pulse-soft 2.6s ease-in-out infinite; }
   .ring-track { stroke: rgba(255,255,255,0.16); }
-  .ring-progress { stroke: #9daaff; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; }
+  .ring-progress { stroke: var(--primary); stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; }
   .progress-fill { transform-origin: left center; animation: grow-progress 850ms cubic-bezier(0.23,1,0.32,1) both; }
   .kpi-value { display: inline-block; font-weight: 800; letter-spacing: -0.04em; animation: count-in 550ms cubic-bezier(0.23,1,0.32,1) both; }
+  .attention-pulse { animation: attention-in 520ms cubic-bezier(0.23,1,0.32,1) both; }
 }
 
 @keyframes slide-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -152,6 +247,78 @@
 @keyframes pulse-soft { 0%, 100% { opacity: .65; transform: scale(.96); } 50% { opacity: 1; transform: scale(1); } }
 @keyframes grow-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes count-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes attention-in { from { box-shadow: 0 0 0 0 rgba(227,154,68,0.22); } to { box-shadow: 0 0 0 6px rgba(227,154,68,0); } }
+
+@media (min-width: 640px) { .container { padding-inline: 1.5rem; } }
+@media (min-width: 1024px) { .container { max-width: 1440px; padding-inline: 2.5rem; } }
+/* ── Landing page ─────────────────────────────────────────────────────────── */
+
+.landing-page-root {
+  color-scheme: dark;
+  background: #060d1e;
+}
+
+/* Shimmer sweep used on CTA buttons */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Gentle pulse ring around live-status dots */
+@keyframes ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(110, 231, 183, 0.55); }
+  50%       { box-shadow: 0 0 0 7px rgba(110, 231, 183, 0); }
+}
+
+/* Slow spin for decorative arcs */
+@keyframes slow-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Drift — used by floating badge cards */
+@keyframes drift-up {
+  0%, 100% { transform: translateY(0px) translateZ(20px); }
+  50%       { transform: translateY(-10px) translateZ(20px); }
+}
+
+@keyframes drift-down {
+  0%, 100% { transform: translateY(0px) translateZ(24px); }
+  50%       { transform: translateY(10px) translateZ(24px); }
+}
+
+/* Text gradient shimmer */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-text {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* Utility: twinkling star dots in hero background */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.55; }
+}
+
+/* Topic pill enter */
+@keyframes pill-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Stat card count-up feel */
+@keyframes stat-pop {
+  0%   { transform: scale(0.88); opacity: 0; }
+  60%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* Underline reveal */
 
 @media (min-width: 640px) { .container { padding-inline: 1.5rem; } }
 @media (min-width: 1024px) { .container { max-width: 1440px; padding-inline: 2.5rem; } }
@@ -226,6 +393,42 @@
 @keyframes underline-in {
   from { transform: scaleX(0); transform-origin: left; }
   to   { transform: scaleX(1); transform-origin: left; }
+}
+
+/* ── 3D & Holographic Utilities ───────────────────────────────────────────── */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.translate-z-10 {
+  transform: translateZ(10px);
+}
+
+.translate-z-20 {
+  transform: translateZ(20px);
+}
+
+.translate-z-30 {
+  transform: translateZ(30px);
+}
+
+.mesh-gradient-hero {
+  background: 
+    radial-gradient(circle at 15% 20%, color-mix(in srgb, var(--primary) 32%, transparent), transparent 45%),
+    radial-gradient(circle at 85% 30%, color-mix(in srgb, #6366f1 28%, transparent), transparent 50%),
+    radial-gradient(circle at 50% 80%, color-mix(in srgb, #06b6d4 15%, transparent), transparent 60%),
+    linear-gradient(135deg, var(--role-bg, #141B2A) 0%, color-mix(in srgb, var(--role-bg, #141B2A) 82%, var(--primary)) 60%, color-mix(in srgb, var(--role-bg, #141B2A) 70%, #1e1b4b) 100%);
+}
+
+.hologram-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 /* ── Prose / body stays light in non-landing pages ───────────────────────── */

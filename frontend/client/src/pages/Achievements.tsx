@@ -40,13 +40,13 @@ export default function Achievements() {
                   setSelectedForUpload(null);
                   setShowUpload(true);
                 }}
-                className="flex items-center gap-1.5 rounded-xl border border-[#dfe5ef] bg-white px-3.5 py-2.5 text-xs font-bold text-[#3048a8] hover:bg-[#f4f7fd] transition shadow-sm"
+                className="flex items-center gap-1.5 rounded-xl border border-[#dfe5ef] bg-white px-3.5 py-2.5 text-xs font-bold text-primary hover:bg-[#f4f7fd] transition shadow-sm"
               >
                 <UploadCloud className="h-3.5 w-3.5" /> Vault Evidence
               </button>
               <button
                 onClick={() => setShowForm(true)}
-                className="flex items-center gap-1.5 rounded-xl bg-[#3048a8] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#3f5ac1] transition shadow-sm"
+                className="flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white hover:opacity-90 transition shadow-sm"
               >
                 <Plus className="h-3.5 w-3.5" /> Add achievement
               </button>
@@ -158,13 +158,13 @@ export default function Achievements() {
                   setShowForm(false);
                   setShowUpload(true);
                 }}
-                className="rounded-2xl border border-dashed border-[#c8d2e3] bg-white p-6 text-center cursor-pointer hover:border-[#3048a8]"
+                className="rounded-2xl border border-dashed border-[#c8d2e3] bg-white p-6 text-center cursor-pointer hover:border-primary"
               >
                 <UploadCloud className="mx-auto h-5 w-5 text-[#5268cb]" />
                 <div className="mt-2 text-xs font-bold text-[#52617d]">Click to upload proof document</div>
                 <div className="mt-1 text-[10px] text-[#8995aa]">PDF, PNG, or JPG · Dual-layer SHA-256 computed on upload</div>
               </div>
-              <button onClick={() => { setShowForm(false); toast.success("Achievement saved as Self Reported"); }} className="w-full rounded-xl bg-[#3048a8] py-3 text-xs font-bold text-white">
+              <button onClick={() => { setShowForm(false); toast.success("Achievement saved as Self Reported"); }} className="w-full rounded-xl bg-primary py-3 text-xs font-bold text-white hover:opacity-90 transition">
                 Save achievement
               </button>
             </div>
@@ -176,3 +176,4 @@ export default function Achievements() {
 }
 
 function VerificationBadge({ state, tone }: { state: string; tone: string }) { const Icon = state === "Rejected" ? XCircle : state === "Pending" || state === "Self Reported" ? FileCheck2 : CheckCircle2; const styles: Record<string, string> = { green: "bg-[#e5f7f2] text-[#13876f]", blue: "bg-[#edf0ff] text-[#5268cb]", amber: "bg-[#fff1dc] text-[#bd7a27]", slate: "bg-[#eef1f6] text-[#71809a]" }; return <span className={`flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold ${styles[tone]}`}><Icon className="h-3 w-3" /> {state}</span>; }
+

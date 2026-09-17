@@ -603,3 +603,142 @@ export type InsertNotification = typeof notifications.$inferInsert;
 
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
+
+// ============================================================================
+// 27. SUBJECT ENROLLMENT & TEACHER TRACKING TABLES (NEW)
+// ============================================================================
+
+// 27. FACULTY SUBJECT ASSIGNMENTS (Faculty ↔ Subjects)
+export const facultySubjectAssignments = pgTable(
+  "faculty_subject_assignments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    facultyId: uuid("faculty_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    subjectId: uuid("subject_id")
+      .notNull()
+      .references(() => subjects.id, { onDelete: "cascade" }),
+    semester: integer("semester").notNull(),
+    academicYear: varchar("academic_year", { length: 32 }).notNull(),
+    role: varchar("role", { length: 32 }).default("INSTRUCTOR").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [unique("faculty_subject_semester_unique").on(table.facultyId, table.subjectId, table.semester)]
+);
+
+// 28. SUBJECT ENROLLMENTS (Students ↔ Subjects)
+export const subjectEnrollments = pgTable(
+  "subject_enrollments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => studentProfiles.id, { onDelete: "cascade" }),
+    subjectId: uuid("subject_id")
+      .notNull()
+      .references(() => subjects.id, { onDelete: "cascade" }),
+    semester: integer("semester").notNull(),
+    academicYear: varchar("academic_year", { length: 32 }).notNull(),
+    enrollmentStatus: varchar("enrollment_status", { length: 32 })
+      .default("REGISTERED")
+      .notNull(),
+    enrollmentDate: date("enrollment_date").defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [unique("student_subject_semester_unique").on(table.studentId, table.subjectId, table.semester)]
+);
+
+// 29. SUBJECT ATTENDANCE
+export const subjectAttendance = pgTable(
+  "subject_attendance",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => studentProfiles.id, { onDelete: "cascade" }),
+    subjectId: uuid("subject_id")
+      .notNull()
+      .references(() => subjects.id, { onDelete: "cascade" }),
+    date: date("date").defaultNow().notNull(),
+    status: varchar("status", { length: 32 }).notNull(), // 'PRESENT', 'ABSENT', 'LATE'
+    recordedBy: uuid("recorded_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [unique("student_subject_date_unique").on(table.studentId, table.subjectId, table.date)]
+);
+
+// 30. ASSIGNMENTS (Subject Assignments)
+export const assignments = pgTable("assignments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  subjectId: uuid("subject_id")
+    .notNull()
+    .references(() => subjects.id, { onDelete: "cascade" }),
+  facultyId: uuid("faculty_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  maxMarks: integer("max_marks").default(100).notNull(),
+  dueDate: timestamp("due_date", { withTimezone: true }).notNull(),
+  status: varchar("status", { length: 32 }).default("ACTIVE").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// 31. ASSIGNMENT SUBMISSIONS (Student Submissions - Different from assessment_submissions)
+export const assignmentSubmissions = pgTable("assignment_submissions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  assignmentId: uuid("assignment_id")
+    .notNull()
+    .references(() => assignments.id, { onDelete: "cascade" }),
+  studentId: uuid("student_id")
+    .notNull()
+    .references(() => studentProfiles.id, { onDelete: "cascade" }),
+  submissionText: text("submission_text"),
+  filePath: text("file_path"),
+  marks: numeric("marks", { precision: 5, scale: 2 }),
+  feedback: text("feedback"),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }).defaultNow().notNull(),
+  gradedAt: timestamp("graded_at", { withTimezone: true }),
+  status: varchar("status", { length: 32 }).default("SUBMITTED").notNull(),
+});
+
+// 32. SUBJECT ANNOUNCEMENTS
+export const subjectAnnouncements = pgTable("subject_announcements", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  subjectId: uuid("subject_id")
+    .notNull()
+    .references(() => subjects.id, { onDelete: "cascade" }),
+  facultyId: uuid("faculty_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  priority: varchar("priority", { length: 32 }).default("NORMAL").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ============================================================================
+// 4. INFERRED TYPES FOR NEW TABLES
+// ============================================================================
+
+export type FacultySubjectAssignment = typeof facultySubjectAssignments.$inferSelect;
+export type InsertFacultySubjectAssignment = typeof facultySubjectAssignments.$inferInsert;
+
+export type SubjectEnrollment = typeof subjectEnrollments.$inferSelect;
+export type InsertSubjectEnrollment = typeof subjectEnrollments.$inferInsert;
+
+export type SubjectAttendance = typeof subjectAttendance.$inferSelect;
+export type InsertSubjectAttendance = typeof subjectAttendance.$inferInsert;
+
+export type Assignment = typeof assignments.$inferSelect;
+export type InsertAssignment = typeof assignments.$inferInsert;
+
+export type AssignmentSubmission = typeof assignmentSubmissions.$inferSelect;
+export type InsertAssignmentSubmission = typeof assignmentSubmissions.$inferInsert;
+
+export type SubjectAnnouncement = typeof subjectAnnouncements.$inferSelect;
+export type InsertSubjectAnnouncement = typeof subjectAnnouncements.$inferInsert;

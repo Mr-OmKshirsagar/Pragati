@@ -38,7 +38,7 @@ export default function UserNav() {
       <div className="grid grid-flow-col auto-cols-max items-center gap-2">
         <Link
           href="/login"
-          className="grid grid-flow-col auto-cols-max items-center gap-1.5 rounded-xl bg-[#3048a8] px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#3d57be]"
+          className="grid grid-flow-col auto-cols-max items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90"
         >
           <LogIn className="h-3.5 w-3.5" />
           <span>Sign In</span>
@@ -81,7 +81,7 @@ export default function UserNav() {
             </div>
             <div className="text-[10px] text-[#71809a] leading-none mt-1">{user.roleId}</div>
           </div>
-          <ChevronDown className="h-3.5 w-3.5 text-[#8995aa] transition group-hover:text-[#3048a8]" />
+          <ChevronDown className="h-3.5 w-3.5 text-[#8995aa] transition group-hover:text-primary" />
         </button>
       </DropdownMenuTrigger>
 
@@ -95,7 +95,7 @@ export default function UserNav() {
             <div className="min-w-0">
               <div className="truncate text-xs font-bold text-[#182643]">{user.name}</div>
               <div className="truncate text-[10px] text-[#71809a]">{user.email}</div>
-              <div className="text-[10px] font-semibold text-[#3048a8] mt-0.5">{user.designation}</div>
+              <div className="text-[10px] font-semibold text-primary mt-0.5">{user.designation}</div>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -115,14 +115,14 @@ export default function UserNav() {
               key={r}
               onClick={() => handleRoleSwitch(r)}
               className={`flex items-center justify-between gap-2 p-2 rounded-xl text-xs font-semibold cursor-pointer ${
-                isCurrent ? "bg-[#edf2fb] text-[#3048a8] font-bold" : "text-[#4b5872] hover:bg-[#f8f9fc]"
+                isCurrent ? "bg-primary/10 text-primary font-bold" : "text-[#4b5872] hover:bg-[#f8f9fc]"
               }`}
             >
               <span className="flex items-center gap-2">
-                <Icon className={`h-4 w-4 ${isCurrent ? "text-[#3048a8]" : "text-[#8b98b0]"}`} />
+                <Icon className={`h-4 w-4 ${isCurrent ? "text-primary" : "text-[#8b98b0]"}`} />
                 <span>{cfg.label}</span>
               </span>
-              {isCurrent && <span className="text-[10px] text-[#3048a8]">Active</span>}
+              {isCurrent && <span className="text-[10px] text-primary">Active</span>}
             </DropdownMenuItem>
           );
         })}
@@ -164,3 +164,4 @@ export default function UserNav() {
     </DropdownMenu>
   );
 }
+

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth, type UserRole } from "@/contexts/AuthContext";
+import { getRoleSidebarTheme } from "@/lib/roleTheme";
 import { useLocation } from "wouter";
 import {
   GraduationCap,
@@ -91,7 +92,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 text-white shadow-lg mb-3">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-violet-600 text-white shadow-lg mb-3">
           <GraduationCap className="w-8 h-8" />
         </div>
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -119,7 +120,14 @@ export default function Login() {
               </p>
             </div>
             {user && (
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <span
+                className="text-xs font-semibold px-2.5 py-1 rounded-full border"
+                style={{
+                  backgroundColor: getRoleSidebarTheme(user.role).accentBg,
+                  color: getRoleSidebarTheme(user.role).accentText,
+                  borderColor: `${getRoleSidebarTheme(user.role).activePillBg}40`,
+                }}
+              >
                 Active: {user.role}
               </span>
             )}
@@ -129,23 +137,41 @@ export default function Login() {
             {PERSONAS.map((p) => {
               const Icon = p.icon;
               const isCurrent = user?.role === p.role;
+              const pTheme = getRoleSidebarTheme(p.role);
               return (
                 <button
                   key={p.role}
                   onClick={() => handleSelectRole(p.role)}
                   disabled={isLoading}
+                  style={
+                    isCurrent
+                      ? {
+                          borderColor: pTheme.activePillBg,
+                          backgroundColor: `${pTheme.activePillBg}0d`,
+                        }
+                      : undefined
+                  }
                   className={`w-full text-left p-4 rounded-xl border transition-all duration-150 flex items-start justify-between group ${
                     isCurrent
-                      ? "border-indigo-600 bg-indigo-50/50 shadow-sm"
-                      : "border-slate-200 hover:border-indigo-300 hover:bg-slate-50/80"
+                      ? "shadow-sm"
+                      : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/80"
                   }`}
                 >
                   <div className="flex items-start gap-3.5">
                     <div
+                      style={
+                        isCurrent
+                          ? {
+                              backgroundColor: pTheme.activePillBg,
+                              borderColor: pTheme.activePillBg,
+                              color: "#ffffff",
+                            }
+                          : undefined
+                      }
                       className={`p-2.5 rounded-xl border ${
                         isCurrent
-                          ? "bg-indigo-600 text-white border-indigo-600"
-                          : "bg-slate-100 text-slate-600 border-slate-200 group-hover:bg-indigo-50 group-hover:text-indigo-600"
+                          ? ""
+                          : "bg-slate-100 text-slate-600 border-slate-200 group-hover:bg-slate-200/60"
                       }`}
                     >
                       <Icon className="w-5 h-5" />
@@ -156,7 +182,12 @@ export default function Login() {
                           {p.name}
                         </span>
                         <span
-                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${p.badgeColor}`}
+                          style={{
+                            backgroundColor: pTheme.accentBg,
+                            color: pTheme.accentText,
+                            borderColor: `${pTheme.activePillBg}40`,
+                          }}
+                          className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border"
                         >
                           {p.badge}
                         </span>
@@ -169,7 +200,10 @@ export default function Login() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-1 flex items-center text-xs font-semibold text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div
+                    style={{ color: pTheme.activePillBg }}
+                    className="mt-1 flex items-center text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
                     Login <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </div>
                 </button>
@@ -187,3 +221,4 @@ export default function Login() {
     </div>
   );
 }
+

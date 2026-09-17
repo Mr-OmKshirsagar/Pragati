@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
   ArrowRight,
+  BarChart3,
   BookOpen,
   Calendar,
   Check,
@@ -14,16 +15,25 @@ import {
   Search,
   ShieldAlert,
   Sparkles,
+  TrendingDown,
+  TrendingUp,
   Users,
   UsersRound,
+  X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { getRoleSidebarTheme } from "@/lib/roleTheme";
 
 export default function FacultyWards() {
   const wardsQuery = trpc.faculty.getWards.useQuery();
+  const { role } = useAuth();
+  const theme = getRoleSidebarTheme(role);
   const [search, setSearch] = useState("");
   const [selectedWardForIntervention, setSelectedWardForIntervention] =
+    useState<any | null>(null);
+  const [selectedWardForScorecard, setSelectedWardForScorecard] =
     useState<any | null>(null);
 
   const wards = wardsQuery.data ?? [];
@@ -53,8 +63,11 @@ export default function FacultyWards() {
           <header className="mb-7 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[#3048a8] shadow-[0_0_0_4px_rgba(48,72,168,0.15)]" />
-                <span className="eyebrow">Teacher-Guardian Workspace</span>
+                <span
+                  className="h-2 w-2 rounded-full shadow-[0_0_0_4px_rgba(48,72,168,0.15)]"
+                  style={{ backgroundColor: theme.activePillBg }}
+                />
+                <span className="eyebrow" style={{ color: theme.activePillBg }}>Teacher-Guardian Workspace</span>
               </div>
               <h1 className="text-[30px] font-extrabold tracking-[-0.045em] text-[#182643] sm:text-[36px]">
                 Assigned Student Wards
@@ -67,7 +80,7 @@ export default function FacultyWards() {
             </div>
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1.5 rounded-xl border border-[#dfe5ef] bg-white px-3.5 py-2.5 text-xs font-bold text-[#52617d] shadow-sm">
-                <Users className="h-4 w-4 text-[#3048a8]" /> {wards.length} Mentees Assigned
+                <Users className="h-4 w-4" style={{ color: theme.activePillBg }} /> {wards.length} Mentees Assigned
               </span>
             </div>
           </header>
@@ -80,34 +93,45 @@ export default function FacultyWards() {
                 value: `0${wards.length}`,
                 helper: "Teacher-guardian roster",
                 icon: UsersRound,
-                color: "bg-[#edf0ff] text-[#3048a8]",
+                isPrimary: true,
               },
               {
                 label: "Needs Attention",
                 value: `0${needsAttentionCount}`,
                 helper: "Active skill gaps detected",
                 icon: AlertTriangle,
-                color: "bg-[#fff1dc] text-[#bd7a27]",
+                isPrimary: false,
               },
               {
                 label: "Active Interventions",
                 value: `0${activeInterventionsTotal}`,
                 helper: "Scheduled or in progress",
                 icon: Calendar,
-                color: "bg-[#f0ebff] text-[#7358c9]",
+                isPrimary: false,
               },
               {
                 label: "On Track",
                 value: `0${onTrackCount}`,
                 helper: "Steady skill progression",
                 icon: CheckCircle2,
-                color: "bg-[#e5f7f2] text-[#13876f]",
+                isPrimary: false,
               },
-            ].map((kpi) => {
+            ].map((kpi, idx) => {
               const Icon = kpi.icon;
               return (
                 <div key={kpi.label} className="premium-card p-4 sm:p-5">
-                  <div className="mb-3 grid h-9 w-9 place-items-center rounded-xl bg-[#edf0ff] text-[#5268cb]">
+                  <div
+                    className="mb-3 grid h-9 w-9 place-items-center rounded-xl"
+                    style={
+                      kpi.isPrimary
+                        ? { backgroundColor: `${theme.activePillBg}18`, color: theme.activePillBg }
+                        : idx === 1
+                        ? { backgroundColor: "#fff1dc", color: "#bd7a27" }
+                        : idx === 2
+                        ? { backgroundColor: "#f0ebff", color: "#7358c9" }
+                        : { backgroundColor: "#e5f7f2", color: "#13876f" }
+                    }
+                  >
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8490a5]">
@@ -154,7 +178,7 @@ export default function FacultyWards() {
                   <th className="px-5 py-3.5">Program &amp; Sem</th>
                   <th className="px-5 py-3.5">Current CGPA</th>
                   <th className="px-5 py-3.5">Status &amp; Findings</th>
-                  <th className="px-5 py-3.5 text-right">Mentoring Action</th>
+                  <th className="px-5 py-3.5 text-right">Faculty Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f1f5f9]">
@@ -188,7 +212,10 @@ export default function FacultyWards() {
                         </div>
                       </td>
                       <td className="px-5 py-4">
-                        <span className="font-mono text-sm font-bold text-[#3048a8]">
+                        <span
+                          className="font-mono text-sm font-bold"
+                          style={{ color: theme.activePillBg }}
+                        >
                           {ward.cgpa.toFixed(2)}
                         </span>
                       </td>
@@ -216,12 +243,24 @@ export default function FacultyWards() {
                         )}
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <button
-                          onClick={() => setSelectedWardForIntervention(ward)}
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-[#3048a8] px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#253782] active:scale-95"
-                        >
-                          <PlusCircle className="h-3.5 w-3.5" /> Intervene &amp; Schedule
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => setSelectedWardForScorecard(ward)}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-[#dfe5ef] bg-white px-3.5 py-2 text-xs font-bold text-[#52617d] transition hover:bg-[#f8fafc] active:scale-95"
+                          >
+                            <BarChart3 className="h-3.5 w-3.5" /> Scorecard
+                          </button>
+                          <button
+                            onClick={() => setSelectedWardForIntervention(ward)}
+                            style={{
+                              backgroundColor: theme.activePillBg,
+                              boxShadow: theme.activePillShadow,
+                            }}
+                            className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-white transition hover:opacity-90 active:scale-95"
+                          >
+                            <PlusCircle className="h-3.5 w-3.5" /> Intervene
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -233,7 +272,7 @@ export default function FacultyWards() {
           {/* Mentoring Methodology Info Banner */}
           <div className="mt-8 rounded-2xl border border-[#cbd5e1] bg-[#f8fafc] p-5">
             <div className="flex items-center gap-2.5 text-xs font-bold text-[#1e293b]">
-              <Sparkles className="h-4 w-4 text-[#3048a8]" />
+              <Sparkles className="h-4 w-4" style={{ color: theme.activePillBg }} />
               Closed-Loop Remediation Architecture
             </div>
             <p className="mt-1 text-xs leading-5 text-[#64748b]">
@@ -254,8 +293,218 @@ export default function FacultyWards() {
           ward={selectedWardForIntervention}
           onClose={() => setSelectedWardForIntervention(null)}
           onSuccess={() => wardsQuery.refetch()}
+          theme={theme}
+        />
+      )}
+      {selectedWardForScorecard && (
+        <StudentScorecardModal
+          ward={selectedWardForScorecard}
+          onClose={() => setSelectedWardForScorecard(null)}
+          theme={theme}
+          onIntervene={() => {
+            setSelectedWardForIntervention(selectedWardForScorecard);
+            setSelectedWardForScorecard(null);
+          }}
         />
       )}
     </PragatiFrame>
   );
 }
+
+function StudentScorecardModal({
+  ward,
+  onClose,
+  onIntervene,
+  theme,
+}: {
+  ward: any;
+  onClose: () => void;
+  onIntervene: () => void;
+  theme: ReturnType<typeof getRoleSidebarTheme>;
+}) {
+  const scorecard = ward.scorecard ?? {};
+  const skillScores = scorecard.skillScores ?? [];
+  const academicTrend = scorecard.academicTrend ?? [];
+  const recentAssessments = scorecard.recentAssessments ?? [];
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <button
+        aria-label="Close student scorecard"
+        onClick={onClose}
+        className="absolute inset-0 bg-[#07112d]/45 backdrop-blur-sm"
+      />
+      <aside className="motion-enter absolute right-0 top-0 flex h-full w-full max-w-[720px] flex-col overflow-y-auto bg-[#f8f9fc] shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#e1e7f0] bg-[#f8f9fc]/95 px-5 py-4 backdrop-blur-xl sm:px-7">
+          <div>
+            <div className="eyebrow" style={{ color: theme.activePillBg }}>Student scorecard</div>
+            <h2 className="mt-1 text-xl font-extrabold tracking-[-0.035em] text-[#1c2a47]">
+              {ward.name}
+            </h2>
+            <div className="mt-0.5 text-xs font-semibold text-[#74819a]">
+              {ward.enrollmentNumber} · Semester {ward.currentSemester}
+            </div>
+          </div>
+          <button
+            aria-label="Close scorecard"
+            onClick={onClose}
+            className="rounded-lg p-2 text-[#74819a] hover:bg-white"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="grid gap-5 p-5 sm:p-7">
+          <div className="grid gap-3 sm:grid-cols-4">
+            <ScoreMetric label="CGPA" value={ward.cgpa?.toFixed?.(2) ?? ward.cgpa} helper="Current cumulative" tone="indigo" />
+            <ScoreMetric label="Readiness" value={`${scorecard.readinessScore ?? 0}%`} helper="Composite index" tone="violet" />
+            <ScoreMetric label="Attendance" value={`${scorecard.attendancePercent ?? 0}%`} helper="Current semester" tone="emerald" />
+            <ScoreMetric label="Backlogs" value={String(ward.activeBacklogsCount ?? 0)} helper="Active records" tone="amber" />
+          </div>
+
+          <section className="rounded-2xl border border-[#e1e7f0] bg-white p-4 sm:p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <div className="eyebrow">Skill performance</div>
+                <h3 className="text-sm font-extrabold text-[#1c2a47]">Verified capability scores</h3>
+              </div>
+              <span className="rounded-full bg-[#eef1f7] px-2.5 py-1 text-[10px] font-bold text-[#64718a]">
+                Benchmark aware
+              </span>
+            </div>
+            <div className="grid gap-3">
+              {skillScores.map((item: any) => {
+                const isBelow = item.score < item.benchmark;
+                return (
+                  <div key={item.skill} className="grid gap-2">
+                    <div className="flex items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2 font-bold text-[#34415d]">
+                        {item.trend === "down" ? (
+                          <TrendingDown className="h-4 w-4 text-[#d75f76]" />
+                        ) : (
+                          <TrendingUp className="h-4 w-4 text-[#16a889]" />
+                        )}
+                        {item.skill}
+                      </div>
+                      <div className={`font-extrabold ${isBelow ? "text-[#bd4c64]" : "text-[#13876f]"}`}>
+                        {item.score}% <span className="font-medium text-[#9aa5b6]">/ {item.benchmark}%</span>
+                      </div>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-[#eef2f7]">
+                      <div
+                        className={`h-full rounded-full ${isBelow ? "bg-[#d75f76]" : "bg-[#16a889]"}`}
+                        style={{ width: `${Math.min(item.score, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+            <div className="rounded-2xl border border-[#e1e7f0] bg-white p-4 sm:p-5">
+              <div className="eyebrow mb-3">Academic trend</div>
+              <div className="grid gap-2">
+                {academicTrend.map((item: any) => (
+                  <div key={item.label} className="grid grid-cols-[64px_1fr_44px] items-center gap-2 text-xs">
+                    <span className="font-bold text-[#52617d]">{item.label}</span>
+                    <div className="h-2 overflow-hidden rounded-full bg-[#eef2f7]">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.min(item.sgpa * 10, 100)}%`,
+                          backgroundColor: theme.activePillBg,
+                        }}
+                      />
+                    </div>
+                    <span className="text-right font-mono font-bold text-[#34415d]">{item.sgpa}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#e1e7f0] bg-white p-4 sm:p-5">
+              <div className="eyebrow mb-3">Recent assessments</div>
+              <div className="space-y-2.5">
+                {recentAssessments.map((assessment: any) => (
+                  <div key={assessment.name} className="rounded-xl bg-[#f8fafc] p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-xs font-bold text-[#34415d]">{assessment.name}</div>
+                      <div className="font-mono text-xs font-extrabold text-[#1c2a47]">{assessment.score}%</div>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between gap-3 text-[10px] font-semibold text-[#8995aa]">
+                      <span>{assessment.date}</span>
+                      <span>{assessment.status}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[#fed7aa] bg-[#fffaf0] p-4 sm:p-5">
+            <div className="mb-2 flex items-center gap-2 text-sm font-extrabold text-[#7c2d12]">
+              <AlertTriangle className="h-4 w-4 text-[#ea580c]" />
+              Faculty attention points
+            </div>
+            <div className="grid gap-2">
+              {(ward.activeGaps ?? []).map((gap: any) => (
+                <div key={gap.id} className="rounded-xl bg-white/70 p-3 text-xs text-[#9a3412]">
+                  <strong>{gap.skillName}:</strong> latest score {gap.reason?.score_history?.at(-1) ?? "N/A"}%, severity {gap.severity}.
+                </div>
+              ))}
+              {(ward.activeGaps ?? []).length === 0 && (
+                <div className="rounded-xl bg-white/70 p-3 text-xs text-[#64748b]">No active skill gaps for this student.</div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        <div className="sticky bottom-0 mt-auto grid gap-3 border-t border-[#e1e7f0] bg-white/95 p-5 backdrop-blur-xl sm:grid-cols-[1fr_auto_auto] sm:items-center sm:p-7">
+          <div className="text-xs font-semibold text-[#74819a]">
+            {scorecard.internshipStatus ?? "No active internship recorded"} · {scorecard.verifiedEvidenceCount ?? 0} verified evidence items
+          </div>
+          <button onClick={onClose} className="rounded-xl border border-[#dfe5ef] px-4 py-2.5 text-xs font-bold text-[#64718a] hover:bg-[#f8fafc]">
+            Close
+          </button>
+          <button
+            onClick={onIntervene}
+            style={{ backgroundColor: theme.activePillBg, boxShadow: theme.activePillShadow }}
+            className="rounded-xl px-4 py-2.5 text-xs font-bold text-white transition hover:opacity-90"
+          >
+            Schedule intervention
+          </button>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function ScoreMetric({
+  label,
+  value,
+  helper,
+  tone,
+}: {
+  label: string;
+  value: string;
+  helper: string;
+  tone: "indigo" | "violet" | "emerald" | "amber";
+}) {
+  const tones = {
+    indigo: "bg-[#edf0ff] text-[#5268cb]",
+    violet: "bg-[#f0ebff] text-[#7358c9]",
+    emerald: "bg-[#e5f7f2] text-[#13876f]",
+    amber: "bg-[#fff1dc] text-[#bd7a27]",
+  };
+
+  return (
+    <div className={`rounded-2xl border border-white/80 p-4 ${tones[tone]}`}>
+      <div className="text-[10px] font-bold uppercase tracking-[0.08em] opacity-75">{label}</div>
+      <div className="mt-1 text-2xl font-extrabold tracking-[-0.05em]">{value}</div>
+      <div className="mt-1 text-[10px] font-semibold opacity-75">{helper}</div>
+    </div>
+  );
+}
+

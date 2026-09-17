@@ -4,7 +4,7 @@ import { Activity, ArrowDownRight, ArrowUpRight, Award, BarChart3, Check, Chevro
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-const chartTooltip = { contentStyle: { borderRadius: 12, border: "1px solid #e2e8f2", boxShadow: "0 12px 30px rgba(31,49,102,.08)", fontSize: 11 }, labelStyle: { color: "#52617d", fontWeight: 700 }, itemStyle: { color: "#3048a8" } };
+const chartTooltip = { contentStyle: { borderRadius: 12, border: "1px solid #e2e8f2", boxShadow: "0 12px 30px rgba(31,49,102,.08)", fontSize: 11 }, labelStyle: { color: "#52617d", fontWeight: 700 }, itemStyle: { color: "var(--primary)" } };
 
 export default function Progress() {
   const query = trpc.student.progress.useQuery();
@@ -33,7 +33,7 @@ export default function Progress() {
 
           <div className="mb-5 grid grid-cols-2 gap-3.5 xl:grid-cols-4">
             {[
-              ["Current CGPA", "8.42", "+0.18", "bg-[#edf0ff] text-[#5268cb]"],
+              ["Current CGPA", "8.42", "+0.18", "bg-primary/10 text-primary"],
               ["Latest SGPA", "8.82", "+0.20", "bg-[#e5f7f2] text-[#13876f]"],
               ["Backlogs", "0", "-2 this year", "bg-[#f0ebff] text-[#7358c9]"],
               ["Verified achievements", "09", "+3 this term", "bg-[#fff1dc] text-[#bd7a27]"],
@@ -71,14 +71,14 @@ export default function Progress() {
                     <XAxis dataKey="semester" tick={{ fill: "#8995aa", fontSize: 10 }} axisLine={false} tickLine={false} />
                     <YAxis domain={[7, 9.2]} tick={{ fill: "#8995aa", fontSize: 10 }} axisLine={false} tickLine={false} />
                     <Tooltip {...chartTooltip} />
-                    <Line type="monotone" dataKey="cgpa" name="CGPA" stroke="#3048a8" strokeWidth={3} dot={{ r: 4, fill: "#3048a8", stroke: "#fff", strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="cgpa" name="CGPA" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, fill: "var(--primary)", stroke: "#fff", strokeWidth: 2 }} activeDot={{ r: 6 }} />
                     <Line type="monotone" dataKey="sgpa" name="SGPA" stroke="#8c7fe0" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: "#8c7fe0" }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
               <div className="mt-4 grid grid-cols-[auto_auto_1fr] items-center gap-5 text-[10px] font-semibold text-[#71809a]">
                 <span className="grid grid-cols-[auto_1fr] items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#3048a8]" /> CGPA
+                  <span className="h-2 w-2 rounded-full bg-primary" /> CGPA
                 </span>
                 <span className="grid grid-cols-[auto_1fr] items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-[#8c7fe0]" /> SGPA
@@ -208,7 +208,7 @@ export default function Progress() {
                   <div key={item.label} className="rounded-xl bg-[#f8f9fc] p-3">
                     <div className="grid grid-cols-[1fr_auto] items-center text-xs font-semibold text-[#52617d]">
                       <span>{item.label}</span>
-                      <span className="font-bold text-[#3048a8]">{item.count}</span>
+                      <span className="font-bold text-primary">{item.count}</span>
                     </div>
                     <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e9edf4]">
                       <div className="h-full rounded-full bg-gradient-to-r from-[#5268cb] to-[#9daaff]" style={{ width: `${Math.min(item.count * 18, 100)}%` }} />
@@ -268,3 +268,4 @@ export default function Progress() {
 }
 
 function ProgressSkeleton() { return <div className="min-h-screen bg-[#f5f7fb] p-6"><div className="mx-auto max-w-6xl animate-pulse space-y-5"><div className="h-16 rounded-2xl bg-white" /><div className="h-32 rounded-2xl bg-[#dfe5f4]" /><div className="grid grid-cols-4 gap-4"><div className="col-span-4 h-24 rounded-2xl bg-white" /></div><div className="h-80 rounded-2xl bg-white" /></div></div>; }
+

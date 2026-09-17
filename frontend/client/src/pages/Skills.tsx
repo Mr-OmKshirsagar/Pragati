@@ -31,7 +31,7 @@ export default function Skills() {
               </div>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="grid grid-flow-col auto-cols-max items-center gap-2 rounded-xl bg-[#3048a8] px-4 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#263a8a] active:scale-95"
+                className="grid grid-flow-col auto-cols-max items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-md transition hover:opacity-90 active:scale-95"
               >
                 <PlusCircle className="h-4 w-4" />
                 <span>Take Assessment</span>
@@ -181,7 +181,7 @@ function SkillDrawer({ skill, onClose }: { skill: SkillDetail; onClose: () => vo
               <h2 className="text-2xl font-extrabold tracking-[-0.035em] text-[#1c2a47]">{skill.label}</h2>
               <div className="mt-1 text-xs text-[#8995aa]">Current score · latest verified assessment</div>
             </div>
-            <div className="text-3xl font-extrabold tracking-[-0.04em] text-[#3048a8]">{skill.current}%</div>
+            <div className="text-3xl font-extrabold tracking-[-0.04em] text-primary">{skill.current}%</div>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-[#e1e7f0] bg-white p-3">
@@ -207,7 +207,7 @@ function SkillDrawer({ skill, onClose }: { skill: SkillDetail; onClose: () => vo
                     <div className="text-xs font-bold text-[#52617d]">{item.assessment}</div>
                     <div className="mt-1 text-[10px] text-[#8995aa]">{item.date} · {item.verification}</div>
                   </div>
-                  <div className="text-sm font-bold text-[#3048a8]">{item.score}%</div>
+                  <div className="text-sm font-bold text-primary">{item.score}%</div>
                 </div>
               ))}
             </div>
@@ -325,7 +325,7 @@ function TakeAssessmentModal({
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full rounded-xl border border-[#cbd5e1] p-2.5 text-xs font-semibold text-[#1e293b] outline-none focus:ring-2 focus:ring-[#3048a8]"
+              className="w-full rounded-xl border border-[#cbd5e1] p-2.5 text-xs font-semibold text-[#1e293b] outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             >
               {assessments.length === 0 && <option value="">No published assessments available</option>}
               {assessments.map((a) => (
@@ -338,7 +338,7 @@ function TakeAssessmentModal({
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <label className="text-xs font-bold text-[#1e293b]">Simulated Assessment Score</label>
-              <span className="font-mono text-sm font-bold text-[#3048a8]">{score}%</span>
+              <span className="font-mono text-sm font-bold text-primary">{score}%</span>
             </div>
             <input
               type="range"
@@ -346,7 +346,7 @@ function TakeAssessmentModal({
               max={100}
               value={score}
               onChange={(e) => setScore(Number(e.target.value))}
-              className="w-full accent-[#3048a8]"
+              className="w-full accent-primary"
             />
             <div className="flex justify-between text-[10px] text-[#94a3b8] mt-1">
               <span>40% (Needs Work)</span>
@@ -370,7 +370,7 @@ function TakeAssessmentModal({
             <button
               type="submit"
               disabled={isSubmitting || !selectedId}
-              className="rounded-xl bg-[#3048a8] px-5 py-2 text-xs font-bold text-white shadow-md transition hover:bg-[#253782] disabled:opacity-50"
+              className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-white shadow-md transition hover:opacity-90 disabled:opacity-50"
             >
               {isSubmitting ? "Submitting..." : "Submit Attempt"}
             </button>
@@ -380,4 +380,5 @@ function TakeAssessmentModal({
     </div>
   );
 }
+
 

@@ -4,6 +4,11 @@ import { evidenceRouter } from "./evidence";
 import { facultyRouter } from "./faculty";
 import { skillGapRouter } from "./skillGap";
 import { studentRouter } from "./student";
+import { tnpRouter } from "./tnp";
+import { subjectRouter } from "./subject";
+import { internshipRouter } from "./internship";
+import { analyticsRouter } from "./analytics";
+import { searchRouter } from "./search";
 
 export const appRouter = router({
   auth: authRouter,
@@ -11,6 +16,11 @@ export const appRouter = router({
   skillGap: skillGapRouter,
   faculty: facultyRouter,
   evidence: evidenceRouter,
+  tnp: tnpRouter,
+  subject: subjectRouter,
+  internship: internshipRouter,
+  analytics: analyticsRouter,
+  search: searchRouter,
 });
 
 export type AppRouter = typeof appRouter;

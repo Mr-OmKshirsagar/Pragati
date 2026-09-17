@@ -1,7 +1,8 @@
 import { COOKIE_NAME } from "@shared/const";
-import { dashboardData, opportunitiesData, progressData, skillsData } from "@shared/pragati";
+import { dashboardData, opportunitiesData, progressData, skillsData, type Opportunity } from "@shared/pragati";
 import { z } from "zod";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { sendMail } from "./_core/email";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 
@@ -79,6 +80,167 @@ const DEMO_PERSONAS: Record<PragatiRole, PragatiUser & { demoPassword: string }>
 const usersStore: Map<string, PragatiUser & { passwordHash?: string }> = new Map(
   Object.values(DEMO_PERSONAS).map(user => [user.email.toLowerCase(), user])
 );
+
+const FACULTY_WARDS = [
+  {
+    studentProfileId: "student-rahul-sharma",
+    userId: "10000000-0000-0000-0000-000000000005",
+    name: "Rahul Sharma",
+    email: "student@northstar.edu",
+    enrollmentNumber: "CSE2024042",
+    program: "B.Tech Computer Science and Engineering",
+    currentSemester: 6,
+    cgpa: 8.42,
+    activeBacklogsCount: 1,
+    activeGapsCount: 1,
+    activeInterventionsCount: 1,
+    status: "NEEDS_ATTENTION" as "NEEDS_ATTENTION" | "ON_TRACK",
+    activeGaps: [
+      {
+        id: "gap-dsa-01",
+        skillId: "s1",
+        skillName: "Data Structures & Algorithms",
+        severity: "HIGH",
+        status: "IN_REVIEW",
+        reason: {
+          score_history: [78, 70, 61],
+          active_backlogs: 1,
+          trigger_text:
+            "Two consecutive score drops accompanied by an active backlog.",
+        },
+      },
+    ],
+    recentInterventions: [
+      {
+        id: "interv-01",
+        type: "MENTORING",
+        description:
+          "1-on-1 mentoring session to review core concepts in Data Structures & Algorithms",
+        status: "SCHEDULED",
+        startDate: new Date(),
+        outcome: null,
+      },
+    ],
+    scorecard: {
+      readinessScore: 76,
+      attendancePercent: 92,
+      creditsEarned: 100,
+      totalCredits: 120,
+      verifiedEvidenceCount: 9,
+      internshipStatus: "Active internship at Atlas Labs",
+      academicTrend: [
+        { label: "Sem 1", sgpa: 8.5 },
+        { label: "Sem 2", sgpa: 8.4 },
+        { label: "Sem 3", sgpa: 8.6 },
+        { label: "Sem 4", sgpa: 8.1 },
+        { label: "Sem 5", sgpa: 8.5 },
+        { label: "Sem 6", sgpa: 8.42 },
+      ],
+      skillScores: [
+        { skill: "DSA", score: 78, benchmark: 75, trend: "up" },
+        { skill: "Python", score: 84, benchmark: 75, trend: "up" },
+        { skill: "DBMS", score: 72, benchmark: 70, trend: "up" },
+        { skill: "Operating Systems", score: 61, benchmark: 70, trend: "down" },
+        { skill: "Computer Networks", score: 69, benchmark: 70, trend: "up" },
+      ],
+      recentAssessments: [
+        { name: "DSA Assessment Cycle 3", score: 78, date: "12 Sep 2026", status: "Verified" },
+        { name: "Python Technical Review", score: 84, date: "10 Sep 2026", status: "Verified" },
+        { name: "Operating Systems Review", score: 61, date: "28 Aug 2026", status: "Needs follow-up" },
+      ],
+    },
+  },
+];
+
+const ACTIVITY_INVITE_STUDENTS = Array.from(
+  new Map(
+    [
+      ...FACULTY_WARDS.map(ward => ({
+        name: ward.name,
+        email: ward.email,
+        enrollmentNumber: ward.enrollmentNumber,
+      })),
+      {
+        name: DEMO_PERSONAS.STUDENT.name,
+        email: DEMO_PERSONAS.STUDENT.email,
+        enrollmentNumber: DEMO_PERSONAS.STUDENT.roleId,
+      },
+      ...(process.env.ACTIVITY_INVITE_EMAILS || "")
+        .split(",")
+        .map(email => email.trim())
+        .filter(Boolean)
+        .map(email => ({
+          name: "PRAGATI Student",
+          email,
+          enrollmentNumber: "Department Student",
+        })),
+    ].map(student => [student.email.toLowerCase(), student])
+  ).values()
+);
+
+const placementInputSchema = z.object({
+  company: z.string().min(1, "Company name required").max(100),
+  role: z.string().min(1, "Role required").max(100),
+  type: z.enum(["Internship", "Placement"]),
+  location: z.string().min(1, "Location required").max(100),
+  deadline: z.string().refine(value => !Number.isNaN(Date.parse(value)), "Invalid deadline date"),
+  description: z.string().min(10, "Description too short").max(1000),
+  skills: z.array(z.string().min(1)).min(1, "At least one skill required").max(10),
+  criteria: z.array(
+    z.object({
+      label: z.string().min(1).max(50),
+      expected: z.string().min(1).max(50),
+    })
+  ).min(1, "At least one eligibility criterion required"),
+  verificationRequirements: z.array(z.string().min(1)).min(1).max(5),
+});
+
+const tnpUploadedOpportunities: Opportunity[] = [];
+
+function getOpportunityStore() {
+  const opportunities = [...opportunitiesData.opportunities, ...tnpUploadedOpportunities];
+  return {
+    summary: {
+      eligible: opportunities.filter(item => item.eligibilityStatus === "Eligible").length,
+      internships: opportunities.filter(item => item.type === "Internship").length,
+      placements: opportunities.filter(item => item.type === "Placement").length,
+      applications: opportunities.filter(item => item.applicationStatus !== "Not applied").length,
+    },
+    opportunities,
+  };
+}
+
+function buildOpportunity(input: z.infer<typeof placementInputSchema>): Opportunity {
+  const id = `${input.company.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${Date.now()}`;
+  const deadline = new Date(input.deadline);
+  const daysUntilDeadline = Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+
+  return {
+    id,
+    company: input.company,
+    role: input.role,
+    type: input.type,
+    location: input.location,
+    deadline: input.deadline,
+    deadlineLabel:
+      daysUntilDeadline > 0
+        ? `Closes in ${daysUntilDeadline} day${daysUntilDeadline === 1 ? "" : "s"}`
+        : "Deadline passed",
+    eligibilitySummary: `${input.type} opportunity uploaded by the Training & Placement Cell.`,
+    eligibilityStatus: "Eligible",
+    applicationStatus: "Not applied",
+    closingSoon: daysUntilDeadline <= 7,
+    description: input.description,
+    skills: input.skills,
+    criteria: input.criteria.map(criteria => ({
+      label: criteria.label,
+      actual: "Pending verification",
+      expected: criteria.expected,
+      pass: true,
+    })),
+    verificationRequirements: input.verificationRequirements,
+  };
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -194,7 +356,7 @@ export const appRouter = router({
   }),
   student: router({
     dashboard: publicProcedure.query(() => dashboardData),
-    opportunities: publicProcedure.query(() => opportunitiesData),
+    opportunities: publicProcedure.query(() => getOpportunityStore()),
     progress: publicProcedure.query(() => progressData),
     skills: publicProcedure.query(() => skillsData),
     getProfile: publicProcedure.query(() => ({
@@ -336,49 +498,32 @@ export const appRouter = router({
         createdAt: new Date(),
       })),
   }),
+  tnp: router({
+    getPlacements: publicProcedure.query(() => getOpportunityStore().opportunities),
+    createPlacement: publicProcedure
+      .input(placementInputSchema)
+      .mutation(({ input }) => {
+        const opportunity = buildOpportunity(input);
+        tnpUploadedOpportunities.unshift(opportunity);
+        return {
+          success: true,
+          placement: opportunity,
+          message: `${input.type} data for ${input.role} at ${input.company} uploaded successfully.`,
+        };
+      }),
+    deletePlacement: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(({ input }) => {
+        const index = tnpUploadedOpportunities.findIndex(item => item.id === input.id);
+        if (index === -1) {
+          throw new Error("Only newly uploaded opportunities can be deleted in this demo workspace.");
+        }
+        tnpUploadedOpportunities.splice(index, 1);
+        return { success: true, message: "Opportunity deleted successfully." };
+      }),
+  }),
   faculty: router({
-    getWards: publicProcedure.query(() => [
-      {
-        studentProfileId: "student-rahul-sharma",
-        userId: "10000000-0000-0000-0000-000000000005",
-        name: "Rahul Sharma",
-        email: "student@northstar.edu",
-        enrollmentNumber: "CSE2024042",
-        program: "B.Tech Computer Science and Engineering",
-        currentSemester: 6,
-        cgpa: 8.42,
-        activeBacklogsCount: 1,
-        activeGapsCount: 1,
-        activeInterventionsCount: 1,
-        status: "NEEDS_ATTENTION" as "NEEDS_ATTENTION" | "ON_TRACK",
-        activeGaps: [
-          {
-            id: "gap-dsa-01",
-            skillId: "s1",
-            skillName: "Data Structures & Algorithms",
-            severity: "HIGH",
-            status: "IN_REVIEW",
-            reason: {
-              score_history: [78, 70, 61],
-              active_backlogs: 1,
-              trigger_text:
-                "Two consecutive score drops accompanied by an active backlog.",
-            },
-          },
-        ],
-        recentInterventions: [
-          {
-            id: "interv-01",
-            type: "MENTORING",
-            description:
-              "1-on-1 mentoring session to review core concepts in Data Structures & Algorithms",
-            status: "SCHEDULED",
-            startDate: new Date(),
-            outcome: null,
-          },
-        ],
-      },
-    ]),
+    getWards: publicProcedure.query(() => FACULTY_WARDS),
     createIntervention: publicProcedure
       .input(
         z.object({
@@ -392,9 +537,11 @@ export const appRouter = router({
           endDate: z.string().optional(),
         })
       )
-      .mutation(({ input }) => ({
-        success: true,
-        intervention: {
+      .mutation(async ({ input, ctx }) => {
+        const ward = FACULTY_WARDS.find(item => item.studentProfileId === input.studentId);
+        const facultyName = ctx.user?.name || "Your faculty mentor";
+        const sessionDate = input.startDate ? new Date(input.startDate) : new Date();
+        const intervention = {
           id: "new-interv-id",
           studentId: input.studentId,
           skillGapId: input.skillGapId ?? null,
@@ -405,8 +552,50 @@ export const appRouter = router({
           endDate: input.endDate ? new Date(input.endDate) : null,
           outcome: null,
           createdAt: new Date(),
-        },
-      })),
+        };
+
+        let emailNotification = {
+          sent: false,
+          reason: "student_not_found" as "student_not_found" | "missing_config" | "smtp_error" | undefined,
+        };
+
+        if (ward) {
+          const mailResult = await sendMail({
+            to: ward.email,
+            subject: "PRAGATI mentoring session scheduled",
+            text: [
+              `Hello ${ward.name},`,
+              "",
+              `${facultyName} has scheduled a ${input.type.replace(/_/g, " ").toLowerCase()} session for you in PRAGATI.`,
+              "",
+              `Date: ${sessionDate.toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}`,
+              `Student ID: ${ward.enrollmentNumber}`,
+              "",
+              "Session plan:",
+              input.description,
+              "",
+              "Please open your PRAGATI mentoring workspace for the latest intervention details and follow-up actions.",
+              "",
+              "Regards,",
+              "PRAGATI Teacher-Guardian Desk",
+            ].join("\n"),
+          });
+
+          emailNotification = mailResult.sent
+            ? { sent: true, reason: undefined }
+            : { sent: false, reason: mailResult.reason };
+        }
+
+        return {
+          success: true,
+          intervention,
+          emailNotification,
+        };
+      }),
     recordOutcome: publicProcedure
       .input(
         z.object({
@@ -427,6 +616,268 @@ export const appRouter = router({
     getWardInterventions: publicProcedure
       .input(z.object({ studentProfileId: z.string() }))
       .query(() => []),
+  }),
+  hod: router({
+    getDepartmentSummary: publicProcedure.query(() => ({
+      departmentName: "Computer Science & Engineering",
+      code: "CSE",
+      institution: "Northstar Institute of Technology",
+      hodName: "Prof. Sunita Rao",
+      totalStudents: 248,
+      activeBatches: ["2021-2025 (Final Year)", "2022-2026 (Pre-Final Year)"],
+      facultyCount: 14,
+      avgCgpa: 8.12,
+      readinessScore: 79.4,
+      readinessDelta: "+3.8%",
+      internshipRate: 84.2,
+      activeGapsCount: 18,
+      resolvedInterventionsCount: 42,
+      metrics: [
+        {
+          label: "Total CSE Students",
+          value: "248",
+          delta: "4 active cohorts",
+          helper: "98.4% attendance index",
+          tone: "indigo" as const,
+        },
+        {
+          label: "Dept Readiness Index",
+          value: "79.4%",
+          delta: "+3.8%",
+          helper: "vs previous cycle",
+          tone: "violet" as const,
+        },
+        {
+          label: "Verified Internships",
+          value: "84.2%",
+          delta: "168 / 200",
+          helper: "SHA-256 signed evidence",
+          tone: "emerald" as const,
+        },
+        {
+          label: "Active Skill Gaps",
+          value: "18",
+          delta: "11 DSA · 7 OS",
+          helper: "Closed-loop remedial active",
+          tone: "amber" as const,
+        },
+      ],
+      readinessIndicators: [
+        { label: "Academic progress", score: 81.2, weight: 30, helper: "Dept avg CGPA 8.12 across semesters" },
+        { label: "Verified skill coverage", score: 77.5, weight: 30, helper: "18 core competencies benchmarked" },
+        { label: "Internship progress", score: 84.2, weight: 20, helper: "168 students completed verified industry stints" },
+        { label: "Authenticated evidence", score: 96.5, weight: 20, helper: "Faculty-verified SHA-256 cryptographic records" },
+      ],
+      skillHotspots: [
+        {
+          skill: "Data Structures & Algorithms",
+          code: "CS301",
+          flaggedStudents: 11,
+          avgScore: 61,
+          benchmark: 75,
+          severity: "HIGH" as const,
+          mentor: "Dr. Anand Verma",
+          status: "Remedial Workshop Active",
+        },
+        {
+          skill: "Operating Systems",
+          code: "CS401",
+          flaggedStudents: 7,
+          avgScore: 64,
+          benchmark: 70,
+          severity: "MEDIUM" as const,
+          mentor: "Dr. Meera Nair",
+          status: "Lab Remediation Scheduled",
+        },
+        {
+          skill: "Computer Networks",
+          code: "CS501",
+          flaggedStudents: 4,
+          avgScore: 69,
+          benchmark: 70,
+          severity: "MEDIUM" as const,
+          mentor: "Dr. Anand Verma",
+          status: "Review Cycle Pending",
+        },
+        {
+          skill: "Database Management Systems",
+          code: "CS302",
+          flaggedStudents: 3,
+          avgScore: 72,
+          benchmark: 70,
+          severity: "LOW" as const,
+          mentor: "Prof. Rajesh Gupta",
+          status: "Cohort On Track",
+        },
+        {
+          skill: "Object-Oriented Programming",
+          code: "CS201",
+          flaggedStudents: 2,
+          avgScore: 81,
+          benchmark: 70,
+          severity: "LOW" as const,
+          mentor: "Prof. Vikram Malhotra",
+          status: "Proficient",
+        },
+      ],
+      facultyMentors: [
+        {
+          id: "f1",
+          name: "Dr. Anand Verma",
+          role: "Associate Professor",
+          wardsCount: 18,
+          flaggedCount: 2,
+          activeInterventions: 3,
+          complianceRate: 94,
+        },
+        {
+          id: "f2",
+          name: "Dr. Meera Nair",
+          role: "Professor",
+          wardsCount: 22,
+          flaggedCount: 1,
+          activeInterventions: 2,
+          complianceRate: 100,
+        },
+        {
+          id: "f3",
+          name: "Prof. Rajesh Gupta",
+          role: "Assistant Professor",
+          wardsCount: 19,
+          flaggedCount: 3,
+          activeInterventions: 4,
+          complianceRate: 89,
+        },
+        {
+          id: "f4",
+          name: "Prof. Vikram Malhotra",
+          role: "Associate Professor",
+          wardsCount: 20,
+          flaggedCount: 0,
+          activeInterventions: 1,
+          complianceRate: 100,
+        },
+      ],
+      placementReadiness: {
+        eligibleTier1: 112,
+        eligibleCore: 198,
+        drivesPublished: 14,
+        totalOffers: 86,
+        topRecruiters: ["TechCorp", "Infosys SpringBoard", "Google Cloud", "Microsoft Engage"],
+      },
+      recentActivities: [
+        {
+          id: "act-1",
+          title: "DSA Mentoring Session Scheduled",
+          detail: "Dr. Anand Verma scheduled 1-on-1 session for Rahul Sharma (CSE2024042)",
+          time: "12 mins ago",
+          badge: "Intervention",
+          tone: "violet" as const,
+        },
+        {
+          id: "act-2",
+          title: "Internship Certificate Verified",
+          detail: "TechCorp 8-week completion certificate cryptographically confirmed via SHA-256",
+          time: "1 hour ago",
+          badge: "Verified",
+          tone: "emerald" as const,
+        },
+        {
+          id: "act-3",
+          title: "Campus Drive Published",
+          detail: "T&P cell opened ABC Technologies drive (min CGPA 7.5, DSA 70)",
+          time: "3 hours ago",
+          badge: "Placement",
+          tone: "indigo" as const,
+        },
+        {
+          id: "act-4",
+          title: "Assessment Cycle 3 Completed",
+          detail: "DSA Assessment Cycle 3 closed for Sem 6 with 96% cohort turnout",
+          time: "Yesterday",
+          badge: "Assessment",
+          tone: "amber" as const,
+        },
+      ],
+    })),
+    scheduleRemedialClinic: publicProcedure
+      .input(
+        z.object({
+          subjectCode: z.string(),
+          facultyMentor: z.string(),
+          batchYear: z.string(),
+          scheduledDate: z.string().optional(),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(({ input }) => ({
+        success: true,
+        clinicId: `clinic-${Date.now()}`,
+        subjectCode: input.subjectCode,
+        facultyMentor: input.facultyMentor,
+        message: `Remedial clinic for ${input.subjectCode} assigned to ${input.facultyMentor} successfully.`,
+      })),
+    sendActivityInvitation: publicProcedure
+      .input(
+        z.object({
+          activityId: z.string(),
+          title: z.string().min(3),
+          detail: z.string().min(3),
+          badge: z.string().optional(),
+          time: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const senderName = ctx.user?.name || "PRAGATI HOD Desk";
+        const results = await Promise.all(
+          ACTIVITY_INVITE_STUDENTS.map(async student => {
+            const mailResult = await sendMail({
+              to: student.email,
+              subject: `PRAGATI invitation: ${input.title}`,
+              text: [
+                `Hello ${student.name},`,
+                "",
+                `${senderName} has sent you an invitation for the following PRAGATI department activity.`,
+                "",
+                `Activity: ${input.title}`,
+                `Category: ${input.badge || "Department Activity"}`,
+                input.time ? `Posted: ${input.time}` : "",
+                "",
+                "Details:",
+                input.detail,
+                "",
+                "Please log in to PRAGATI and check your workspace for any required action.",
+                "",
+                "Regards,",
+                "PRAGATI Department Desk",
+              ].filter(Boolean).join("\n"),
+            });
+
+            return {
+              studentEmail: student.email,
+              sent: mailResult.sent,
+              reason: mailResult.sent ? undefined : mailResult.reason,
+            };
+          })
+        );
+
+        return {
+          success: true,
+          activityId: input.activityId,
+          totalStudents: ACTIVITY_INVITE_STUDENTS.length,
+          sentCount: results.filter(result => result.sent).length,
+          failedCount: results.filter(result => !result.sent).length,
+          results,
+        };
+      }),
+    exportAuditReport: publicProcedure.query(() => ({
+      success: true,
+      reportTitle: "PRAGATI CSE Department Skill & Placement Audit",
+      department: "Computer Science & Engineering",
+      institution: "Northstar Institute of Technology",
+      generatedAt: new Date().toISOString(),
+      format: "PDF (NAAC Criterion 2 & NBA Sub-tier compliant)",
+    })),
   }),
   evidence: router({
     getMyEvidence: publicProcedure.query(() => [

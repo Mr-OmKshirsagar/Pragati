@@ -117,7 +117,7 @@ export default function EvidenceUploadModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#eef1f6] bg-gradient-to-r from-[#f8faff] to-[#f4f7fd]">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#eef2fd] text-[#3048a8]">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
@@ -152,8 +152,8 @@ export default function EvidenceUploadModal({
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 ${
               file
-                ? "border-[#3048a8] bg-[#f5f8ff]"
-                : "border-[#ccd6e8] bg-[#f9fafc] hover:border-[#3048a8] hover:bg-[#f4f7fd]"
+                ? "border-primary bg-primary/5"
+                : "border-[#ccd6e8] bg-[#f9fafc] hover:border-primary hover:bg-primary/5"
             }`}
           >
             <input
@@ -167,7 +167,7 @@ export default function EvidenceUploadModal({
                 }
               }}
             />
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white shadow-sm border border-[#e2e8f2] text-[#3048a8]">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white shadow-sm border border-[#e2e8f2] text-primary">
               <UploadCloud className="h-6 w-6" />
             </div>
             {file ? (
@@ -194,14 +194,14 @@ export default function EvidenceUploadModal({
             <div className="rounded-2xl border border-[#dfe5ef] bg-[#f8faff] p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="flex items-center gap-1.5 text-xs font-bold text-[#182643]">
-                  <Hash className="h-3.5 w-3.5 text-[#3048a8]" />
+                  <Hash className="h-3.5 w-3.5 text-primary" />
                   Client-Computed SHA-256 Checksum
                 </span>
                 {sha256Hash && (
                   <button
                     type="button"
                     onClick={copyHash}
-                    className="flex items-center gap-1 text-[11px] font-semibold text-[#3048a8] hover:underline"
+                    className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
                   >
                     {copied ? (
                       <>
@@ -217,7 +217,7 @@ export default function EvidenceUploadModal({
               </div>
               {isHashing ? (
                 <div className="flex items-center gap-2 text-xs text-[#64748b]">
-                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-[#3048a8] border-t-transparent" />
+                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   Generating cryptographic digest via Web Crypto API...
                 </div>
               ) : (
@@ -247,7 +247,7 @@ export default function EvidenceUploadModal({
             type="button"
             onClick={handleUpload}
             disabled={!file || !sha256Hash || isUploading}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#3048a8] hover:bg-[#3f5ac1] disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-900/15 transition"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md transition"
           >
             {isUploading ? (
               <>
@@ -266,3 +266,4 @@ export default function EvidenceUploadModal({
     </div>
   );
 }
+

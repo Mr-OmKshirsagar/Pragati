@@ -93,7 +93,7 @@ export default function TamperDemoModal({ onClose }: TamperDemoModalProps) {
                 <h3 className="text-base font-extrabold text-[#182643]">
                   Cryptographic Tamper Demonstration
                 </h3>
-                <span className="rounded-full bg-[#3048a8] px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
+                <span className="rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
                   Evaluator Mode
                 </span>
               </div>
@@ -160,7 +160,7 @@ export default function TamperDemoModal({ onClose }: TamperDemoModalProps) {
           <div className="rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-[#182643]">
-                <FileText className="h-4 w-4 text-[#3048a8]" />
+                <FileText className="h-4 w-4 text-primary" />
                 Document: TechCorp_OfferLetter.pdf
               </div>
               <span className="text-[10px] font-mono text-[#8995aa]">
@@ -265,7 +265,7 @@ export default function TamperDemoModal({ onClose }: TamperDemoModalProps) {
             disabled={isComputing}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-md ${
               isTampered
-                ? "bg-[#3048a8] hover:bg-[#3f5ac1] text-white shadow-indigo-900/15"
+                ? "bg-primary hover:opacity-90 text-white shadow-indigo-900/15"
                 : "bg-red-600 hover:bg-red-700 text-white shadow-red-900/15"
             }`}
           >
@@ -286,3 +286,4 @@ export default function TamperDemoModal({ onClose }: TamperDemoModalProps) {
     </div>
   );
 }
+

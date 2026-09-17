@@ -178,4 +178,22 @@ export const studentRouter = router({
     const { getStudentInterventions } = await import("../services/interventionService");
     return getStudentInterventions(ctx.user.studentProfile.id);
   }),
+
+  // 9. Student Opportunities & Placement Drives Query
+  opportunities: studentProcedure.query(async ({ ctx }) => {
+    const { getOpportunities } = await import("../services/placementService");
+    return getOpportunities();
+  }),
+
+  // 10. Apply for Opportunity
+  applyForOpportunity: studentProcedure
+    .input(z.object({ opportunityId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { applyForOpportunity } = await import("../services/placementService");
+      const success = await applyForOpportunity(input.opportunityId, ctx.user.studentProfile.id);
+      return {
+        success,
+        message: "Application submitted successfully",
+      };
+    }),
 });

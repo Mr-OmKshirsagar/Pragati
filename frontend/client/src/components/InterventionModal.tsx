@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { getRoleSidebarTheme, type RoleSidebarTheme } from "@/lib/roleTheme";
 
 interface InterventionModalProps {
   ward: {
@@ -27,13 +29,17 @@ interface InterventionModalProps {
   };
   onClose: () => void;
   onSuccess: () => void;
+  theme?: RoleSidebarTheme;
 }
 
 export default function InterventionModal({
   ward,
   onClose,
   onSuccess,
+  theme: propTheme,
 }: InterventionModalProps) {
+  const { role } = useAuth();
+  const activeTheme = propTheme ?? getRoleSidebarTheme(role);
   const selectedGap = ward.activeGaps[0];
   const [type, setType] = useState<"MENTORING" | "REMEDIAL_CLASS" | "ASSIGNMENT">(
     "MENTORING"
@@ -59,7 +65,7 @@ export default function InterventionModal({
 
     setIsSubmitting(true);
     try {
-      await createMutation.mutateAsync({
+      const result = await createMutation.mutateAsync({
         studentId: ward.studentProfileId,
         skillGapId: selectedGap.id,
         type,
@@ -67,9 +73,15 @@ export default function InterventionModal({
         startDate,
       });
 
-      toast.success(
-        `Intervention scheduled successfully for ${ward.name}. Skill gap transitioned to In Review.`
-      );
+      if (result.emailNotification?.sent) {
+        toast.success(
+          `Intervention scheduled for ${ward.name}. Email notification sent.`
+        );
+      } else {
+        toast.warning(
+          `Intervention scheduled for ${ward.name}, but email notification was not sent. Check SMTP configuration.`
+        );
+      }
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -89,7 +101,10 @@ export default function InterventionModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#e2e8f0] pb-4">
           <div>
-            <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#3048a8]">
+            <div
+              className="text-[10px] font-extrabold uppercase tracking-wider"
+              style={{ color: activeTheme.activePillBg }}
+            >
               Closed-Loop Mentoring
             </div>
             <h2 className="mt-0.5 text-lg font-extrabold text-[#1a2848]">
@@ -144,9 +159,18 @@ export default function InterventionModal({
                     key={fmt.id}
                     type="button"
                     onClick={() => setType(fmt.id as any)}
+                    style={
+                      isSelected
+                        ? {
+                            borderColor: activeTheme.activePillBg,
+                            color: activeTheme.activePillBg,
+                            backgroundColor: `${activeTheme.activePillBg}15`,
+                          }
+                        : undefined
+                    }
                     className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-center transition ${
                       isSelected
-                        ? "border-[#3048a8] bg-[#eff3ff] text-[#3048a8] font-bold shadow-sm"
+                        ? "font-bold shadow-sm"
                         : "border-[#e2e8f0] text-[#64748b] hover:bg-[#f8fafc]"
                     }`}
                   >
@@ -167,7 +191,7 @@ export default function InterventionModal({
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-xl border border-[#cbd5e1] p-2.5 text-xs font-semibold text-[#1e293b] outline-none focus:ring-2 focus:ring-[#3048a8]"
+                className="w-full rounded-xl border border-[#cbd5e1] p-2.5 text-xs font-semibold text-[#1e293b] outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
@@ -182,7 +206,7 @@ export default function InterventionModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the session topics, remedial resources, or practice problems assigned..."
-              className="w-full rounded-xl border border-[#cbd5e1] p-2.5 text-xs font-medium text-[#1e293b] outline-none focus:ring-2 focus:ring-[#3048a8]"
+              className="w-full rounded-xl border border-[#cbd5e1] p-2.5 text-xs font-medium text-[#1e293b] outline-none focus:ring-2 focus:ring-primary"
               required
             />
           </div>
@@ -199,7 +223,11 @@ export default function InterventionModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-[#3048a8] px-5 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#253782] disabled:opacity-50"
+              style={{
+                backgroundColor: activeTheme.activePillBg,
+                boxShadow: activeTheme.activePillShadow,
+              }}
+              className="rounded-xl px-5 py-2.5 text-xs font-bold text-white transition hover:opacity-90 active:scale-95 disabled:opacity-50"
             >
               {isSubmitting ? "Scheduling..." : "Assign Intervention"}
             </button>
@@ -209,3 +237,4 @@ export default function InterventionModal({
     </div>
   );
 }
+
