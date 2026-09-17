@@ -10,6 +10,7 @@ import {
   publicProcedure,
   router,
   studentProcedure,
+  tnpProcedure,
 } from "../_core/trpc";
 
 export const authRouter = router({
@@ -28,7 +29,7 @@ export const authRouter = router({
   demoLogin: publicProcedure
     .input(
       z.object({
-        role: z.enum(["STUDENT", "FACULTY", "HOD", "ADMIN"]),
+        role: z.enum(["STUDENT", "FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]),
       })
     )
     .mutation(async ({ input }) => {
@@ -110,6 +111,14 @@ export const authRouter = router({
       authorized: true,
       role: ctx.user.role,
       facultyUserId: ctx.user.id,
+    };
+  }),
+
+  testTnpAccess: tnpProcedure.query(({ ctx }) => {
+    return {
+      authorized: true,
+      role: ctx.user.role,
+      tnpUserId: ctx.user.id,
     };
   }),
 

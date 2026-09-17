@@ -4,6 +4,7 @@ import { evidenceRouter } from "./evidence";
 import { facultyRouter } from "./faculty";
 import { skillGapRouter } from "./skillGap";
 import { studentRouter } from "./student";
+import { tnpRouter } from "./tnp";
 import { subjectRouter } from "./subject";
 import { internshipRouter } from "./internship";
 import { placementRouter } from "./placement";
@@ -18,6 +19,7 @@ export const appRouter = router({
   skillGap: skillGapRouter,
   faculty: facultyRouter,
   evidence: evidenceRouter,
+  tnp: tnpRouter,
   subject: subjectRouter,
   internship: internshipRouter,
   placement: placementRouter,
