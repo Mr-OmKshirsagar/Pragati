@@ -1,10 +1,24 @@
 import { COOKIE_NAME } from "@shared/const";
 import { dashboardData, opportunitiesData, progressData, skillsData, type Opportunity } from "@shared/pragati";
+import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { sendMail } from "./_core/email";
+import { supabaseAdmin } from "./_core/supabase";
+import { ensureSupabaseAuthPersonas } from "./_core/supabaseAuthSync";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+
+const supabaseAnonClient = createClient(
+  process.env.SUPABASE_URL || "https://placeholder.supabase.co",
+  process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key",
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 export type PragatiRole = "STUDENT" | "FACULTY" | "HOD" | "TNP_COORDINATOR" | "ADMIN";
 
@@ -247,6 +261,7 @@ export const appRouter = router({
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     demoAccounts: publicProcedure.query(() => {
+      ensureSupabaseAuthPersonas().catch(() => {});
       return Object.values(DEMO_PERSONAS).map(({ demoPassword, ...user }) => ({
         ...user,
         hintPassword: demoPassword,
@@ -261,21 +276,65 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
-        const found = usersStore.get(input.email.toLowerCase());
+        const emailLower = input.email.toLowerCase();
+
+        // 1. Authenticate with Supabase Authentication (Users tab)
+        try {
+          const { data: authData, error: authError } =
+            await supabaseAnonClient.auth.signInWithPassword({
+              email: emailLower,
+              password: input.password,
+            });
+
+          if (!authError && authData?.user) {
+            const meta = authData.user.user_metadata || {};
+            const userRole = (meta.role || input.role) as PragatiRole;
+            const initials = (meta.name || "User")
+              .split(" ")
+              .map((part: string) => part[0])
+              .slice(0, 2)
+              .join("")
+              .toUpperCase();
+
+            const authedUser: PragatiUser = {
+              id: authData.user.id,
+              name: meta.name || input.email.split("@")[0],
+              email: authData.user.email || input.email,
+              role: userRole,
+              department: meta.department || "Computer Science & Engineering",
+              roleId: meta.roleId || meta.enrollmentNumber || "ROLE-001",
+              designation: meta.designation || `${userRole}`,
+              avatar: initials,
+            };
+
+            return {
+              success: true,
+              user: authedUser,
+              token: authData.session?.access_token || `demo_${userRole}`,
+            };
+          }
+        } catch {
+          // Fallback to local / demo store if Supabase Auth is unavailable
+        }
+
+        const found = usersStore.get(emailLower);
         if (!found) {
           // Allow demo login fallback if demo user was requested
           const demoFallback = DEMO_PERSONAS[input.role];
-          if (demoFallback && (input.email.toLowerCase() === demoFallback.email.toLowerCase() || input.password === "password123")) {
-            return { success: true, user: demoFallback };
+          if (
+            demoFallback &&
+            (emailLower === demoFallback.email.toLowerCase() || input.password === "password123")
+          ) {
+            return { success: true, user: demoFallback, token: `demo_${input.role}` };
           }
-          throw new Error("Invalid credentials or account not found. Use a Demo Persona or Register.");
+          throw new Error("Invalid credentials or account not found in Supabase Authentication. Please register or use a demo account.");
         }
 
         if (found.role !== input.role) {
           throw new Error(`Account registered as ${found.role}, not ${input.role}. Please select the correct role tab.`);
         }
 
-        return { success: true, user: found };
+        return { success: true, user: found, token: `demo_${found.role}` };
       }),
     register: publicProcedure
       .input(
@@ -291,6 +350,40 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         const key = input.email.toLowerCase();
+
+        // 1. Securely create user in Supabase Authentication Users tab (auth.users)
+        let supabaseUserId: string | null = null;
+        try {
+          const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+            email: input.email.toLowerCase(),
+            password: input.password,
+            email_confirm: true,
+            user_metadata: {
+              name: input.name,
+              role: input.role,
+              department: input.department,
+              roleId: input.roleId,
+              designation: input.designation || `${input.role} (${input.department})`,
+              email_verified: true,
+            },
+          });
+
+          if (authError) {
+            if (
+              authError.message?.toLowerCase().includes("already registered") ||
+              authError.status === 422
+            ) {
+              throw new Error("An account with this email already exists in Supabase Authentication. Please sign in instead.");
+            }
+            console.warn("[Auth] Supabase admin createUser notice:", authError.message);
+          } else if (authData?.user) {
+            supabaseUserId = authData.user.id;
+          }
+        } catch (e: any) {
+          if (e.message?.includes("already exists")) throw e;
+          console.warn("[Auth] Supabase auth registration notice:", e);
+        }
+
         if (usersStore.has(key)) {
           throw new Error("An account with this email already exists. Please sign in instead.");
         }
@@ -303,7 +396,7 @@ export const appRouter = router({
           .toUpperCase() || "U";
 
         const newUser: PragatiUser = {
-          id: `user-${Date.now()}`,
+          id: supabaseUserId || `user-${Date.now()}`,
           name: input.name,
           email: input.email,
           role: input.role,
@@ -318,7 +411,25 @@ export const appRouter = router({
       }),
     demoLogin: publicProcedure
       .input(z.object({ role: z.enum(["STUDENT", "FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]) }))
-      .mutation(({ input }) => {
+      .mutation(async ({ input }) => {
+        ensureSupabaseAuthPersonas().catch(() => {});
+
+        const email =
+          input.role === "HOD" ? "hod.cse@northstar.edu" : `${input.role.toLowerCase()}@northstar.edu`;
+        let supabaseToken = `demo_${input.role}`;
+        let supabaseUserId = "10000000-0000-0000-0000-000000000005";
+
+        try {
+          const { data: authData } = await supabaseAnonClient.auth.signInWithPassword({
+            email,
+            password: "password123",
+          });
+          if (authData?.session?.access_token) {
+            supabaseToken = authData.session.access_token;
+            supabaseUserId = authData.user.id;
+          }
+        } catch {}
+
         const personaNames: Record<string, string> = {
           STUDENT: "Rahul Sharma",
           FACULTY: "Dr. Anand Verma",
@@ -326,13 +437,14 @@ export const appRouter = router({
           TNP_COORDINATOR: "Vikram Malhotra",
           ADMIN: "Platform Administrator",
         };
+
         return {
           success: true,
-          token: `demo_${input.role}`,
+          token: supabaseToken,
           user: {
-            id: "10000000-0000-0000-0000-000000000005",
+            id: supabaseUserId,
             name: personaNames[input.role] || "Demo User",
-            email: `${input.role.toLowerCase()}@northstar.edu`,
+            email,
             role: input.role,
             institutionId: "NIT-001",
             departmentId: "CSE",

@@ -3,6 +3,7 @@ import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { eq } from "drizzle-orm";
 import * as schema from "../drizzle/schema";
+import { syncSupabaseAuthUsers } from "./sync-supabase-auth";
 
 async function seed() {
   console.log("==================================================");
@@ -410,6 +411,11 @@ async function seed() {
     } else {
       console.log(`   ℹ️ Drive exists: ${drive.companyName}`);
     }
+
+    // ------------------------------------------------------------------------
+    // 10. SYNCHRONIZE SUPABASE AUTHENTICATION USERS TAB (auth.users)
+    // ------------------------------------------------------------------------
+    await syncSupabaseAuthUsers();
 
     console.log("\n==================================================");
     console.log("          SEED DATA COMPLETED SUCCESSFULLY        ");
