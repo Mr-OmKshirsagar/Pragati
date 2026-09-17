@@ -44,6 +44,7 @@ import {
 import SuperAdminPortal from "./pages/SuperAdminPortal";
 import HodApprovals from "./pages/HodApprovals";
 import AdminApprovals from "./pages/AdminApprovals";
+import FirstLoginPasswordReset from "./pages/FirstLoginPasswordReset";
 import { Route, Switch } from "wouter";
 
 const Internship = () => <WorkspacePage kind="internship" />;
@@ -71,6 +72,7 @@ function Router() {
       <Route path="/register">{() => <AuthPage initialMode="register" />}</Route>
       <Route path="/auth">{() => <AuthPage initialMode="login" />}</Route>
       <Route path="/login-personas" component={Login} />
+      <Route path="/reset-initial-password" component={FirstLoginPasswordReset} />
 
       {/* ── Role-aware Overview / Dashboard ── */}
       <Route path="/overview">

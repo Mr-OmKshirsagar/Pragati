@@ -20,6 +20,7 @@ export interface AuthenticatedUser {
   name: string;
   studentProfile?: StudentProfileContext;
   isSuperAdmin?: boolean;
+  mustChangePassword?: boolean;
 }
 
 export async function createContext({ req, res }: CreateExpressContextOptions) {
@@ -83,6 +84,7 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
               departmentId: matchedUser.departmentId,
               name: matchedUser.name,
               studentProfile: studentProf,
+              mustChangePassword: matchedUser.mustChangePassword ?? false,
             };
           }
         } else {
@@ -109,6 +111,7 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
                   "00000000-0000-0000-0000-000000000000",
                 name: (authUser.user_metadata?.name as string) || "Platform Owner",
                 isSuperAdmin: true,
+                mustChangePassword: false,
               };
             } else {
               const [profile] = await db
@@ -144,6 +147,7 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
                   departmentId: profile.departmentId,
                   name: profile.name,
                   studentProfile: studentProf,
+                  mustChangePassword: profile.mustChangePassword ?? false,
                 };
               }
             }

@@ -43,8 +43,8 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) {
-  const { role, isAuthenticated } = useAuth();
-  const [, navigate] = useLocation();
+  const { role, user, isAuthenticated } = useAuth();
+  const [location, navigate] = useLocation();
 
   if (!isAuthenticated) {
     return (
@@ -64,6 +64,11 @@ export function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) 
         </div>
       </div>
     );
+  }
+
+  if (user?.mustChangePassword && location !== "/reset-initial-password") {
+    navigate("/reset-initial-password");
+    return null;
   }
 
   if (!allowedRoles.includes(role)) {

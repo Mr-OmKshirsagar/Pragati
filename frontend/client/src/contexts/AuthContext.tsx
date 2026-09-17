@@ -25,6 +25,7 @@ export interface PragatiUser {
   designation?: string;
   avatar?: string;
   studentProfile?: StudentProfileData;
+  mustChangePassword?: boolean;
 }
 export type UserData = PragatiUser;
 
@@ -107,6 +108,7 @@ interface AuthContextType {
   loginWithDemo: (role: PragatiRole) => Promise<void>;
   logout: () => void;
   switchRole: (role: PragatiRole) => void;
+  updateMustChangePassword: (mustChange: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -237,6 +239,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loginWithDemo(newRole);
   };
 
+  const updateMustChangePassword = (mustChange: boolean) => {
+    setUser(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, mustChangePassword: mustChange };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
   const role: PragatiRole = user?.role ?? "STUDENT";
   const isAuthenticated = Boolean(user);
 
@@ -264,6 +277,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithDemo,
         logout,
         switchRole,
+        updateMustChangePassword,
       }}
     >
       {children}

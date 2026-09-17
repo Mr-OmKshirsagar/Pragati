@@ -15,17 +15,17 @@ import { eq, inArray } from "drizzle-orm";
 import type { Context } from "../src/_core/context";
 
 // Helper to create test context
-function createTestContext(userOverrides: Partial<Context["user"]>): Context {
+function createTestContext(userOverrides?: Partial<NonNullable<Context["user"]>>): Context {
   return {
     req: {} as any,
     res: {} as any,
     user: {
-      id: userOverrides.id || crypto.randomUUID(),
-      email: userOverrides.email || "test@northstar.edu",
-      role: userOverrides.role || "STUDENT",
-      institutionId: userOverrides.institutionId || "10000000-0000-0000-0000-000000000000",
-      departmentId: userOverrides.departmentId || null,
-      name: userOverrides.name || "Test User",
+      id: userOverrides?.id || crypto.randomUUID(),
+      email: userOverrides?.email || "test@northstar.edu",
+      role: userOverrides?.role || "STUDENT",
+      institutionId: userOverrides?.institutionId || "10000000-0000-0000-0000-000000000000",
+      departmentId: userOverrides?.departmentId || null,
+      name: userOverrides?.name || "Test User",
       ...userOverrides,
     } as any,
   };
@@ -140,7 +140,6 @@ describe("Phase 14: Hierarchical Provisioning, Academic Scoping & Two-Tier Appro
     const [sub] = await db
       .insert(subjects)
       .values({
-        institutionId: instId,
         departmentId: deptAId,
         name: "Operating Systems",
         code: `CS401-${Date.now()}`,

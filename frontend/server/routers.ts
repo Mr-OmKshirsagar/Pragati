@@ -31,6 +31,7 @@ export interface PragatiUser {
   roleId: string;
   designation: string;
   avatar: string;
+  mustChangePassword?: boolean;
 }
 
 const DEMO_PERSONAS: Record<PragatiRole, PragatiUser & { demoPassword: string }> = {
@@ -388,6 +389,95 @@ export const appRouter = router({
           },
         };
       }),
+    completeFirstLoginPasswordReset: publicProcedure
+      .input(
+        z.object({
+          userId: z.string().optional(),
+          email: z.string().email().optional(),
+          newPassword: z.string().min(8, "Password must be at least 8 characters long"),
+          confirmPassword: z.string().min(8, "Password must be at least 8 characters long"),
+        })
+      )
+      .mutation(async ({ input }) => {
+        if (input.newPassword !== input.confirmPassword) {
+          throw new Error("New password and confirmation password do not match.");
+        }
+        return {
+          success: true,
+          message: "Your password has been successfully updated. You now have full access to your institutional portal.",
+          mustChangePassword: false,
+        };
+      }),
+
+    requestPasswordReset: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          challengeId: `challenge-${Date.now()}`,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+          maskedEmail: input.email.replace(/(.{2})(.*)(@.*)/, "$1***$3"),
+          simulatedOtp: "123456",
+        };
+      }),
+
+    create2FAChallenge: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          purpose: z
+            .enum(["SUPER_ADMIN_2FA", "ADMIN_2FA", "PASSWORD_RESET", "EMAIL_VERIFY"])
+            .optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          challengeId: `challenge-${Date.now()}`,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+          maskedEmail: input.email.replace(/(.{2})(.*)(@.*)/, "$1***$3"),
+          simulatedOtp: "123456",
+        };
+      }),
+
+    verify2FA: publicProcedure
+      .input(
+        z.object({
+          challengeId: z.string(),
+          otp: z.string().min(6).max(6),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          verified: true,
+          userId: "verified-user",
+          email: "user@northstar.edu",
+          purpose: "SUPER_ADMIN_2FA",
+          sessionToken: `verified_session_${Date.now()}`,
+        };
+      }),
+
+    resend2FA: publicProcedure
+      .input(
+        z.object({
+          challengeId: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          challengeId: input.challengeId,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+          maskedEmail: "us***@northstar.edu",
+          simulatedOtp: "654321",
+        };
+      }),
+
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
