@@ -326,77 +326,18 @@ export const appRouter = router({
         return { success: true, user: found, token: `demo_${found.role}` };
       }),
     register: publicProcedure
-      .input(
-        z.object({
-          name: z.string().min(2),
-          email: z.string().email(),
-          password: z.string().min(6),
-          role: z.enum(["STUDENT", "FACULTY", "HOD", "ADMIN"]),
-          department: z.string().default("Computer Science & Engineering"),
-          roleId: z.string().min(2),
-          designation: z.string().optional(),
-        })
-      )
-      .mutation(async ({ input }) => {
-        const key = input.email.toLowerCase();
-
-        // 1. Securely create user in Supabase Authentication Users tab (auth.users)
-        let supabaseUserId: string | null = null;
-        try {
-          const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            email: input.email.toLowerCase(),
-            password: input.password,
-            email_confirm: true,
-            user_metadata: {
-              name: input.name,
-              role: input.role,
-              department: input.department,
-              roleId: input.roleId,
-              designation: input.designation || `${input.role} (${input.department})`,
-              email_verified: true,
-            },
-          });
-
-          if (authError) {
-            if (
-              authError.message?.toLowerCase().includes("already registered") ||
-              authError.status === 422
-            ) {
-              throw new Error("An account with this email already exists in Supabase Authentication. Please sign in instead.");
-            }
-            console.warn("[Auth] Supabase admin createUser notice:", authError.message);
-          } else if (authData?.user) {
-            supabaseUserId = authData.user.id;
-          }
-        } catch (e: any) {
-          if (e.message?.includes("already exists")) throw e;
-          console.warn("[Auth] Supabase auth registration notice:", e);
-        }
-
-        if (usersStore.has(key)) {
-          throw new Error("An account with this email already exists. Please sign in instead.");
-        }
-
-        const initials = input.name
-          .split(" ")
-          .map(part => part[0])
-          .slice(0, 2)
-          .join("")
-          .toUpperCase() || "U";
-
-        const newUser: PragatiUser = {
-          id: supabaseUserId || `user-${Date.now()}`,
-          name: input.name,
-          email: input.email,
-          role: input.role,
-          department: input.department,
-          roleId: input.roleId,
-          designation: input.designation || `${input.role} (${input.department})`,
-          avatar: initials,
-        };
-
-        usersStore.set(key, newUser);
-        return { success: true, user: newUser };
+      .input(z.record(z.string(), z.unknown()).optional())
+      .mutation(async (): Promise<{ success: boolean; user?: PragatiUser }> => {
+        throw new Error(
+          "Public self-registration is strictly disabled. Student accounts must be provisioned through hierarchical Class Teacher / HOD approval."
+        );
+      }),
+    selfRegister: publicProcedure
+      .input(z.record(z.string(), z.unknown()).optional())
+      .mutation(async (): Promise<{ success: boolean; user?: PragatiUser }> => {
+        throw new Error(
+          "Public self-registration is strictly disabled. Student accounts must be provisioned through hierarchical Class Teacher / HOD approval."
+        );
       }),
     demoLogin: publicProcedure
       .input(z.object({ role: z.enum(["STUDENT", "FACULTY", "HOD", "ADMIN"]) }))
@@ -715,6 +656,35 @@ export const appRouter = router({
     getWardInterventions: publicProcedure
       .input(z.object({ studentProfileId: z.string() }))
       .query(() => []),
+    submitStudentEnrollment: publicProcedure
+      .input(
+        z.object({
+          classId: z.string(),
+          departmentId: z.string().optional(),
+          studentData: z.object({
+            name: z.string(),
+            collegeEmail: z.string().email(),
+            personalEmail: z.string().email().optional(),
+            mobilePhone: z.string().optional(),
+            parentPhone: z.string().optional(),
+            enrollmentNumber: z.string(),
+            program: z.string(),
+            batch: z.string(),
+            currentSemester: z.number(),
+            sectionDivision: z.string().optional(),
+            admissionYear: z.number().optional(),
+            graduationYear: z.number().optional(),
+          }),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          id: `req-stu-${Date.now()}`,
+          status: "PENDING" as const,
+          createdAt: new Date().toISOString(),
+          studentData: input.studentData,
+        };
+      }),
   }),
   hod: router({
     getDepartmentSummary: publicProcedure.query(() => ({
@@ -977,6 +947,118 @@ export const appRouter = router({
       generatedAt: new Date().toISOString(),
       format: "PDF (NAAC Criterion 2 & NBA Sub-tier compliant)",
     })),
+    getPendingStudentRequests: publicProcedure
+      .input(z.object({ departmentId: z.string().optional() }).optional())
+      .query(async () => {
+        return [
+          {
+            id: "req-stu-001",
+            institutionId: "inst-nit-001",
+            departmentId: "dept-cse-001",
+            classId: "CSE-SEM6-A",
+            submittedBy: "user-faculty-1",
+            studentData: {
+              name: "Pooja Hegde",
+              collegeEmail: "pooja.hegde@northstar.edu",
+              enrollmentNumber: "CSE2024099",
+              program: "B.Tech Computer Science and Engineering",
+              batch: "2021-2025",
+              currentSemester: 6,
+              parentPhone: "+91 98220 12345",
+              mobilePhone: "+91 98220 54321",
+            },
+            status: "PENDING" as const,
+            createdAt: new Date().toISOString(),
+            submitterName: "Dr. Anand Verma",
+            submitterEmail: "faculty@northstar.edu",
+          },
+        ];
+      }),
+    processStudentEnrollments: publicProcedure
+      .input(
+        z.object({
+          requestIds: z.array(z.string()).min(1),
+          action: z.enum(["APPROVE", "REJECT"]),
+          rejectionReason: z.string().optional(),
+          departmentId: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return { processedCount: input.requestIds.length, action: input.action };
+      }),
+    requestFaculty: publicProcedure
+      .input(
+        z.object({
+          requestType: z.enum(["CREATE", "DELETE"]),
+          targetUserId: z.string().optional(),
+          departmentId: z.string().optional(),
+          facultyData: z.any().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          id: `req-fac-${Date.now()}`,
+          requestType: input.requestType,
+          status: "PENDING" as const,
+          createdAt: new Date().toISOString(),
+        };
+      }),
+    assignClassTeacher: publicProcedure
+      .input(z.object({ classId: z.string(), facultyId: z.string() }))
+      .mutation(async () => {
+        return { success: true };
+      }),
+    assignSubjectTeacher: publicProcedure
+      .input(
+        z.object({
+          subjectId: z.string(),
+          facultyId: z.string(),
+          classId: z.string().optional(),
+          departmentId: z.string().optional(),
+          semester: z.number().optional(),
+          academicYear: z.string().optional(),
+          role: z.string().optional(),
+        })
+      )
+      .mutation(async () => {
+        return { success: true };
+      }),
+    listClasses: publicProcedure
+      .input(z.object({ departmentId: z.string().optional() }).optional())
+      .query(async () => {
+        return [
+          {
+            id: "class-cse-sem6-a",
+            className: "Third Year CSE - Div A",
+            academicYear: "2024-2025",
+            semester: 6,
+            classTeacherId: "user-faculty-1",
+            classTeacherName: "Dr. Anand Verma",
+            classTeacherEmail: "faculty@northstar.edu",
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }),
+    createClass: publicProcedure
+      .input(
+        z.object({
+          className: z.string(),
+          academicYear: z.string(),
+          semester: z.number(),
+          departmentId: z.string().optional(),
+          classTeacherId: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          id: `class-${Date.now()}`,
+          className: input.className,
+          academicYear: input.academicYear,
+          semester: input.semester,
+          classTeacherId: input.classTeacherId || null,
+          createdAt: new Date().toISOString(),
+        };
+      }),
   }),
   evidence: router({
     getMyEvidence: publicProcedure.query(() => [
@@ -1979,6 +2061,91 @@ export const appRouter = router({
           message: `Change request marked as ${input.action}.`,
         };
       }),
+  }),
+
+  admin: router({
+    getPendingFacultyRequests: publicProcedure.query(async () => {
+      return [
+        {
+          id: "req-fac-001",
+          institutionId: "inst-nit-001",
+          departmentId: "dept-cse-001",
+          submittedBy: "user-hod-1",
+          requestType: "CREATE" as const,
+          targetUserId: null,
+          facultyData: {
+            name: "Dr. Rajesh Kulkarni",
+            email: "rajesh.kulkarni@northstar.edu",
+            phone: "+91 98221 67890",
+            designation: "Assistant Professor",
+            specialization: "Cloud Computing & Distributed Systems",
+            highestQualification: "Ph.D. in Computer Engineering",
+          },
+          status: "PENDING" as const,
+          createdAt: new Date().toISOString(),
+          departmentName: "Computer Science & Engineering",
+          submitterName: "Prof. Sunita Rao",
+          submitterEmail: "hod.cse@northstar.edu",
+        },
+      ];
+    }),
+    processFacultyRequests: publicProcedure
+      .input(
+        z.object({
+          requestIds: z.array(z.string()).min(1),
+          action: z.enum(["APPROVE", "REJECT"]),
+          rejectionReason: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return { processedCount: input.requestIds.length, action: input.action };
+      }),
+    reassignFacultyDesignation: publicProcedure
+      .input(
+        z.object({
+          facultyUserId: z.string(),
+          newRole: z.enum(["FACULTY", "HOD", "TNP_COORDINATOR"]),
+          departmentId: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          id: input.facultyUserId,
+          role: input.newRole,
+          departmentId: input.departmentId,
+        };
+      }),
+    listDepartments: publicProcedure.query(async () => {
+      return [
+        { id: "dept-cse-001", name: "Computer Science & Engineering", code: "CSE" },
+        { id: "dept-it-002", name: "Information Technology", code: "IT" },
+        { id: "dept-ece-003", name: "Electronics & Communication", code: "ECE" },
+      ];
+    }),
+    listFaculty: publicProcedure.query(async () => {
+      return [
+        {
+          id: "user-faculty-1",
+          name: "Dr. Anand Verma",
+          email: "faculty@northstar.edu",
+          role: "FACULTY",
+          departmentId: "dept-cse-001",
+          isActive: true,
+          mustChangePassword: false,
+          departmentName: "Computer Science & Engineering",
+        },
+        {
+          id: "user-hod-1",
+          name: "Prof. Sunita Rao",
+          email: "hod.cse@northstar.edu",
+          role: "HOD",
+          departmentId: "dept-cse-001",
+          isActive: true,
+          mustChangePassword: false,
+          departmentName: "Computer Science & Engineering",
+        },
+      ];
+    }),
   }),
 });
 

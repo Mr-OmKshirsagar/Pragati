@@ -1,18 +1,20 @@
 import { router } from "../_core/trpc";
+import { adminRouter } from "./admin";
+import { analyticsRouter } from "./analytics";
 import { authRouter } from "./auth";
+import { dashboardRouter } from "./dashboard";
 import { evidenceRouter } from "./evidence";
 import { facultyRouter } from "./faculty";
-import { skillGapRouter } from "./skillGap";
-import { studentRouter } from "./student";
-import { tnpRouter } from "./tnp";
-import { subjectRouter } from "./subject";
+import { hodRouter } from "./hod";
 import { internshipRouter } from "./internship";
 import { placementRouter } from "./placement";
 import { recruitmentRouter } from "./recruitment";
-import { analyticsRouter } from "./analytics";
-import { dashboardRouter } from "./dashboard";
 import { searchRouter } from "./search";
+import { skillGapRouter } from "./skillGap";
+import { studentRouter } from "./student";
+import { subjectRouter } from "./subject";
 import { superAdminRouter } from "./superAdmin";
+import { tnpRouter } from "./tnp";
 
 export const appRouter = router({
   auth: authRouter,
@@ -29,6 +31,8 @@ export const appRouter = router({
   dashboard: dashboardRouter,
   search: searchRouter,
   superAdmin: superAdminRouter,
+  hod: hodRouter,
+  admin: adminRouter,
 });
 
 export type AppRouter = typeof appRouter;

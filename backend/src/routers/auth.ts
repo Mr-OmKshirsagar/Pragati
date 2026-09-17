@@ -95,6 +95,29 @@ export const authRouter = router({
     return { success: true, message: "Logged out successfully" };
   }),
 
+  /**
+   * Public Self-Registration Lockout:
+   * PRAGATI strictly enforces two-tier hierarchical provisioning.
+   * Public registration attempts are rejected with 403 Forbidden.
+   */
+  register: publicProcedure
+    .input(z.record(z.string(), z.unknown()).optional())
+    .mutation(() => {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Public self-registration is strictly disabled. Student accounts must be provisioned through hierarchical Class Teacher / HOD approval.",
+      });
+    }),
+
+  selfRegister: publicProcedure
+    .input(z.record(z.string(), z.unknown()).optional())
+    .mutation(() => {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Public self-registration is strictly disabled. Student accounts must be provisioned through hierarchical Class Teacher / HOD approval.",
+      });
+    }),
+
   // ==========================================================================
   // ROLE VERIFICATION TEST ENDPOINTS (Used by automated tests and RBAC verification)
   // ==========================================================================

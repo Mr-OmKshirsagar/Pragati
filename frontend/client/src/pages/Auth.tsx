@@ -354,191 +354,137 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
               </div>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {mode === "register" && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-xs font-bold text-[#304063]">Full Name</label>
-                    <div className="relative">
-                      <UserRound className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#8b98b0]" />
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Rahul Sharma"
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
-                      />
+            {/* Form or Lockout Notice */}
+            {mode === "register" ? (
+              <div className="space-y-6 py-2">
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 text-center space-y-4">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                    <ShieldCheck className="h-7 w-7" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-[#182643]">
+                      Public Self-Registration is Disabled
+                    </h3>
+                    <p className="text-xs text-[#6e7b93] max-w-md mx-auto">
+                      PRAGATI operates under a strict two-tier hierarchical academic governance model to prevent unauthorized accounts.
+                    </p>
+                  </div>
+
+                  <div className="text-left bg-white/80 border border-[#dfe5ef] rounded-xl p-4 text-xs space-y-2.5 text-[#182643]">
+                    <div className="flex items-start gap-2.5">
+                      <GraduationCap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <strong>Students:</strong> Your enrollment profile is initiated by your assigned Class Teacher and reviewed by your Department HOD.
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <UserCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <strong>Faculty & Staff:</strong> Accounts are provisioned through your Department Head and authorized by the College Administrator.
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <Lock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <strong>First-Time Login:</strong> Once approved, you will receive your credentials and be prompted to set your permanent password upon initial sign-in.
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="mb-1 block text-xs font-bold text-[#304063]">{roleConfig.idLabel}</label>
-                    <div className="relative">
-                      <KeyRound className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#8b98b0]" />
-                      <input
-                        type="text"
-                        required
-                        placeholder={
-                          selectedRole === "STUDENT"
-                            ? "CS-2023-0842"
-                            : selectedRole === "FACULTY"
-                            ? "FAC-CS-104"
-                            : selectedRole === "HOD"
-                            ? "HOD-CSE-001"
-                            : "ADM-SYS-001"
-                        }
-                        value={roleId}
-                        onChange={e => setRoleId(e.target.value)}
-                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {mode === "register" && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-xs font-bold text-[#304063]">Department</label>
-                    <select
-                      value={department}
-                      onChange={e => setDepartment(e.target.value)}
-                      className="w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-2.5 text-xs text-[#182643] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    >
-                      {DEPARTMENTS.map(dept => (
-                        <option key={dept} value={dept}>
-                          {dept}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-xs font-bold text-[#304063]">Academic Designation</label>
-                    <input
-                      type="text"
-                      placeholder={
-                        selectedRole === "STUDENT"
-                          ? "B.Tech CSE · Sem 6"
-                          : selectedRole === "FACULTY"
-                          ? "Associate Professor"
-                          : selectedRole === "HOD"
-                          ? "Head of Department"
-                          : "Coordinator"
-                      }
-                      value={designation}
-                      onChange={e => setDesignation(e.target.value)}
-                      className="w-full rounded-xl border border-[#dfe5ef] bg-white px-3 py-2.5 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Email */}
-              <div>
-                <label className="mb-1 block text-xs font-bold text-[#304063]">
-                  {mode === "login" ? "Institutional Email / ID" : "Official Institutional Email"}
-                </label>
-                <div className="relative">
-                  <Mail className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#8b98b0]" />
-                  <input
-                    type="email"
-                    required
-                    placeholder={
-                      selectedRole === "STUDENT"
-                        ? "rahul.sharma@northstar.edu"
-                        : selectedRole === "FACULTY"
-                        ? "meera.nair@northstar.edu"
-                        : selectedRole === "HOD"
-                        ? "sunita.rao@northstar.edu"
-                        : "admin@northstar.edu"
-                    }
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className={mode === "login" ? "sm:col-span-2" : ""}>
-                  <label className="mb-1 block text-xs font-bold text-[#304063]">Password</label>
-                  <div className="relative">
-                    <Lock className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#8b98b0]" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      required
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-10 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    />
+                  <div className="pt-2">
                     <button
                       type="button"
-                      onClick={() => setShowPassword(v => !v)}
-                      className="absolute right-3 top-2.5 text-[#8b98b0] hover:text-primary"
+                      onClick={() => setMode("login")}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-primary/90 transition"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      Return to Secure Sign-In
                     </button>
                   </div>
                 </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Email */}
+                <div>
+                  <label className="mb-1 block text-xs font-bold text-[#304063]">
+                    Institutional Email / ID
+                  </label>
+                  <div className="relative">
+                    <Mail className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#8b98b0]" />
+                    <input
+                      type="email"
+                      required
+                      placeholder={
+                        selectedRole === "STUDENT"
+                          ? "rahul.sharma@northstar.edu"
+                          : selectedRole === "FACULTY"
+                          ? "meera.nair@northstar.edu"
+                          : selectedRole === "HOD"
+                          ? "sunita.rao@northstar.edu"
+                          : "admin@northstar.edu"
+                      }
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                </div>
 
-                {mode === "register" && (
-                  <div>
-                    <label className="mb-1 block text-xs font-bold text-[#304063]">Confirm Password</label>
+                {/* Password */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className="mb-1 block text-xs font-bold text-[#304063]">Password</label>
                     <div className="relative">
                       <Lock className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#8b98b0]" />
                       <input
                         type={showPassword ? "text" : "password"}
                         required
                         placeholder="••••••••"
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-3 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        className="w-full rounded-xl border border-[#dfe5ef] bg-white py-2.5 pl-9 pr-10 text-xs text-[#182643] outline-none placeholder:text-[#a0acc0] focus:border-primary focus:ring-2 focus:ring-primary/20"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(v => !v)}
+                        className="absolute right-3 top-2.5 text-[#8b98b0] hover:text-primary"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* Quick demo autofill helper in login mode */}
-              {mode === "login" && currentDemo && (
-                <div className="flex items-center justify-between pt-1">
-                  <button
-                    type="button"
-                    onClick={fillDemoAccount}
-                    style={{ color: selectedTheme.activePillBg }}
-                    className="text-[11px] font-bold hover:underline"
-                  >
-                    Auto-fill demo credentials for {currentDemo.name}
-                  </button>
-                  <span className="text-[10px] text-[#8995aa]">Demo pwd: password123</span>
                 </div>
-              )}
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  backgroundColor: selectedTheme.activePillBg,
-                  boxShadow: `0 8px 20px ${selectedTheme.activePillShadow}`,
-                }}
-                className="mt-2 grid w-full grid-flow-col auto-cols-max items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold text-white transition hover:opacity-90 active:scale-[0.99] disabled:opacity-50"
-              >
-                <span>
-                  {loading
-                    ? "Authenticating..."
-                    : mode === "login"
-                    ? `Sign in as ${roleConfig.label}`
-                    : `Register as ${roleConfig.label}`}
-                </span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </form>
+                {/* Quick demo autofill helper in login mode */}
+                {currentDemo && (
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      type="button"
+                      onClick={fillDemoAccount}
+                      style={{ color: selectedTheme.activePillBg }}
+                      className="text-[11px] font-bold hover:underline"
+                    >
+                      Auto-fill demo credentials for {currentDemo.name}
+                    </button>
+                    <span className="text-[10px] text-[#8995aa]">Demo pwd: password123</span>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    backgroundColor: selectedTheme.activePillBg,
+                    boxShadow: `0 8px 20px ${selectedTheme.activePillShadow}`,
+                  }}
+                  className="mt-2 grid w-full grid-flow-col auto-cols-max items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold text-white transition hover:opacity-90 active:scale-[0.99] disabled:opacity-50"
+                >
+                  <span>{loading ? "Authenticating..." : `Sign in as ${roleConfig.label}`}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </form>
+            )}
 
             {/* Quick 1-Click Evaluation Personas */}
             <div className="mt-8 border-t border-[#e2e8f2] pt-6">

@@ -99,6 +99,17 @@ export const changeRequestStatusEnum = pgEnum("change_request_status", [
   "REJECTED",
 ]);
 
+export const approvalStatusEnum = pgEnum("approval_status", [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+]);
+
+export const facultyRequestTypeEnum = pgEnum("faculty_request_type", [
+  "CREATE",
+  "DELETE",
+]);
+
 // ============================================================================
 // 2. 26 NORMALIZED TABLES
 // ============================================================================
@@ -151,6 +162,7 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").default("STUDENT").notNull(),
   avatarUrl: text("avatar_url"),
   isActive: boolean("is_active").default(true).notNull(),
+  mustChangePassword: boolean("must_change_password").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -789,3 +801,76 @@ export const institutionChangeRequests = pgTable("institution_change_requests", 
 
 export type InstitutionChangeRequest = typeof institutionChangeRequests.$inferSelect;
 export type InsertInstitutionChangeRequest = typeof institutionChangeRequests.$inferInsert;
+
+// ============================================================================
+// 34. PHASE 14 HIERARCHICAL PROVISIONING & APPROVAL TABLES
+// ============================================================================
+
+// 34. STUDENT ENROLLMENT REQUESTS (Faculty -> HOD)
+export const studentEnrollmentRequests = pgTable("student_enrollment_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  institutionId: uuid("institution_id")
+    .notNull()
+    .references(() => institutions.id, { onDelete: "cascade" }),
+  departmentId: uuid("department_id")
+    .notNull()
+    .references(() => departments.id, { onDelete: "cascade" }),
+  classId: varchar("class_id", { length: 50 }).notNull(), // e.g. "CSE-SEM6-A"
+  submittedBy: uuid("submitted_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }), // Class Teacher
+  studentData: jsonb("student_data").notNull(), // Full student profile payload
+  status: approvalStatusEnum("status").default("PENDING").notNull(),
+  reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }), // HOD
+  reviewNotes: text("review_notes"),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  createdUserId: uuid("created_user_id").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type StudentEnrollmentRequest = typeof studentEnrollmentRequests.$inferSelect;
+export type InsertStudentEnrollmentRequest = typeof studentEnrollmentRequests.$inferInsert;
+
+// 35. FACULTY ONBOARDING & DELETION REQUESTS (HOD -> Admin)
+export const facultyOnboardingRequests = pgTable("faculty_onboarding_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  institutionId: uuid("institution_id")
+    .notNull()
+    .references(() => institutions.id, { onDelete: "cascade" }),
+  departmentId: uuid("department_id")
+    .notNull()
+    .references(() => departments.id, { onDelete: "cascade" }),
+  submittedBy: uuid("submitted_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }), // HOD
+  requestType: facultyRequestTypeEnum("request_type").notNull(),
+  targetUserId: uuid("target_user_id").references(() => users.id, { onDelete: "set null" }), // For deletion
+  facultyData: jsonb("faculty_data"), // For creation
+  status: approvalStatusEnum("status").default("PENDING").notNull(),
+  reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }), // Admin
+  reviewNotes: text("review_notes"),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type FacultyOnboardingRequest = typeof facultyOnboardingRequests.$inferSelect;
+export type InsertFacultyOnboardingRequest = typeof facultyOnboardingRequests.$inferInsert;
+
+// 36. ACADEMIC CLASS ALLOCATIONS & CLASS TEACHERS
+export const classAllocations = pgTable("class_allocations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  institutionId: uuid("institution_id")
+    .notNull()
+    .references(() => institutions.id, { onDelete: "cascade" }),
+  departmentId: uuid("department_id")
+    .notNull()
+    .references(() => departments.id, { onDelete: "cascade" }),
+  className: varchar("class_name", { length: 100 }).notNull(), // e.g. "Third Year CSE - Div A"
+  academicYear: varchar("academic_year", { length: 20 }).notNull(), // e.g. "2024-2025"
+  semester: integer("semester").notNull(),
+  classTeacherId: uuid("class_teacher_id").references(() => users.id, { onDelete: "set null" }), // Faculty
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type ClassAllocation = typeof classAllocations.$inferSelect;
+export type InsertClassAllocation = typeof classAllocations.$inferInsert;

@@ -42,6 +42,8 @@ import {
   AdminSettings,
 } from "./pages/admin/AdminStubPages";
 import SuperAdminPortal from "./pages/SuperAdminPortal";
+import HodApprovals from "./pages/HodApprovals";
+import AdminApprovals from "./pages/AdminApprovals";
 import { Route, Switch } from "wouter";
 
 const Internship = () => <WorkspacePage kind="internship" />;
@@ -79,6 +81,9 @@ function Router() {
       </Route>
       <Route path="/hod">
         {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><HodDashboard /></ProtectedRoute>}
+      </Route>
+      <Route path="/hod/approvals">
+        {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><HodApprovals /></ProtectedRoute>}
       </Route>
       <Route path="/progress">
         {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Progress /></ProtectedRoute>}
@@ -132,6 +137,9 @@ function Router() {
       {/* ── ADMIN ROUTES ── */}
       <Route path="/admin/overview">
         {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminOverview /></ProtectedRoute>}
+      </Route>
+      <Route path="/admin/approvals">
+        {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminApprovals /></ProtectedRoute>}
       </Route>
       <Route path="/admin/users">
         {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminUsers /></ProtectedRoute>}
