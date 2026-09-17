@@ -1811,6 +1811,175 @@ export const appRouter = router({
       },
     })),
   }),
+
+  superAdmin: router({
+    getPlatformStats: publicProcedure.query(async () => {
+      return {
+        totalInstitutions: 2,
+        activeInstitutions: 2,
+        suspendedInstitutions: 0,
+        demoInstitutions: 1,
+        totalUsers: 9,
+        totalStudents: 1,
+      };
+    }),
+    listInstitutions: publicProcedure
+      .input(
+        z
+          .object({
+            status: z.enum(["ACTIVE", "SUSPENDED", "ALL"]).optional(),
+            includeDemo: z.boolean().default(true),
+            search: z.string().optional(),
+          })
+          .optional()
+      )
+      .query(async () => {
+        return [
+          {
+            id: "10000000-0000-0000-0000-000000000000",
+            name: "Northstar Institute of Technology (Demo)",
+            code: "NIT-DEMO",
+            domain: "northstar.edu",
+            universityBoard: "Autonomous Technical University",
+            address: "100 Innovation Boulevard, Tech District",
+            city: "Pune",
+            state: "Maharashtra",
+            contactPhone: "+91 98765 43210",
+            contactEmail: "admin@northstar.edu",
+            isDemo: true,
+            status: "ACTIVE" as const,
+            suspensionReason: null,
+            suspendedAt: null,
+            isDeleted: false,
+            deletedAt: null,
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }),
+    provisionInstitution: publicProcedure
+      .input(
+        z.object({
+          name: z.string().min(3),
+          code: z.string().min(2),
+          domain: z.string().min(3),
+          universityBoard: z.string().min(2),
+          address: z.string().min(5),
+          city: z.string().min(2),
+          state: z.string().min(2),
+          contactPhone: z.string().min(8),
+          contactEmail: z.string().email(),
+          adminName: z.string().min(2),
+          adminEmail: z.string().email(),
+          adminPhone: z.string().min(8),
+          adminDesignation: z.string().min(2),
+          adminEmployeeId: z.string().min(2),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          message: `Institution '${input.name}' and administrator '${input.adminName}' provisioned successfully.`,
+          institution: {
+            id: "inst-" + Date.now(),
+            name: input.name,
+            code: input.code,
+            domain: input.domain,
+            status: "ACTIVE" as const,
+            isDemo: false,
+          },
+        };
+      }),
+    suspendInstitution: publicProcedure
+      .input(
+        z.object({
+          institutionId: z.string(),
+          reason: z.string().min(5),
+        })
+      )
+      .mutation(async () => {
+        return {
+          success: true,
+          message: `Institution suspended. Lockout reason recorded.`,
+        };
+      }),
+    reviveInstitution: publicProcedure
+      .input(z.object({ institutionId: z.string() }))
+      .mutation(async () => {
+        return {
+          success: true,
+          message: "Institution revived successfully.",
+        };
+      }),
+    softDeleteInstitution: publicProcedure
+      .input(z.object({ institutionId: z.string() }))
+      .mutation(async () => {
+        return {
+          success: true,
+          message: "Institution soft-deleted into 30-day recovery pool.",
+        };
+      }),
+    listTrash: publicProcedure.query(async () => {
+      return [] as {
+        resourceType: "INSTITUTION";
+        resourceId: string;
+        name: string;
+        code: string;
+        deletedAt: string;
+        daysRemaining: number;
+        isExpired: boolean;
+      }[];
+    }),
+    restoreFromTrash: publicProcedure
+      .input(
+        z.object({
+          resourceType: z.enum(["INSTITUTION", "USER", "DEPARTMENT"]),
+          resourceId: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          message: `${input.resourceType} restored from trash.`,
+        };
+      }),
+    listChangeRequests: publicProcedure
+      .input(
+        z
+          .object({
+            status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+          })
+          .optional()
+      )
+      .query(async () => {
+        return [] as {
+          id: string;
+          institutionId: string;
+          institutionName: string | null;
+          requestedBy: string;
+          requestedByName: string | null;
+          requestedChanges: unknown;
+          reason: string;
+          status: "PENDING" | "APPROVED" | "REJECTED";
+          reviewNotes: string | null;
+          reviewedAt: string | null;
+          createdAt: string;
+        }[];
+      }),
+    reviewChangeRequest: publicProcedure
+      .input(
+        z.object({
+          requestId: z.string(),
+          action: z.enum(["APPROVE", "REJECT"]),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          message: `Change request marked as ${input.action}.`,
+        };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

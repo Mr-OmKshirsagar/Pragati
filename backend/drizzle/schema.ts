@@ -87,6 +87,18 @@ export const applicationStatusEnum = pgEnum("application_status", [
   "REJECTED",
 ]);
 
+export const institutionStatusEnum = pgEnum("institution_status", [
+  "ACTIVE",
+  "SUSPENDED",
+  "ARCHIVED",
+]);
+
+export const changeRequestStatusEnum = pgEnum("change_request_status", [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+]);
+
 // ============================================================================
 // 2. 26 NORMALIZED TABLES
 // ============================================================================
@@ -95,7 +107,21 @@ export const applicationStatusEnum = pgEnum("application_status", [
 export const institutions = pgTable("institutions", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
-  code: varchar("code", { length: 32 }).notNull().unique(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  domain: varchar("domain", { length: 150 }),
+  universityBoard: varchar("university_board", { length: 255 }),
+  address: text("address"),
+  city: varchar("city", { length: 100 }),
+  state: varchar("state", { length: 100 }),
+  contactPhone: varchar("contact_phone", { length: 30 }),
+  contactEmail: varchar("contact_email", { length: 150 }),
+  isDemo: boolean("is_demo").default(false).notNull(),
+  status: institutionStatusEnum("status").default("ACTIVE").notNull(),
+  suspensionReason: text("suspension_reason"),
+  suspendedAt: timestamp("suspended_at", { withTimezone: true }),
+  isDeleted: boolean("is_deleted").default(false).notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  deletedBy: uuid("deleted_by"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -742,3 +768,24 @@ export type InsertAssignmentSubmission = typeof assignmentSubmissions.$inferInse
 
 export type SubjectAnnouncement = typeof subjectAnnouncements.$inferSelect;
 export type InsertSubjectAnnouncement = typeof subjectAnnouncements.$inferInsert;
+
+// 33. INSTITUTION DATA CHANGE REQUESTS
+export const institutionChangeRequests = pgTable("institution_change_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  institutionId: uuid("institution_id")
+    .notNull()
+    .references(() => institutions.id, { onDelete: "cascade" }),
+  requestedBy: uuid("requested_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  requestedChanges: jsonb("requested_changes").notNull(),
+  reason: text("reason").notNull(),
+  status: changeRequestStatusEnum("status").default("PENDING").notNull(),
+  reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+  reviewNotes: text("review_notes"),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type InstitutionChangeRequest = typeof institutionChangeRequests.$inferSelect;
+export type InsertInstitutionChangeRequest = typeof institutionChangeRequests.$inferInsert;

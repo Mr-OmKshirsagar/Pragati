@@ -41,6 +41,7 @@ import {
   AdminNotifications,
   AdminSettings,
 } from "./pages/admin/AdminStubPages";
+import SuperAdminPortal from "./pages/SuperAdminPortal";
 import { Route, Switch } from "wouter";
 
 const Internship = () => <WorkspacePage kind="internship" />;
@@ -58,6 +59,9 @@ function RoleAwareDashboard() {
 function Router() {
   return (
     <Switch>
+      {/* ── Unlinked Platform Owner / Super Admin Portal ── */}
+      <Route path="/super-admin-pragati01" component={SuperAdminPortal} />
+
       {/* Public — always visible */}
       <Route path="/"        component={LandingPage} />
       <Route path="/landing" component={LandingPage} />

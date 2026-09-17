@@ -12,6 +12,7 @@ import { recruitmentRouter } from "./recruitment";
 import { analyticsRouter } from "./analytics";
 import { dashboardRouter } from "./dashboard";
 import { searchRouter } from "./search";
+import { superAdminRouter } from "./superAdmin";
 
 export const appRouter = router({
   auth: authRouter,
@@ -27,6 +28,7 @@ export const appRouter = router({
   analytics: analyticsRouter,
   dashboard: dashboardRouter,
   search: searchRouter,
+  superAdmin: superAdminRouter,
 });
 
 export type AppRouter = typeof appRouter;
