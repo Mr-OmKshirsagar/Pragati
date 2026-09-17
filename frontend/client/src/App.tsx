@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Achievements from "./pages/Achievements";
 import AuthPage from "./pages/Auth";
+import CareerPassport from "./pages/CareerPassport";
 import FacultyWards from "./pages/FacultyWards";
 import HodDashboard from "./pages/HodDashboard";
 import Home from "./pages/Home";
@@ -43,7 +44,7 @@ import {
 import { Route, Switch } from "wouter";
 
 const Internship = () => <WorkspacePage kind="internship" />;
-const Passport   = () => <WorkspacePage kind="passport" />;
+const Passport   = () => <CareerPassport />;
 const Mentoring  = () => <WorkspacePage kind="mentoring" />;
 
 function RoleAwareDashboard() {

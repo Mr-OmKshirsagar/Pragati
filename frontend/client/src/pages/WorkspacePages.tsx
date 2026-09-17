@@ -1,7 +1,37 @@
+import EvidenceUploadModal from "@/components/EvidenceUploadModal";
+import InternshipCheckinModal from "@/components/InternshipCheckinModal";
 import PragatiFrame from "@/components/PragatiFrame";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
-import { AlertTriangle, BookOpenCheck, BriefcaseBusiness, CalendarDays, Check, Clock3, Download, Eye, FileCheck2, FileText, MessageSquareText, Route, ShieldCheck, Sparkles, Target, UsersRound } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpenCheck,
+  BriefcaseBusiness,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  Clock,
+  Clock3,
+  Download,
+  ExternalLink,
+  Eye,
+  FileCheck2,
+  FileText,
+  MessageSquareText,
+  Plus,
+  RefreshCw,
+  Route,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  UploadCloud,
+  UsersRound,
+  XCircle,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
 
 const pageCopy: Record<string, { eyebrow: string; title: string; description: string }> = {
   progress: { eyebrow: "Student trajectory", title: "My Progress", description: "See how your academic, skill, and evidence milestones are building toward career readiness." },
@@ -169,47 +199,91 @@ function InternshipPage() {
 }
 
 function StudentInternshipPage() {
-  const dashboardQuery = trpc.student.dashboard.useQuery();
-  const internship = dashboardQuery.data?.internship ?? {
-    company: "Atlas Labs",
-    role: "Product Engineering Intern",
-    progress: 68,
-    status: "In progress",
-    nextMilestone: "Internship report",
-    verification: "Institution review pending",
-    evidence: [
-      { label: "Offer letter", state: "verified" as const },
-      { label: "Check-in 1", state: "verified" as const },
-      { label: "Check-in 2", state: "verified" as const },
-      { label: "Internship report", state: "pending" as const },
-      { label: "Completion certificate", state: "not_started" as const },
-    ],
+  const internshipQuery = trpc.internship.getMyInternship.useQuery();
+  const [showCheckinModal, setShowCheckinModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const data = internshipQuery.data;
+
+  const internship = {
+    id: data?.id || "internship-01",
+    company: data?.companyName || "Atlas Labs",
+    role: data?.role || "Product Engineering Intern",
+    startDate: data?.startDate || "2026-06-01",
+    endDate: data?.endDate || "2026-11-30",
+    stipend: data?.stipend ? `₹${Number(data.stipend).toLocaleString("en-IN")}/mo` : "₹45,000/mo",
+    status: data?.status || "IN_PROGRESS",
+    verificationStatus: data?.verificationStatus || "PENDING",
+    completeness: data?.completeness ?? 50,
+    supervisorName: data?.supervisorName || "Sarah Jenkins",
+    supervisorEmail: data?.supervisorEmail || "s.jenkins@atlaslabs.io",
+    milestones: data?.milestones ?? {
+      hasOfferLetter: true,
+      hasCheckin: true,
+      hasReport: false,
+      hasCertificate: false,
+    },
+    evidence: data?.evidence || [],
+    checkins: data?.checkins || [],
   };
 
-  const verifiedCount = internship.evidence.filter(item => item.state === "verified").length;
-  const totalCount = internship.evidence.length;
+  const checklistItems = [
+    {
+      key: "offer_letter",
+      label: "Offer Letter (25%)",
+      completed: internship.milestones.hasOfferLetter,
+      detail: internship.milestones.hasOfferLetter ? "Document cryptographic hash attached" : "Required for formal onboarding",
+    },
+    {
+      key: "checkin",
+      label: "Progress Check-ins (25%)",
+      completed: internship.milestones.hasCheckin,
+      detail: `${internship.checkins.length} check-in(s) logged on portal`,
+    },
+    {
+      key: "report",
+      label: "Internship Report (25%)",
+      completed: internship.milestones.hasReport,
+      detail: internship.milestones.hasReport ? "Report uploaded and pending sign-off" : "Submit before concluding internship",
+    },
+    {
+      key: "certificate",
+      label: "Completion Certificate (25%)",
+      completed: internship.milestones.hasCertificate,
+      detail: internship.milestones.hasCertificate ? "Verified by institutional faculty" : "Submit once internship period finishes",
+    },
+  ];
+
   const studentMetrics = [
-    { label: "Current company", value: internship.company, detail: internship.status, tone: "bg-[#eef1ff] text-primary" },
-    { label: "Evidence progress", value: `${internship.progress}%`, detail: `${verifiedCount}/${totalCount} verified`, tone: "bg-[#e5f7f2] text-[#13876f]" },
-    { label: "Next milestone", value: internship.nextMilestone, detail: "Due soon", tone: "bg-[#fff1dc] text-[#bd7a27]" },
-    { label: "Verification", value: "Pending", detail: "Faculty review", tone: "bg-[#f2f4f8] text-[#62718c]" },
-  ];
-
-  const uploadTasks = [
-    { title: "Upload internship report", detail: "PDF up to 10 MB with company guide comments", tag: "Required", tone: "bg-[#fff1dc] text-[#bd7a27]" },
-    { title: "Add mentor feedback", detail: "Attach guide review or weekly progress summary", tag: "Recommended", tone: "bg-[#eef1ff] text-primary" },
-    { title: "Completion certificate", detail: "Submit when internship end date is reached", tag: "Upcoming", tone: "bg-[#f2f4f8] text-[#62718c]" },
-  ];
-
-  const history = [
-    ["Sep 12", "Check-in 2 verified by institution"],
-    ["Aug 28", "Check-in 1 accepted"],
-    ["Aug 14", "Offer letter hash matched"],
-    ["Aug 01", "Internship registered for Atlas Labs"],
+    {
+      label: "Current Company",
+      value: internship.company,
+      detail: internship.role,
+      tone: "bg-[#eef1ff] text-primary",
+    },
+    {
+      label: "Evidence Completeness",
+      value: `${internship.completeness}%`,
+      detail: `${checklistItems.filter(i => i.completed).length}/4 milestones`,
+      tone: internship.completeness === 100 ? "bg-[#e5f7f2] text-[#13876f]" : "bg-[#fff1dc] text-[#bd7a27]",
+    },
+    {
+      label: "Verification Status",
+      value: internship.verificationStatus === "INSTITUTION_VERIFIED" ? "Verified" : internship.verificationStatus === "REJECTED" ? "Needs Revision" : "Pending",
+      detail: internship.verificationStatus === "INSTITUTION_VERIFIED" ? "Faculty Signed Off" : "Faculty Review Desk",
+      tone: internship.verificationStatus === "INSTITUTION_VERIFIED" ? "bg-[#e5f7f2] text-[#13876f]" : internship.verificationStatus === "REJECTED" ? "bg-[#fff0f3] text-[#c24152]" : "bg-[#fff1dc] text-[#bd7a27]",
+    },
+    {
+      label: "Stipend & Duration",
+      value: internship.stipend,
+      detail: `${internship.startDate} to ${internship.endDate}`,
+      tone: "bg-[#f2f4f8] text-[#62718c]",
+    },
   ];
 
   return (
     <div className="space-y-5">
+      {/* Metric Cards */}
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {studentMetrics.map(metric => (
           <div key={metric.label} className="metric-card p-4">
@@ -220,140 +294,334 @@ function StudentInternshipPage() {
         ))}
       </section>
 
-      <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+      {/* Main Internship Overview & Progress */}
+      <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="premium-card p-6">
           <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-start">
             <div>
               <div className="grid grid-cols-[auto_1fr] items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary/10 text-primary">
-                  <BriefcaseBusiness className="h-5 w-5" />
+                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
+                  <BriefcaseBusiness className="h-6 w-6" />
                 </span>
                 <div>
-                  <div className="text-base font-extrabold text-[#263653]">{internship.company}</div>
-                  <div className="text-xs font-semibold text-[#8995aa]">{internship.role}</div>
+                  <div className="text-lg font-extrabold text-[#263653]">{internship.company}</div>
+                  <div className="text-xs font-semibold text-[#8995aa]">
+                    {internship.role} · Supervisor: {internship.supervisorName} ({internship.supervisorEmail})
+                  </div>
                 </div>
               </div>
               <p className="mt-4 max-w-2xl text-xs leading-5 text-[#647089]">
-                Keep your internship record complete by uploading each milestone document. PRAGATI verifies document integrity and sends it for faculty review.
+                Milestone tracking verifies your internship lifecycle. Complete all four milestones (Offer Letter, Bi-weekly Check-ins, Report, and Certificate) to achieve 100% evidence completeness and submit for faculty institutional sign-off.
               </p>
             </div>
-            <button className="rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90">
-              Upload Evidence
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setShowCheckinModal(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-2.5 text-xs font-bold text-primary transition hover:bg-primary/10"
+              >
+                <Clock className="h-3.5 w-3.5" />
+                <span>Log Check-in</span>
+              </button>
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90"
+              >
+                <UploadCloud className="h-3.5 w-3.5" />
+                <span>Upload Evidence</span>
+              </button>
+            </div>
           </div>
 
-          <div className="mt-7 h-2.5 overflow-hidden rounded-full bg-[#edf0f6]">
-            <div className="progress-fill h-full rounded-full bg-gradient-to-r from-primary to-[#16a889]" style={{ width: `${internship.progress}%` }} />
-          </div>
-          <div className="mt-2 grid grid-cols-2 text-[10px] font-semibold text-[#8995aa]">
-            <span>{internship.progress}% evidence collected</span>
-            <span className="text-right">{internship.verification}</span>
+          {/* Real-time Evidence Progress Bar */}
+          <div className="mt-7">
+            <div className="flex items-center justify-between text-xs font-bold text-[#263653] mb-2">
+              <span>Evidence Completeness</span>
+              <span className="font-extrabold text-primary">{internship.completeness}%</span>
+            </div>
+            <div className="h-3 overflow-hidden rounded-full bg-[#edf0f6]">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-primary to-[#16a889] transition-all duration-500"
+                style={{ width: `${internship.completeness}%` }}
+              />
+            </div>
+            <div className="mt-2 grid grid-cols-2 text-[10px] font-semibold text-[#8995aa]">
+              <span>Formula: (Completed Milestones / 4) × 100%</span>
+              <span className="text-right">
+                Status: <strong className="text-[#263653]">{internship.status}</strong> ({internship.verificationStatus})
+              </span>
+            </div>
           </div>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
-            {uploadTasks.map(task => (
-              <div key={task.title} className="rounded-xl border border-[#e4eaf2] bg-[#fbfcfe] p-4">
-                <span className={`inline-flex rounded-full px-2 py-0.5 text-[9.5px] font-extrabold ${task.tone}`}>{task.tag}</span>
-                <div className="mt-3 text-xs font-extrabold text-[#263653]">{task.title}</div>
-                <p className="mt-1 text-[11px] leading-4 text-[#71809a]">{task.detail}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="premium-card p-5">
-          <div className="mb-5 text-sm font-bold text-[#263653]">My verification checklist</div>
-          <div className="space-y-4">
-            {internship.evidence.map(item => {
-              const isVerified = item.state === "verified";
-              const isPending = item.state === "pending";
-              return (
-                <div key={item.label} className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-                  <span className={`grid h-8 w-8 place-items-center rounded-full ${isVerified ? "bg-[#e5f7f2] text-[#13876f]" : isPending ? "bg-[#fff1dc] text-[#bd7a27]" : "bg-[#eef1f6] text-[#9aa5b6]"}`}>
-                    {isVerified ? <Check className="h-3.5 w-3.5" /> : <FileCheck2 className="h-3.5 w-3.5" />}
+          {/* Evidence Milestones Cards */}
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {checklistItems.map(item => (
+              <div
+                key={item.key}
+                className={`rounded-2xl border p-4 transition ${
+                  item.completed
+                    ? "border-[#13876f]/20 bg-[#f0faf7]"
+                    : "border-[#e4eaf2] bg-[#fbfcfe]"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-extrabold ${
+                      item.completed
+                        ? "bg-[#e5f7f2] text-[#13876f]"
+                        : "bg-[#fff1dc] text-[#bd7a27]"
+                    }`}
+                  >
+                    {item.completed ? <Check className="h-2.5 w-2.5" /> : <Clock className="h-2.5 w-2.5" />}
+                    {item.completed ? "Achieved (+25%)" : "Pending (0%)"}
                   </span>
-                  <div>
-                    <div className="text-xs font-bold text-[#52617d]">{item.label}</div>
-                    <div className="text-[10px] text-[#8995aa]">{isVerified ? "Institution verified" : isPending ? "Awaiting upload or review" : "Not started"}</div>
-                  </div>
-                  {isPending && <span className="rounded-full bg-[#fff1dc] px-2 py-0.5 text-[9.5px] font-bold text-[#bd7a27]">Next</span>}
                 </div>
-              );
-            })}
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-        <section className="premium-card p-5">
-          <div className="mb-4 text-sm font-bold text-[#263653]">Upcoming actions</div>
-          <div className="space-y-3">
-            {uploadTasks.map(task => (
-              <div key={task.title} className="grid grid-cols-[auto_1fr] items-start gap-3 rounded-xl border border-[#e4eaf2] p-4">
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <FileText className="h-4 w-4" />
-                </span>
-                <div>
-                  <div className="text-xs font-extrabold text-[#263653]">{task.title}</div>
-                  <div className="mt-1 text-[11px] leading-4 text-[#71809a]">{task.detail}</div>
-                </div>
+                <div className="mt-3 text-xs font-extrabold text-[#263653]">{item.label}</div>
+                <p className="mt-1 text-[10.5px] leading-4 text-[#71809a]">{item.detail}</p>
               </div>
             ))}
           </div>
         </section>
 
+        {/* Verification Checklist */}
         <section className="premium-card p-5">
-          <div className="mb-4 grid grid-cols-[1fr_auto] items-center gap-3">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-sm font-bold text-[#263653]">Evidence activity</div>
-              <div className="mt-1 text-xs text-[#8995aa]">Your latest internship milestones</div>
+              <div className="text-sm font-bold text-[#263653]">Milestone Verification</div>
+              <div className="text-xs text-[#8995aa]">Institutional audit requirements</div>
             </div>
             <ShieldCheck className="h-5 w-5 text-[#13876f]" />
           </div>
-          <div className="space-y-3">
-            {history.map(([time, note]) => (
-              <div key={`${time}-${note}`} className="grid grid-cols-[72px_auto_1fr] items-start gap-3">
-                <span className="pt-1 text-[10px] font-bold text-[#8995aa]">{time}</span>
-                <span className="mt-1.5 h-2 w-2 rounded-full bg-primary ring-4 ring-primary/10" />
-                <span className="text-xs font-semibold leading-5 text-[#52617d]">{note}</span>
+
+          <div className="space-y-3.5">
+            {checklistItems.map(item => (
+              <div
+                key={item.key}
+                className="flex items-center justify-between rounded-xl border border-[#edf1f6] bg-[#fcfdfe] p-3"
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`grid h-8 w-8 place-items-center rounded-xl ${
+                      item.completed ? "bg-[#e5f7f2] text-[#13876f]" : "bg-[#f2f4f8] text-[#8995aa]"
+                    }`}
+                  >
+                    {item.completed ? <Check className="h-4 w-4" /> : <FileCheck2 className="h-4 w-4" />}
+                  </span>
+                  <div>
+                    <div className="text-xs font-bold text-[#32415d]">{item.label}</div>
+                    <div className="text-[10.5px] text-[#8995aa]">{item.detail}</div>
+                  </div>
+                </div>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                    item.completed ? "bg-[#e5f7f2] text-[#13876f]" : "bg-[#f2f4f8] text-[#62718c]"
+                  }`}
+                >
+                  {item.completed ? "Complete" : "Pending"}
+                </span>
               </div>
             ))}
           </div>
+
+          <div className="mt-5 rounded-2xl border border-[#dfe5ef] bg-[#f8fafd] p-4">
+            <div className="text-xs font-bold text-[#182643]">Cryptographic Tamper Protection</div>
+            <p className="mt-1 text-[11px] leading-relaxed text-[#64748b]">
+              All uploaded internship evidence is cryptographically hashed with SHA-256 upon selection and immutably stored in the institutional repository.
+            </p>
+          </div>
         </section>
       </div>
+
+      {/* Check-ins & Evidence Logs */}
+      <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
+        {/* Student Check-ins List */}
+        <section className="premium-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-sm font-bold text-[#263653]">Bi-Weekly Check-in Logs</div>
+              <div className="text-xs text-[#8995aa]">Logged progress updates during internship</div>
+            </div>
+            <button
+              onClick={() => setShowCheckinModal(true)}
+              className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+            >
+              <Plus className="h-3.5 w-3.5" /> Add Log
+            </button>
+          </div>
+
+          {internship.checkins.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-[#d8e0ec] p-6 text-center">
+              <Clock className="mx-auto h-8 w-8 text-[#8995aa]" />
+              <div className="mt-2 text-xs font-bold text-[#263653]">No check-ins submitted yet</div>
+              <p className="mt-1 text-[11px] text-[#71809a]">Submit your first check-in to unlock the 25% check-in progress milestone.</p>
+              <button
+                onClick={() => setShowCheckinModal(true)}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-white shadow-sm"
+              >
+                <Plus className="h-3 w-3" /> Log First Check-in
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {internship.checkins.map((chk: any) => (
+                <div key={chk.id} className="rounded-xl border border-[#e8edf5] bg-white p-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#182643]">
+                      Check-in · {new Date(chk.checkInDate || chk.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                    <span className="rounded-full bg-[#eef2fd] px-2 py-0.5 text-[9.5px] font-bold text-[#3048a8]">
+                      {chk.status}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-[#52617d] whitespace-pre-line">{chk.summary}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Linked Cryptographic Documents */}
+        <section className="premium-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-sm font-bold text-[#263653]">Cryptographic Evidence Documents</div>
+              <div className="text-xs text-[#8995aa]">SHA-256 verified milestone attachments</div>
+            </div>
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+            >
+              <Plus className="h-3.5 w-3.5" /> Upload File
+            </button>
+          </div>
+
+          {internship.evidence.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-[#d8e0ec] p-6 text-center">
+              <FileCheck2 className="mx-auto h-8 w-8 text-[#8995aa]" />
+              <div className="mt-2 text-xs font-bold text-[#263653]">No documents linked yet</div>
+              <p className="mt-1 text-[11px] text-[#71809a]">Upload your Offer Letter or Internship Report to link cryptographic proof.</p>
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-white shadow-sm"
+              >
+                <UploadCloud className="h-3 w-3" /> Upload Evidence
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {internship.evidence.map((doc: any) => (
+                <div key={doc.id} className="rounded-xl border border-[#e8edf5] bg-white p-3.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-[#3048a8]" />
+                      <span className="text-xs font-extrabold text-[#182643]">{doc.filename}</span>
+                    </div>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[9.5px] font-bold ${
+                        doc.status === "INSTITUTION_VERIFIED"
+                          ? "bg-[#e5f7f2] text-[#13876f]"
+                          : "bg-[#fff1dc] text-[#bd7a27]"
+                      }`}
+                    >
+                      {doc.status}
+                    </span>
+                  </div>
+                  <div className="mt-2 text-[10px] font-mono text-[#64748b] truncate">
+                    SHA-256: {doc.sha256Hash}
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-[10px] text-[#8995aa]">
+                    <span>Type: {doc.evidenceType}</span>
+                    {doc.downloadUrl && (
+                      <a
+                        href={doc.downloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary font-bold hover:underline inline-flex items-center gap-0.5"
+                      >
+                        Download <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* Modals */}
+      {showCheckinModal && (
+        <InternshipCheckinModal
+          internshipId={internship.id}
+          companyName={internship.company}
+          onClose={() => setShowCheckinModal(false)}
+          onSuccess={() => {
+            internshipQuery.refetch();
+          }}
+        />
+      )}
+
+      {showUploadModal && (
+        <EvidenceUploadModal
+          onClose={() => setShowUploadModal(false)}
+          onSuccess={() => {
+            internshipQuery.refetch();
+          }}
+          defaultTitle={`${internship.company} Milestone`}
+        />
+      )}
     </div>
   );
 }
 
 function FacultyInternshipPage() {
+  const queueQuery = trpc.internship.getReviewQueue.useQuery();
+  const verifyMutation = trpc.internship.verifyInternship.useMutation();
+
+  const [selectedInternship, setSelectedInternship] = useState<any | null>(null);
+  const [reviewNotes, setReviewNotes] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const queue = queueQuery.data || [];
+
+  const handleVerify = async (internshipId: string, status: "INSTITUTION_VERIFIED" | "REJECTED") => {
+    setIsProcessing(true);
+    try {
+      await verifyMutation.mutateAsync({
+        internshipId,
+        status,
+        notes: reviewNotes || (status === "INSTITUTION_VERIFIED" ? "Approved with full institutional compliance." : "Revision requested by faculty mentor."),
+      });
+
+      toast.success(
+        status === "INSTITUTION_VERIFIED"
+          ? "Internship approved and marked completed! Audit record created."
+          : "Internship rejected/revision requested. Student notified."
+      );
+      setSelectedInternship(null);
+      setReviewNotes("");
+      queueQuery.refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Action failed.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const pendingCount = queue.filter(q => q.verificationStatus === "PENDING").length;
+  const verifiedCount = queue.filter(q => q.verificationStatus === "INSTITUTION_VERIFIED").length;
+  const totalWards = queue.length;
+  const avgCompleteness = totalWards > 0 ? Math.round(queue.reduce((acc, q) => acc + q.completeness, 0) / totalWards) : 0;
+
   const metrics = [
-    { label: "Pending review", value: "12", detail: "4 due today", tone: "bg-[#fff1dc] text-[#bd7a27]" },
-    { label: "Verified this week", value: "28", detail: "Across 3 sections", tone: "bg-[#e5f7f2] text-[#13876f]" },
-    { label: "Integrity checks", value: "96%", detail: "SHA-256 matched", tone: "bg-[#eef1ff] text-[#5268cb]" },
-    { label: "At-risk wards", value: "5", detail: "Missing milestones", tone: "bg-[#fff0f3] text-[#c24152]" },
-  ];
-
-  const evidenceRows = [
-    { student: "Rahul Sharma", company: "Atlas Labs", role: "Product Engineering Intern", progress: 68, status: "Report due", due: "Sep 24", hash: "Matched", tone: "amber" },
-    { student: "Aditi Nair", company: "Northwind AI", role: "Data Science Intern", progress: 92, status: "Ready for faculty review", due: "Sep 18", hash: "Matched", tone: "green" },
-    { student: "Kabir Mehta", company: "FinEdge Systems", role: "Backend Intern", progress: 48, status: "Check-in missing", due: "Overdue", hash: "Pending", tone: "red" },
-  ];
-
-  const reviewQueue = [
-    { title: "Completion certificate", student: "Aditi Nair", meta: "Northwind AI - uploaded 2h ago", status: "Needs signature" },
-    { title: "Midterm report", student: "Rahul Sharma", meta: "Atlas Labs - mentor comments attached", status: "Review file" },
-    { title: "Check-in 3", student: "Kabir Mehta", meta: "FinEdge Systems - student note only", status: "Request proof" },
-  ];
-
-  const activity = [
-    ["09:40 AM", "Offer letter verified for Rahul Sharma"],
-    ["Yesterday", "Aditi Nair certificate hash matched stored digest"],
-    ["Sep 14", "Reminder sent for Kabir Mehta's missing check-in"],
-    ["Sep 12", "Atlas Labs internship moved to in-progress"],
+    { label: "Review Queue", value: pendingCount.toString(), detail: "Awaiting faculty sign-off", tone: "bg-[#fff1dc] text-[#bd7a27]" },
+    { label: "Verified Internships", value: verifiedCount.toString(), detail: "Institutional sign-off granted", tone: "bg-[#e5f7f2] text-[#13876f]" },
+    { label: "Average Evidence Completeness", value: `${avgCompleteness}%`, detail: "Across assigned wards", tone: "bg-[#eef1ff] text-primary" },
+    { label: "Total Active Wards", value: totalWards.toString(), detail: "Department of CSE", tone: "bg-[#f2f4f8] text-[#62718c]" },
   ];
 
   return (
     <div className="space-y-5">
+      {/* Metrics */}
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map(metric => (
           <div key={metric.label} className="metric-card p-4">
@@ -368,143 +636,223 @@ function FacultyInternshipPage() {
         ))}
       </section>
 
-      <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
+      {/* Main Review Desk & Details */}
+      <div className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
         <section className="premium-card overflow-hidden">
-          <div className="grid gap-4 border-b border-[#e7ecf4] p-5 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="flex items-center justify-between border-b border-[#e7ecf4] p-5">
             <div>
-              <div className="grid grid-cols-[auto_1fr] items-center gap-2 text-sm font-bold text-[#263653]">
+              <div className="flex items-center gap-2 text-sm font-bold text-[#263653]">
                 <BriefcaseBusiness className="h-4 w-4 text-primary" />
-                <span>Ward internship evidence</span>
+                <span>Faculty Review Desk — Mentee Internships</span>
               </div>
-              <p className="mt-1 text-xs text-[#8995aa]">Track each student's mandatory documents, check-ins, and verification readiness.</p>
+              <p className="mt-1 text-xs text-[#8995aa]">
+                Evaluate milestone completeness, cryptographic hashes, and bi-weekly check-in updates.
+              </p>
             </div>
-            <div className="grid grid-flow-col auto-cols-max gap-2">
-              <button className="grid h-9 w-9 place-items-center rounded-lg border border-[#dfe5ef] bg-white text-[#647089] hover:border-primary hover:text-primary" aria-label="View evidence filters">
-                <Eye className="h-4 w-4" />
-              </button>
-              <button className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-white shadow-sm hover:opacity-90" aria-label="Download evidence report">
-                <Download className="h-4 w-4" />
-              </button>
-            </div>
+            <button
+              onClick={() => queueQuery.refetch()}
+              className="grid h-9 w-9 place-items-center rounded-lg border border-[#dfe5ef] bg-white text-[#647089] hover:text-primary transition"
+              title="Refresh queue"
+            >
+              <RefreshCw className={`h-4 w-4 ${queueQuery.isFetching ? "animate-spin" : ""}`} />
+            </button>
           </div>
 
-          <div className="divide-y divide-[#edf1f6]">
-            {evidenceRows.map(row => (
-              <div key={row.student} className="grid gap-4 p-5 lg:grid-cols-[1fr_170px_120px] lg:items-center">
-                <div className="grid grid-cols-[auto_1fr] gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-xs font-extrabold text-primary">
-                    {row.student.split(" ").map(part => part[0]).join("")}
-                  </span>
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-extrabold text-[#263653]">{row.student}</div>
-                    <div className="mt-0.5 text-xs font-semibold text-[#647089]">{row.company} - {row.role}</div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#edf0f6]">
-                      <div className={`progress-fill h-full rounded-full ${row.progress > 80 ? "bg-[#16a889]" : row.progress < 55 ? "bg-[#d75f76]" : "bg-gradient-to-r from-[#5268cb] to-[#8c7fe0]"}`} style={{ width: `${row.progress}%` }} />
+          {queue.length === 0 ? (
+            <div className="p-8 text-center text-xs text-[#8995aa]">
+              No internships pending review for your assigned mentees.
+            </div>
+          ) : (
+            <div className="divide-y divide-[#edf1f6]">
+              {queue.map(item => {
+                const isSelected = selectedInternship?.id === item.id;
+                const isVerified = item.verificationStatus === "INSTITUTION_VERIFIED";
+                const isRejected = item.verificationStatus === "REJECTED";
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`p-5 transition hover:bg-[#fafcff] ${isSelected ? "bg-[#f4f7fe]" : ""}`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex items-start gap-3.5">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-xs font-black text-primary">
+                          {item.studentName?.split(" ").map((n: string) => n[0]).join("") || "ST"}
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-extrabold text-[#182643]">{item.studentName}</span>
+                            <span className="rounded-md bg-[#edf2f7] px-2 py-0.5 text-[10px] font-bold text-[#64748b]">
+                              {item.enrollmentNumber}
+                            </span>
+                          </div>
+                          <div className="mt-0.5 text-xs font-semibold text-[#52617d]">
+                            {item.role} @ <strong className="text-[#182643]">{item.companyName}</strong>
+                          </div>
+                          <div className="mt-1 text-[11px] text-[#8995aa]">
+                            {item.startDate} to {item.endDate || "Present"} · {item.evidenceCount} evidence doc(s) · {item.checkinCount} check-in(s)
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 self-end sm:self-center">
+                        <div className="text-right">
+                          <div className="text-xs font-extrabold text-[#182643]">{item.completeness}% Complete</div>
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                              isVerified
+                                ? "bg-[#e5f7f2] text-[#13876f]"
+                                : isRejected
+                                ? "bg-[#fff0f3] text-[#c24152]"
+                                : "bg-[#fff1dc] text-[#bd7a27]"
+                            }`}
+                          >
+                            {item.verificationStatus}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setSelectedInternship(isSelected ? null : item)}
+                          className="rounded-xl border border-[#dfe5ef] bg-white px-3.5 py-2 text-xs font-bold text-[#52617d] transition hover:border-primary hover:text-primary shadow-xs"
+                        >
+                          {isSelected ? "Close" : "Review"}
+                        </button>
+                      </div>
                     </div>
-                    <div className="mt-1 grid grid-cols-2 text-[10px] text-[#8995aa]">
-                      <span>{row.progress}% evidence collected</span>
-                      <span className="text-right">{row.hash} integrity</span>
+
+                    {/* Completeness Bar */}
+                    <div className="mt-3.5 h-1.5 overflow-hidden rounded-full bg-[#edf0f6]">
+                      <div
+                        className={`h-full rounded-full ${
+                          item.completeness === 100
+                            ? "bg-[#16a889]"
+                            : item.completeness >= 50
+                            ? "bg-[#5268cb]"
+                            : "bg-[#d75f76]"
+                        }`}
+                        style={{ width: `${item.completeness}%` }}
+                      />
                     </div>
                   </div>
-                </div>
-                <div>
-                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${row.tone === "green" ? "bg-[#e5f7f2] text-[#13876f]" : row.tone === "red" ? "bg-[#fff0f3] text-[#c24152]" : "bg-[#fff1dc] text-[#bd7a27]"}`}>
-                    {row.status}
-                  </span>
-                  <div className="mt-2 grid grid-cols-[auto_1fr] items-center gap-1.5 text-[11px] font-semibold text-[#8995aa]">
-                    <CalendarDays className="h-3.5 w-3.5" />
-                    <span>{row.due}</span>
-                  </div>
-                </div>
-                <button className="rounded-lg border border-[#dfe5ef] bg-white px-3 py-2 text-xs font-bold text-[#52617d] transition hover:border-primary hover:text-primary">Open Review</button>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
+        {/* Review Action Drawer / Panel */}
         <section className="premium-card p-5">
-          <div className="mb-5 text-sm font-bold text-[#263653]">Verification journey</div>
-          <div className="space-y-4">
-            {["Offer letter", "Check-ins 1 and 2", "Internship report", "Completion certificate", "Faculty review"].map((item, index) => (
-              <div key={item} className="grid grid-cols-[auto_1fr] items-center gap-3">
-                <span className={`grid h-7 w-7 place-items-center rounded-full ${index < 2 ? "bg-[#e5f7f2] text-[#13876f]" : index === 2 ? "bg-[#fff1dc] text-[#bd7a27]" : "bg-[#eef1f6] text-[#9aa5b6]"}`}>
-                  {index < 2 ? <Check className="h-3.5 w-3.5" /> : <FileCheck2 className="h-3.5 w-3.5" />}
+          {selectedInternship ? (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-[#edf1f6] pb-3">
+                <div>
+                  <div className="text-sm font-extrabold text-[#182643]">Audit & Sign-Off</div>
+                  <div className="text-xs text-[#8995aa]">{selectedInternship.studentName} ({selectedInternship.companyName})</div>
+                </div>
+                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary">
+                  {selectedInternship.completeness}% Ready
                 </span>
-                <div>
-                  <div className="text-xs font-bold text-[#52617d]">{item}</div>
-                  <div className="text-[10px] text-[#8995aa]">{index < 2 ? "Institution verified" : index === 2 ? "Ready for upload" : "Not started"}</div>
-                </div>
               </div>
-            ))}
-          </div>
 
-          <div className="mt-6 rounded-xl border border-[#f0d4a1] bg-[#fffaf1] p-4">
-            <div className="grid grid-cols-[auto_1fr] gap-2 text-xs font-bold text-[#8f5d1b]">
-              <AlertTriangle className="h-4 w-4" />
-              <span>Faculty attention</span>
-            </div>
-            <p className="mt-2 text-xs leading-5 text-[#7f6a4b]">Five wards have not uploaded a check-in within the configured two-week window. Send reminders before approving completion.</p>
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-        <section className="premium-card p-5">
-          <div className="mb-4 grid grid-cols-[1fr_auto] items-center gap-3">
-            <div>
-              <div className="text-sm font-bold text-[#263653]">Review queue</div>
-              <div className="mt-1 text-xs text-[#8995aa]">Documents awaiting mentor action</div>
-            </div>
-            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary">3 active</span>
-          </div>
-          <div className="space-y-3">
-            {reviewQueue.map(item => (
-              <div key={`${item.student}-${item.title}`} className="rounded-xl border border-[#e4eaf2] p-4">
-                <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#eef1ff] text-[#5268cb]">
-                    <FileText className="h-4 w-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <div className="truncate text-xs font-extrabold text-[#263653]">{item.title}</div>
-                    <div className="mt-0.5 text-[11px] font-semibold text-[#647089]">{item.student}</div>
-                    <div className="mt-1 text-[10px] text-[#8995aa]">{item.meta}</div>
+              {/* Evidence Documents List */}
+              <div>
+                <div className="text-xs font-bold text-[#263653] mb-2 flex items-center justify-between">
+                  <span>Cryptographic Documents ({selectedInternship.evidence?.length || 0})</span>
+                  <ShieldCheck className="h-4 w-4 text-[#13876f]" />
+                </div>
+                {selectedInternship.evidence?.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-[#e2e8f0] p-3 text-center text-xs text-[#8995aa]">
+                    No documents uploaded yet.
                   </div>
-                  <button className="rounded-lg bg-primary px-3 py-2 text-[11px] font-bold text-white shadow-sm hover:opacity-90">{item.status}</button>
-                </div>
+                ) : (
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {selectedInternship.evidence.map((doc: any) => (
+                      <div key={doc.id} className="rounded-xl border border-[#edf1f6] bg-[#fbfcfe] p-2.5 text-xs">
+                        <div className="flex items-center justify-between font-bold text-[#182643]">
+                          <span>{doc.filename}</span>
+                          <span className="text-[10px] text-[#13876f] font-mono">SHA-256 Verified</span>
+                        </div>
+                        <div className="text-[10px] font-mono text-[#64748b] truncate mt-0.5">
+                          {doc.sha256Hash}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        </section>
 
-        <section className="premium-card p-5">
-          <div className="mb-4 grid grid-cols-[1fr_auto] items-center gap-3">
-            <div>
-              <div className="text-sm font-bold text-[#263653]">Audit activity</div>
-              <div className="mt-1 text-xs text-[#8995aa]">Recent evidence and verification events</div>
-            </div>
-            <ShieldCheck className="h-5 w-5 text-[#13876f]" />
-          </div>
-          <div className="space-y-3">
-            {activity.map(([time, note]) => (
-              <div key={`${time}-${note}`} className="grid grid-cols-[86px_auto_1fr] items-start gap-3">
-                <span className="pt-1 text-[10px] font-bold text-[#8995aa]">{time}</span>
-                <span className="mt-1.5 h-2 w-2 rounded-full bg-primary ring-4 ring-primary/10" />
-                <span className="text-xs font-semibold leading-5 text-[#52617d]">{note}</span>
+              {/* Check-ins Summary */}
+              <div>
+                <div className="text-xs font-bold text-[#263653] mb-2">
+                  Student Check-ins ({selectedInternship.checkins?.length || 0})
+                </div>
+                {selectedInternship.checkins?.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-[#e2e8f0] p-3 text-center text-xs text-[#8995aa]">
+                    No check-ins logged yet.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-36 overflow-y-auto">
+                    {selectedInternship.checkins.map((chk: any) => (
+                      <div key={chk.id} className="rounded-xl border border-[#edf1f6] bg-[#fbfcfe] p-2.5 text-xs">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-[#32415d]">
+                          <span>{chk.checkInDate || "Date"}</span>
+                          <span className="text-[#3048a8]">{chk.status}</span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-[#64748b] line-clamp-2">{chk.summary}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-          <div className="mt-5 grid gap-3 rounded-xl border border-[#d8efe8] bg-[#f7fcf9] p-4 sm:grid-cols-[auto_1fr]">
-            <MessageSquareText className="h-4 w-4 text-[#13876f]" />
-            <div>
-              <div className="text-xs font-bold text-[#246b5c]">Suggested mentor note</div>
-              <p className="mt-1 text-xs leading-5 text-[#5f776f]">Ask Rahul to attach the signed project report and company guide feedback before the next faculty review cycle.</p>
+
+              {/* Sign-Off Notes */}
+              <div>
+                <label className="block text-xs font-bold text-[#263653] mb-1.5">
+                  Faculty Review Notes / Revision Feedback
+                </label>
+                <textarea
+                  value={reviewNotes}
+                  onChange={e => setReviewNotes(e.target.value)}
+                  placeholder="Provide institutional verification remarks or revision details for student..."
+                  rows={3}
+                  className="w-full rounded-xl border border-[#cbd5e1] p-2.5 text-xs text-[#182643] focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                />
+              </div>
+
+              {/* Verification Actions */}
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => handleVerify(selectedInternship.id, "INSTITUTION_VERIFIED")}
+                  disabled={isProcessing}
+                  className="flex-1 rounded-xl bg-[#13876f] px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#0f6c58] transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Approve & Verify</span>
+                </button>
+                <button
+                  onClick={() => handleVerify(selectedInternship.id, "REJECTED")}
+                  disabled={isProcessing}
+                  className="rounded-xl border border-[#e2e8f0] bg-white px-3.5 py-2.5 text-xs font-bold text-[#c24152] hover:bg-red-50 transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  <XCircle className="h-4 w-4" />
+                  <span>Request Revision</span>
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="p-8 text-center text-xs text-[#8995aa]">
+              <FileCheck2 className="mx-auto h-10 w-10 text-[#a0aec0] mb-2" />
+              <div className="font-bold text-[#263653]">Select an internship from the queue</div>
+              <p className="mt-1 text-[11px] text-[#71809a]">
+                Click "Review" on any mentee to inspect submitted evidence, check-in milestones, and grant institutional verification sign-off.
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </div>
   );
 }
+
 
 function PassportPage() {
   return (

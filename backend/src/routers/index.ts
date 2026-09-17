@@ -6,7 +6,10 @@ import { skillGapRouter } from "./skillGap";
 import { studentRouter } from "./student";
 import { subjectRouter } from "./subject";
 import { internshipRouter } from "./internship";
+import { placementRouter } from "./placement";
+import { recruitmentRouter } from "./recruitment";
 import { analyticsRouter } from "./analytics";
+import { dashboardRouter } from "./dashboard";
 import { searchRouter } from "./search";
 
 export const appRouter = router({
@@ -17,7 +20,10 @@ export const appRouter = router({
   evidence: evidenceRouter,
   subject: subjectRouter,
   internship: internshipRouter,
+  placement: placementRouter,
+  recruitment: recruitmentRouter,
   analytics: analyticsRouter,
+  dashboard: dashboardRouter,
   search: searchRouter,
 });
 
