@@ -30,6 +30,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const dashboardQuery = trpc.student.dashboard.useQuery();
@@ -101,16 +102,11 @@ function StudentFullDashboard({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 1. Top Context Sub-Bar
-// ═══════════════════════════════════════════════════════════════════════════
-
-
-
-// ═══════════════════════════════════════════════════════════════════════════
-// 2. Oceanic Navy/Teal Hero Banner
+// Oceanic Navy/Teal Hero Banner
 // ═══════════════════════════════════════════════════════════════════════════
 
 function CapabilityHeroBanner({ data }: { data: StudentDashboard }) {
+  const [, navigate] = useLocation();
   const firstName = data.student.name.split(" ")[0] || "Rahul";
 
   const greeting = useMemo(() => {
@@ -121,29 +117,25 @@ function CapabilityHeroBanner({ data }: { data: StudentDashboard }) {
   }, []);
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#07172B] via-[#0C2D48] to-[#143D66] p-6 sm:p-8 text-white shadow-sm">
-      <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-blue-600/15 blur-3xl" />
-      <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-indigo-600/15 blur-3xl" />
-
-      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-blue-200 border border-white/15 backdrop-blur-xs">
-            <Sparkles className="h-3.5 w-3.5 text-blue-300" />
-            <span>OFFICIAL CAPABILITY INTELLIGENCE PLATFORM</span>
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+    <div className="mb-8">
+      <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold text-[#71809a]">
+        <span>Learner Workspace</span>
+        <span className="text-[#d0d8e6]">/</span>
+        <span className="text-primary font-bold">Overview</span>
+      </div>
+      <div className="grid grid-cols-[1fr_auto] items-start gap-4 sm:items-end">
+        <div>
+          <h1 className="text-[28px] font-extrabold tracking-[-0.04em] text-[#182643] sm:text-[34px]">
             {greeting}, {firstName}
-          </h2>
-
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm text-slate-200">
-            <span className="flex items-center gap-1.5 font-medium">
-              <Briefcase className="h-3.5 w-3.5 text-blue-300" />
+          </h1>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#6c7890]">
+            <span className="flex items-center gap-1.5 font-medium text-[#334155]">
+              <Briefcase className="h-3.5 w-3.5 text-primary" />
               <span>{data.student.program}</span>
             </span>
-            <span className="text-white/40">·</span>
-            <span className="flex items-center gap-1.5 text-slate-300">
-              <Building2 className="h-3.5 w-3.5 text-indigo-300" />
+            <span className="text-[#cbd5e1]">·</span>
+            <span className="flex items-center gap-1.5">
+              <Building2 className="h-3.5 w-3.5 text-[#8290a7]" />
               <span>{data.student.institution} · CS-2023-0842</span>
             </span>
           </div>
@@ -151,18 +143,18 @@ function CapabilityHeroBanner({ data }: { data: StudentDashboard }) {
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           <button
-            onClick={() => window.location.assign("/skills")}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] px-5 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-orange-950/20 hover:from-[#EA580C] hover:to-[#C2410C] active:scale-95 transition-all"
+            onClick={() => navigate("/skills")}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-950/20 hover:from-[#EA580C] hover:to-[#C2410C] active:scale-95 transition-all"
           >
             <FileText className="h-4 w-4" />
             <span>Take Assessment</span>
           </button>
 
           <button
-            onClick={() => window.location.assign("/career-passport")}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-xs sm:text-sm font-semibold text-white shadow-xs backdrop-blur-xs hover:bg-white/20 active:scale-95 transition-all"
+            onClick={() => navigate("/career-passport")}
+            className="inline-flex items-center gap-2 rounded-xl border border-[#dfe5ef] bg-white px-4 py-2.5 text-xs font-bold text-[#334155] shadow-xs hover:bg-slate-50 active:scale-95 transition-all"
           >
-            <BookOpen className="h-4 w-4 text-cyan-300" />
+            <BookOpen className="h-4 w-4 text-primary" />
             <span>View Career Passport</span>
           </button>
         </div>
@@ -176,6 +168,7 @@ function CapabilityHeroBanner({ data }: { data: StudentDashboard }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function StudentMetricsRow({ data }: { data: StudentDashboard }) {
+  const [, navigate] = useLocation();
   const cards = [
     {
       label: "ACADEMIC CGPA",
@@ -245,8 +238,8 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
             </div>
 
             <button
-              onClick={() => window.location.assign(card.link)}
-              className="mt-4 flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-emerald-700 transition-colors pt-2 border-t border-slate-100"
+              onClick={() => navigate(card.link)}
+              className="mt-4 flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-primary transition-colors pt-2 border-t border-slate-100"
             >
               <span>{card.actionText}</span>
               <ArrowRight className="h-3 w-3" />
@@ -263,6 +256,8 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function TargetedSkillGapAlert({ data }: { data: StudentDashboard }) {
+  const [, navigate] = useLocation();
+
   return (
     <div className="rounded-2xl border border-amber-200/90 bg-gradient-to-r from-amber-50/40 via-white to-white p-6 sm:p-7 shadow-xs space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-amber-100 pb-4">
@@ -319,8 +314,8 @@ function TargetedSkillGapAlert({ data }: { data: StudentDashboard }) {
         </span>
 
         <button
-          onClick={() => window.location.assign("/mentoring")}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#059669] px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#047857] active:scale-95 transition-all"
+          onClick={() => navigate("/mentoring")}
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all"
         >
           <span>Schedule Mentoring Session</span>
           <ArrowRight className="h-3.5 w-3.5" />
@@ -335,6 +330,7 @@ function TargetedSkillGapAlert({ data }: { data: StudentDashboard }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function CompetencyProfileSection({ data }: { data: StudentDashboard }) {
+  const [, navigate] = useLocation();
   return (
     <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -346,7 +342,7 @@ function CompetencyProfileSection({ data }: { data: StudentDashboard }) {
         </div>
 
         <button
-          onClick={() => window.location.assign("/skills")}
+          onClick={() => navigate("/skills")}
           className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
         >
           Full Skill Matrix
@@ -395,7 +391,7 @@ function CompetencyProfileSection({ data }: { data: StudentDashboard }) {
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    isGap ? "bg-amber-500" : "bg-[#059669]"
+                    isGap ? "bg-amber-500" : "bg-primary"
                   }`}
                   style={{ width: `${skill.score}%` }}
                 />
@@ -406,8 +402,8 @@ function CompetencyProfileSection({ data }: { data: StudentDashboard }) {
                   History: {skill.series.join(" → ")}%
                 </span>
                 <button
-                  onClick={() => window.location.assign("/skills")}
-                  className="font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+                  onClick={() => navigate("/skills")}
+                  className="font-semibold text-primary hover:text-blue-700 flex items-center gap-1"
                 >
                   <span>Assessment history</span>
                   <ArrowRight className="h-3 w-3" />
@@ -486,6 +482,7 @@ function CareerTimelineSection({ data }: { data: StudentDashboard }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function NextBestActionsSection({ data }: { data: StudentDashboard }) {
+  const [, navigate] = useLocation();
   return (
     <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs space-y-4">
       <div className="flex items-center justify-between">
@@ -526,11 +523,11 @@ function NextBestActionsSection({ data }: { data: StudentDashboard }) {
 
             <button
               onClick={() => {
-                if (action.title.includes("OS mentoring")) window.location.assign("/mentoring");
-                else if (action.title.includes("internship")) window.location.assign("/internship");
-                else window.location.assign("/opportunities");
+                if (action.title.includes("OS mentoring")) navigate("/mentoring");
+                else if (action.title.includes("internship")) navigate("/internship");
+                else navigate("/opportunities");
               }}
-              className="shrink-0 text-slate-400 hover:text-emerald-700 pt-1"
+              className="shrink-0 text-slate-400 hover:text-primary pt-1"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -546,6 +543,7 @@ function NextBestActionsSection({ data }: { data: StudentDashboard }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function CorporateAttachmentCard({ data }: { data: StudentDashboard }) {
+  const [, navigate] = useLocation();
   return (
     <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs space-y-4">
       <div className="flex items-center justify-between">
@@ -558,8 +556,8 @@ function CorporateAttachmentCard({ data }: { data: StudentDashboard }) {
           </p>
         </div>
         <button
-          onClick={() => window.location.assign("/internship")}
-          className="text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+          onClick={() => navigate("/internship")}
+          className="text-xs font-semibold text-primary hover:text-blue-700"
         >
           Manage
         </button>
@@ -574,7 +572,7 @@ function CorporateAttachmentCard({ data }: { data: StudentDashboard }) {
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
-            className="h-full rounded-full bg-[#059669] transition-all duration-500"
+            className="h-full rounded-full bg-primary transition-all duration-500"
             style={{ width: `${data.internship.progress}%` }}
           />
         </div>
@@ -632,6 +630,7 @@ function PlacementGatewaySection({
   opportunities: Opportunity[];
   loading: boolean;
 }) {
+  const [, navigate] = useLocation();
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
 
   return (
@@ -644,8 +643,8 @@ function PlacementGatewaySection({
           <p className="text-[11px] text-slate-500">Corporate recruitment drives</p>
         </div>
         <button
-          onClick={() => window.location.assign("/opportunities")}
-          className="text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+          onClick={() => navigate("/opportunities")}
+          className="text-xs font-semibold text-primary hover:text-blue-700"
         >
           View All ({opportunities.length})
         </button>
@@ -713,6 +712,7 @@ function OpportunityCriteriaModal({
   opportunity: Opportunity;
   onClose: () => void;
 }) {
+  const [, navigate] = useLocation();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
       <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
@@ -765,8 +765,8 @@ function OpportunityCriteriaModal({
             Close
           </button>
           <button
-            onClick={() => window.location.assign("/opportunities")}
-            className="rounded-xl bg-[#059669] px-4 py-2 text-xs font-bold text-white hover:bg-[#047857] shadow-xs transition-colors"
+            onClick={() => navigate("/opportunities")}
+            className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 shadow-xs transition-colors"
           >
             Go to Drive Application
           </button>
@@ -811,7 +811,7 @@ function DashboardError({ onRetry }: { onRetry: () => void }) {
         </p>
         <button
           onClick={onRetry}
-          className="mt-4 rounded-xl bg-[#059669] px-4 py-2 text-xs font-bold text-white hover:bg-[#047857] transition-colors"
+          className="mt-4 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition-colors"
         >
           Retry
         </button>

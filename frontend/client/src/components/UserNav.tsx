@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ROLE_CONFIG, type PragatiRole, usePragatiAuth } from "@/contexts/AuthContext";
 import {
-  BriefcaseBusiness,
   Building2,
   ChevronDown,
   GraduationCap,
@@ -25,7 +24,6 @@ const ROLE_ICONS: Record<PragatiRole, React.ComponentType<{ className?: string }
   STUDENT: GraduationCap,
   FACULTY: UserCheck,
   HOD: Building2,
-  TNP_COORDINATOR: BriefcaseBusiness,
   ADMIN: ShieldCheck,
 };
 
@@ -47,8 +45,9 @@ export default function UserNav() {
     );
   }
 
-  const roleConfig = ROLE_CONFIG[role];
-  const CurrentRoleIcon = ROLE_ICONS[role];
+  const effectiveRole = (role && ROLE_CONFIG[role]) ? role : "STUDENT";
+  const roleConfig = ROLE_CONFIG[effectiveRole] ?? ROLE_CONFIG.STUDENT;
+  const CurrentRoleIcon = ROLE_ICONS[effectiveRole] ?? ROLE_ICONS.STUDENT;
 
   const handleRoleSwitch = (newRole: PragatiRole) => {
     switchRole(newRole);
@@ -106,9 +105,10 @@ export default function UserNav() {
         <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#8b98b0]">
           Switch Active Role (Demo)
         </div>
-        {(["STUDENT", "FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"] as PragatiRole[]).map(r => {
+        {(["STUDENT", "FACULTY", "HOD", "ADMIN"] as PragatiRole[]).map(r => {
           const cfg = ROLE_CONFIG[r];
           const Icon = ROLE_ICONS[r];
+          if (!cfg || !Icon) return null;
           const isCurrent = role === r;
           return (
             <DropdownMenuItem
@@ -164,4 +164,3 @@ export default function UserNav() {
     </DropdownMenu>
   );
 }
-

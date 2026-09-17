@@ -1,4 +1,5 @@
 import { trpc } from "@/lib/trpc";
+import { useLocation } from "wouter";
 import {
   AlertTriangle,
   ArrowRight,
@@ -14,6 +15,7 @@ import {
 import { useMemo } from "react";
 
 export default function SkillGapAlert() {
+  const [, navigate] = useLocation();
   const gapsQuery = trpc.skillGap.getMyGaps.useQuery();
   const gaps = gapsQuery.data ?? [];
   const primaryGap = gaps[0];
@@ -164,7 +166,7 @@ export default function SkillGapAlert() {
           Detected automatically by the deterministic PRAGATI Skill Engine.
         </span>
         <button
-          onClick={() => window.location.assign("/progress")}
+          onClick={() => navigate("/progress")}
           className="flex items-center gap-1.5 rounded-xl bg-[#9a6318] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#784c10]"
         >
           View Progress &amp; Interventions <ArrowRight className="h-3.5 w-3.5" />

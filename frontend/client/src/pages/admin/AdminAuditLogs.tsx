@@ -54,7 +54,7 @@ const mockLogs: AuditLog[] = [
     id: "4",
     timestamp: "Sep 17, 2024 12:00 PM",
     actor: "Rahul Patel",
-    role: "TNP_COORDINATOR",
+    role: "ADMIN",
     action: "Modified eligibility rule",
     resource: "Placement",
     resourceId: "RULE-2024-10",

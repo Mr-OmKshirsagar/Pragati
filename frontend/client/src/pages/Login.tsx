@@ -4,7 +4,6 @@ import { getRoleSidebarTheme } from "@/lib/roleTheme";
 import { useLocation } from "wouter";
 import {
   GraduationCap,
-  Briefcase,
   ShieldCheck,
   Building2,
   Users,
@@ -55,16 +54,6 @@ const PERSONAS: PersonaCard[] = [
     badgeColor: "bg-purple-100 text-purple-700 border-purple-300",
     icon: Building2,
     description: "Inspects department skill heatmaps, backlog clusters, and faculty intervention velocity.",
-  },
-  {
-    role: "TNP_COORDINATOR",
-    name: "Vikram Malhotra",
-    title: "Training & Placement Officer",
-    email: "tnp@northstar.edu",
-    badge: "T&P Officer",
-    badgeColor: "bg-amber-100 text-amber-700 border-amber-300",
-    icon: Briefcase,
-    description: "Publishes placement drives (ABC Technologies), configures AST eligibility rules.",
   },
   {
     role: "ADMIN",

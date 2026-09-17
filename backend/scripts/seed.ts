@@ -82,12 +82,6 @@ async function seed() {
         role: "HOD" as const,
       },
       {
-        id: "10000000-0000-0000-0000-000000000003",
-        name: "Vikram Malhotra",
-        email: "tnp@northstar.edu",
-        role: "TNP_COORDINATOR" as const,
-      },
-      {
         id: "10000000-0000-0000-0000-000000000004",
         name: "Platform Administrator",
         email: "admin@northstar.edu",
@@ -131,7 +125,7 @@ async function seed() {
 
     const facultyUser = usersMap["FACULTY"];
     const studentUser = usersMap["STUDENT"];
-    const tnpUser = usersMap["TNP_COORDINATOR"];
+    const adminUser = usersMap["ADMIN"];
 
     // ------------------------------------------------------------------------
     // 4. STUDENT PROFILE: Rahul Sharma
@@ -382,7 +376,7 @@ async function seed() {
           ctcOrStipend: "12 LPA",
           applicationDeadline: deadline,
           status: "PUBLISHED",
-          createdBy: tnpUser.id,
+          createdBy: adminUser.id,
         })
         .returning();
 
@@ -402,7 +396,7 @@ async function seed() {
         version: 1,
         ruleDefinition: ruleAST,
         isActive: true,
-        createdBy: tnpUser.id,
+        createdBy: adminUser.id,
       });
 
       console.log(`   ✅ Seeded Drive: ${drive.companyName} - ${drive.jobTitle} (${drive.ctcOrStipend})`);

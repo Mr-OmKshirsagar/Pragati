@@ -31,7 +31,7 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
  * Enforces server-side Role-Based Access Control (RBAC). Throws 403 FORBIDDEN if role is not allowed.
  */
 export const requireRole = (
-  allowedRoles: ("STUDENT" | "FACULTY" | "HOD" | "TNP_COORDINATOR" | "ADMIN")[]
+  allowedRoles: ("STUDENT" | "FACULTY" | "HOD" | "ADMIN")[]
 ) =>
   protectedProcedure.use(async ({ ctx, next }) => {
     if (!allowedRoles.includes(ctx.user.role)) {
@@ -63,5 +63,4 @@ export const studentProcedure = requireRole(["STUDENT"]).use(async ({ ctx, next 
 });
 export const facultyProcedure = requireRole(["FACULTY", "HOD", "ADMIN"]);
 export const hodProcedure = requireRole(["HOD", "ADMIN"]);
-export const tnpProcedure = requireRole(["TNP_COORDINATOR", "ADMIN"]);
 export const adminProcedure = requireRole(["ADMIN"]);

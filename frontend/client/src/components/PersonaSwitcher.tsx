@@ -4,7 +4,6 @@ import { getRoleSidebarTheme } from "@/lib/roleTheme";
 import { useLocation } from "wouter";
 import {
   GraduationCap,
-  Briefcase,
   ShieldCheck,
   Building2,
   Users,
@@ -18,36 +17,10 @@ export default function PersonaSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
 
   const roles: { role: UserRole; label: string; name: string; icon: any }[] = [
-    {
-      role: "STUDENT",
-      label: "Student",
-      name: "Rahul Sharma",
-      icon: GraduationCap,
-    },
-    {
-      role: "FACULTY",
-      label: "Faculty",
-      name: "Dr. Anand Verma",
-      icon: Users,
-    },
-    {
-      role: "HOD",
-      label: "HOD",
-      name: "Prof. Sunita Rao",
-      icon: Building2,
-    },
-    {
-      role: "TNP_COORDINATOR",
-      label: "T&P & Placement",
-      name: "Vikram Malhotra",
-      icon: Briefcase,
-    },
-    {
-      role: "ADMIN",
-      label: "System & Placement Admin",
-      name: "Platform Admin",
-      icon: ShieldCheck,
-    },
+    { role: "STUDENT", label: "Student", name: "Rahul Sharma", icon: GraduationCap },
+    { role: "FACULTY", label: "Faculty", name: "Dr. Anand Verma", icon: Users },
+    { role: "HOD", label: "HOD", name: "Prof. Sunita Rao", icon: Building2 },
+    { role: "ADMIN", label: "System & Placement Admin", name: "Platform Admin", icon: ShieldCheck },
   ];
 
   const current = roles.find((r) => r.role === user?.role) || roles[0];

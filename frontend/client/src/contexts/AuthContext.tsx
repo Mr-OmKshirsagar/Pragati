@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { getRoleSidebarTheme } from "@/lib/roleTheme";
 
-export type PragatiRole = "STUDENT" | "FACULTY" | "HOD" | "TNP_COORDINATOR" | "ADMIN";
+export type PragatiRole = "STUDENT" | "FACULTY" | "HOD" | "ADMIN";
 export type UserRole = PragatiRole;
 
 export interface StudentProfileData {
@@ -66,15 +66,6 @@ export const ROLE_CONFIG: Record<
     defaultPath: "/overview",
     themeTone: "bg-[#f0ebff] text-[#7358c9] border-[#d3c2fa]",
     avatarTone: "bg-[#7358c9] text-white",
-  },
-  TNP_COORDINATOR: {
-    label: "T&P & Placement Officer",
-    badge: "Placement Governance",
-    description: "Publish drives, evaluate eligibility criteria, and manage recruitment pipelines.",
-    idLabel: "T&P Officer ID",
-    defaultPath: "/admin/placement",
-    themeTone: "bg-[#fff1dc] text-[#bd7a27] border-[#f6d7ab]",
-    avatarTone: "bg-[#bd7a27] text-white",
   },
   ADMIN: {
     label: "System & Placement Admin",
@@ -148,7 +139,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (authToken.startsWith("demo_")) {
       const targetRole = authToken.replace("demo_", "") as PragatiRole;
       try {
-        const res = await demoLoginMutation.mutateAsync({ role: targetRole });
+        const res = await demoLoginMutation.mutateAsync({
+          role: targetRole,
+        });
         if (res.success && res.user) {
           const syncedUser: PragatiUser = {
             ...res.user,
@@ -165,11 +158,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 ? "FAC-CS-104"
                 : targetRole === "HOD"
                 ? "HOD-CSE-001"
-                : targetRole === "TNP_COORDINATOR"
-                ? "TNP-ENG-042"
                 : "ADM-SYS-001",
             department: "Computer Science & Engineering",
-            designation: ROLE_CONFIG[targetRole].description,
+            designation: ROLE_CONFIG[targetRole]?.description ?? "",
           };
           setUser(syncedUser);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedUser));
@@ -217,11 +208,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               ? "FAC-CS-104"
               : targetRole === "HOD"
               ? "HOD-CSE-001"
-              : targetRole === "TNP_COORDINATOR"
-              ? "TNP-ENG-042"
               : "ADM-SYS-001",
           department: "Computer Science & Engineering",
-          designation: ROLE_CONFIG[targetRole].description,
+          designation: ROLE_CONFIG[targetRole]?.description ?? "",
         };
         setUser(syncedUser);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedUser));

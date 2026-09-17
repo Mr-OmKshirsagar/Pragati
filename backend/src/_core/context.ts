@@ -14,7 +14,7 @@ export interface StudentProfileContext {
 export interface AuthenticatedUser {
   id: string;
   email: string;
-  role: "STUDENT" | "FACULTY" | "HOD" | "TNP_COORDINATOR" | "ADMIN";
+  role: "STUDENT" | "FACULTY" | "HOD" | "ADMIN";
   institutionId: string;
   departmentId?: string | null;
   name: string;
@@ -37,7 +37,6 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
             | "STUDENT"
             | "FACULTY"
             | "HOD"
-            | "TNP_COORDINATOR"
             | "ADMIN";
 
           const [matchedUser] = await db

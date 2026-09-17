@@ -6,7 +6,7 @@ import { sendMail } from "./_core/email";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 
-export type PragatiRole = "STUDENT" | "FACULTY" | "HOD" | "TNP_COORDINATOR" | "ADMIN";
+export type PragatiRole = "STUDENT" | "FACULTY" | "HOD" | "ADMIN";
 
 export interface PragatiUser {
   id: string;
@@ -51,17 +51,6 @@ const DEMO_PERSONAS: Record<PragatiRole, PragatiUser & { demoPassword: string }>
     roleId: "HOD-CSE-001",
     designation: "Head of Department (CSE)",
     avatar: "SR",
-    demoPassword: "password123",
-  },
-  TNP_COORDINATOR: {
-    id: "user-tnp-1",
-    name: "Prof. Vikram Mehta",
-    email: "vikram.mehta@northstar.edu",
-    role: "TNP_COORDINATOR",
-    department: "Training & Placement Cell",
-    roleId: "TNP-ENG-042",
-    designation: "Head of Training & Placement",
-    avatar: "VM",
     demoPassword: "password123",
   },
   ADMIN: {
@@ -257,7 +246,7 @@ export const appRouter = router({
         z.object({
           email: z.string().email(),
           password: z.string().min(1),
-          role: z.enum(["STUDENT", "FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]),
+          role: z.enum(["STUDENT", "FACULTY", "HOD", "ADMIN"]),
         })
       )
       .mutation(async ({ input, ctx }) => {
@@ -283,7 +272,7 @@ export const appRouter = router({
           name: z.string().min(2),
           email: z.string().email(),
           password: z.string().min(6),
-          role: z.enum(["STUDENT", "FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]),
+          role: z.enum(["STUDENT", "FACULTY", "HOD", "ADMIN"]),
           department: z.string().default("Computer Science & Engineering"),
           roleId: z.string().min(2),
           designation: z.string().optional(),
@@ -317,13 +306,12 @@ export const appRouter = router({
         return { success: true, user: newUser };
       }),
     demoLogin: publicProcedure
-      .input(z.object({ role: z.enum(["STUDENT", "FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]) }))
+      .input(z.object({ role: z.enum(["STUDENT", "FACULTY", "HOD", "ADMIN"]) }))
       .mutation(({ input }) => {
         const personaNames: Record<string, string> = {
           STUDENT: "Rahul Sharma",
           FACULTY: "Dr. Anand Verma",
           HOD: "Prof. Sunita Rao",
-          TNP_COORDINATOR: "Vikram Malhotra",
           ADMIN: "Platform Administrator",
         };
         return {

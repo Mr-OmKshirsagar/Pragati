@@ -16,10 +16,6 @@ export const ROLE_ROUTES: Record<PragatiRole, string[]> = {
     "/overview", "/dashboard", "/hod", "/faculty", "/faculty/wards",
     "/skills", "/opportunities",
   ],
-  TNP_COORDINATOR: [
-    "/overview", "/dashboard", "/opportunities",
-    "/faculty", "/faculty/wards",
-  ],
   ADMIN: [
     "/overview", "/dashboard", "/hod", "/progress", "/skills",
     "/achievements", "/internship", "/opportunities",
@@ -34,11 +30,10 @@ export const ROLE_ROUTES: Record<PragatiRole, string[]> = {
 
 // ─── Default landing page per role ────────────────────────────────────────────
 export const ROLE_DEFAULT_PATH: Record<PragatiRole, string> = {
-  STUDENT:         "/overview",
-  FACULTY:         "/faculty",
-  HOD:             "/overview",
-  TNP_COORDINATOR: "/opportunities",
-  ADMIN:           "/admin/overview",
+  STUDENT:  "/overview",
+  FACULTY:  "/faculty",
+  HOD:      "/overview",
+  ADMIN:    "/admin/overview",
 };
 
 // ─── ProtectedRoute wrapper ────────────────────────────────────────────────────

@@ -106,19 +106,6 @@ describe("Phase 02: Authentication & 5-Role RBAC", () => {
     await expect(caller.auth.testStudentAccess()).rejects.toThrowError(/not authorized to execute this procedure/);
   });
 
-  it("should allow TNP_COORDINATOR to access tnpProcedure and FORBID student", async () => {
-    const tnpCtx = await createTestContext("demo_TNP_COORDINATOR");
-    const tnpCaller = appRouter.createCaller(tnpCtx);
-
-    const tnpResult = await tnpCaller.auth.testTnpAccess();
-    expect(tnpResult.authorized).toBe(true);
-    expect(tnpResult.role).toBe("TNP_COORDINATOR");
-
-    const studentCtx = await createTestContext("demo_STUDENT");
-    const studentCaller = appRouter.createCaller(studentCtx);
-    await expect(studentCaller.auth.testTnpAccess()).rejects.toThrowError(/not authorized to execute this procedure/);
-  });
-
   it("should allow ADMIN to access adminProcedure and FORBID faculty", async () => {
     const adminCtx = await createTestContext("demo_ADMIN");
     const adminCaller = appRouter.createCaller(adminCtx);

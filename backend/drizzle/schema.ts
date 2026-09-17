@@ -21,7 +21,6 @@ export const userRoleEnum = pgEnum("user_role", [
   "STUDENT",
   "FACULTY",
   "HOD",
-  "TNP_COORDINATOR",
   "ADMIN",
 ]);
 

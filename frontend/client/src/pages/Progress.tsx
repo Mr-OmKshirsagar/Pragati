@@ -1,5 +1,6 @@
 import PragatiFrame from "@/components/PragatiFrame";
 import { trpc } from "@/lib/trpc";
+import { progressData } from "@shared/pragati";
 import { Activity, ArrowDownRight, ArrowUpRight, Award, BarChart3, Check, ChevronDown, Clock3, GraduationCap, HeartPulse, Sparkles, Target, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -9,37 +10,35 @@ const chartTooltip = { contentStyle: { borderRadius: 12, border: "1px solid #e2e
 export default function Progress() {
   const query = trpc.student.progress.useQuery();
   const [skill, setSkill] = useState("DSA");
-  const data = query.data;
+  const data = query.data ?? progressData;
   const skillData = useMemo(() => data?.skills.find(item => item.label === skill) ?? data?.skills[0], [data, skill]);
-  if (query.isLoading) return <ProgressSkeleton />;
-  if (query.isError || !data || !skillData) return <div className="grid min-h-screen place-items-center bg-[#f5f7fb] text-sm text-[#64718a]">We couldn&apos;t load progress analytics.</div>;
-  const skillSeries = skillData.values.map((value, index) => ({ date: skillData.dates[index], score: value }));
+  const skillSeries = (skillData?.values ?? []).map((value, index) => ({ date: skillData.dates[index], score: value }));
 
   return (
-    <PragatiFrame title="My progress" activePath="/progress">
+    <PragatiFrame title="My Progress" activePath="/progress">
       <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10">
         <div className="mx-auto max-w-[1420px]">
-          <div className="relative mb-7 overflow-hidden rounded-3xl bg-gradient-to-r from-[#07172B] via-[#0C2D48] to-[#143D66] p-6 sm:p-8 text-white shadow-sm">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-blue-600/15 blur-3xl" />
-            <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-indigo-600/15 blur-3xl" />
-
-            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-blue-200 border border-white/15 backdrop-blur-xs">
-                  <Sparkles className="h-3.5 w-3.5 text-blue-300" />
-                  <span>STUDENT TRAJECTORY</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">My Progress</h1>
-                <p className="max-w-2xl text-xs sm:text-sm text-slate-200 leading-relaxed">
-                  How academic and skill performance has changed over time, with the milestones and interventions behind the movement.
+          {/* Progress Page Header */}
+          <div className="mb-8">
+            <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold text-[#71809a]">
+              <span>Learner Workspace</span>
+              <span className="text-[#d0d8e6]">/</span>
+              <span className="text-primary font-bold">My Progress</span>
+            </div>
+            <div className="grid grid-cols-[1fr_auto] items-start gap-4 sm:items-end">
+              <div>
+                <h1 className="text-[28px] font-extrabold tracking-[-0.04em] text-[#182643] sm:text-[34px]">
+                  My Progress
+                </h1>
+                <p className="mt-1.5 max-w-2xl text-sm text-[#6c7890] leading-relaxed">
+                  See how your academic, skill, and evidence milestones are building toward career readiness.
                 </p>
               </div>
-
-              <div className="shrink-0">
-                <div className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-xs font-medium text-white shadow-xs backdrop-blur-xs">
-                  <TrendingUp className="h-4 w-4 text-emerald-400" />
-                  <span>Improving across 4 of 6 indicators</span>
-                </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-xl border border-blue-200/80 bg-blue-50/90 px-4 py-2.5 text-xs font-bold text-blue-800 shadow-2xs">
+                  <TrendingUp className="h-4 w-4 text-blue-600" />
+                  Consistent upward trend
+                </span>
               </div>
             </div>
           </div>

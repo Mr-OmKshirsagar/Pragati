@@ -46,6 +46,8 @@ const itemVariants = {
 export default function AssessmentPage() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
+  const { role } = useAuth();
+  const isFaculty = role === "FACULTY";
   const [assessments, setAssessments] = useState<AssessmentCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -102,59 +104,56 @@ export default function AssessmentPage() {
   return (
     <PragatiFrame title="Assessments" activePath="/assessments">
       <div className="min-h-screen dashboard-grid">
-        {/* ── Executive Hero Header ─────────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative overflow-hidden border-b border-blue-500/20 bg-gradient-to-r from-[#07172B] via-[#0C2D48] to-[#143D66] px-4 py-8 sm:px-7 text-white"
-        >
-          {/* Ambient glow */}
-          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl bg-blue-600/15" />
-          <div className="pointer-events-none absolute right-1/3 -bottom-24 h-64 w-64 rounded-full blur-3xl bg-indigo-600/15" />
-
-          <div className="relative z-10 max-w-7xl mx-auto">
-            {/* Status Telemetry Row */}
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider border backdrop-blur"
-                style={{
-                  background: 'color-mix(in srgb, var(--primary) 25%, transparent)',
-                  borderColor: 'color-mix(in srgb, var(--primary) 35%, transparent)',
-                  color: 'color-mix(in srgb, var(--primary) 50%, white)',
-                }}
-              >
-                <span className="h-2 w-2 rounded-full animate-ping" style={{ background: 'var(--primary)' }} />
-                Assessment Suite
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300 border border-emerald-500/20">
-                <Shield className="h-3 w-3 text-emerald-400" />
-                Proctored & Verified
+        {/* ── Header ─────────────────────────────────────────── */}
+        <div className="px-4 pt-7 pb-2 sm:px-7 max-w-7xl mx-auto">
+          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold text-[#71809a]">
+            <span>{isFaculty ? "Academic & Skills" : "Learner Workspace"}</span>
+            <span className="text-[#d0d8e6]">/</span>
+            <span className="text-primary font-bold">Assessments</span>
+          </div>
+          <div className="grid grid-cols-[1fr_auto] items-start gap-4 sm:items-end">
+            <div>
+              <h1 className="text-[28px] font-extrabold tracking-[-0.04em] text-[#182643] sm:text-[34px]">
+                Assessments
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-sm text-[#6c7890] leading-relaxed">
+                {isFaculty
+                  ? "Measure student skills through verified, proctored assessments, benchmark evaluations, and adaptive tests."
+                  : "Measure your skills through verified, proctored assessments. Track your progress, build your evidence portfolio, and demonstrate what you can do."}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold shadow-2xs ${
+                isFaculty
+                  ? "border-emerald-200/80 bg-emerald-50/90 text-emerald-800"
+                  : "border-blue-200/80 bg-blue-50/90 text-blue-800"
+              }`}>
+                <Shield className={`h-4 w-4 ${isFaculty ? "text-emerald-600" : "text-blue-600"}`} />
+                {kpis.total} Total Assessments
               </span>
             </div>
-
-            {/* Title */}
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Assessment <span style={{ color: 'color-mix(in srgb, var(--primary) 50%, white)' }}>Command Center</span>
-            </h1>
-            <p className="mt-2 text-sm text-slate-300/80 max-w-2xl">
-              Measure your skills through verified, proctored assessments. Track your progress, build your evidence portfolio, and demonstrate what you can do.
-            </p>
-
-            {/* KPI Tiles */}
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8"
-            >
-              <KpiTile icon={<Layers className="h-5 w-5" />} label="Total Assessments" value={kpis.total} />
-              <KpiTile icon={<Sparkles className="h-5 w-5" />} label="Available Now" value={kpis.available} highlight />
-              <KpiTile icon={<CheckCircle2 className="h-5 w-5" />} label="Completed" value={kpis.completed} />
-              <KpiTile icon={<BarChart3 className="h-5 w-5" />} label="Avg. Score" value={`${kpis.avgScore}%`} />
-            </motion.div>
           </div>
-        </motion.div>
+
+          {/* KPI Summary Tiles */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mt-6">
+            <div className="premium-card p-4 sm:p-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8490a5]">Total Assessments</div>
+              <div className="text-2xl font-extrabold tracking-[-0.05em] text-[#1b2946] mt-1">{kpis.total}</div>
+            </div>
+            <div className="premium-card p-4 sm:p-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8490a5]">Available Now</div>
+              <div className="text-2xl font-extrabold tracking-[-0.05em] text-emerald-600 mt-1">{kpis.available}</div>
+            </div>
+            <div className="premium-card p-4 sm:p-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8490a5]">Completed</div>
+              <div className="text-2xl font-extrabold tracking-[-0.05em] text-[#1b2946] mt-1">{kpis.completed}</div>
+            </div>
+            <div className="premium-card p-4 sm:p-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8490a5]">Avg. Score</div>
+              <div className="text-2xl font-extrabold tracking-[-0.05em] text-[#1b2946] mt-1">{kpis.avgScore}%</div>
+            </div>
+          </div>
+        </div>
 
         {/* ── Search & Filter Bar ───────────────────────────────────────────── */}
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-7">
