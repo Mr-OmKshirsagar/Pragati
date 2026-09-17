@@ -153,14 +153,17 @@ Last Updated:
 
 ---
 
-# PHASE 8 — PLACEMENT
+# PHASE 8 — PLACEMENT (COMPLETED)
 
-* [ ] Recruitment drive
-* [ ] Rule builder
-* [ ] Eligibility evaluator
-* [ ] Eligibility reasons
-* [ ] Publish drive
-* [ ] Student application
+* [x] Recruitment drive lazy initialization & retrieval (`getOrCreateBenchmarkDrive`, `getDriveById`, `getDrives`)
+* [x] Pure functional recursive AST placement rule builder & parser (`RuleAST`, `RuleCondition`, AND/OR nesting)
+* [x] Deterministic eligibility engine with zero-mock PostgreSQL snapshot extraction (`academic_records`, `backlogs`, `skill_history`, `internships`)
+* [x] Itemized transparent explanation generation comparing Actual vs Required values with color-coded tags (`[PASS]` / `[FAIL]`)
+* [x] Benchmark ABC Technologies placement drive (14.5 LPA, CGPA >= 7.5, Backlogs = 0, DSA >= 70, Python >= 65, Internship = COMPLETED)
+* [x] Idempotent audit logging of evaluation results to `eligibility_evaluations` via unique constraint
+* [x] T&P candidate roster bulk evaluation (`evaluateRoster`) and custom rule saving (`saveRule`) with strict RBAC guards
+* [x] Interactive frontend views: `EligibilityCheckerModal.tsx`, `Opportunities.tsx` benchmark card, and `AdminPlacement.tsx` roster evaluation modal
+* [x] Automated Vitest test suite passing (`backend/tests/phase-08.test.ts` - 90/90 tests passing across all suites)
 
 ---
 

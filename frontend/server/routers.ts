@@ -1166,6 +1166,193 @@ export const appRouter = router({
         verifiedAt: new Date().toISOString(),
       })),
   }),
+  placement: router({
+    checkMyEligibility: publicProcedure
+      .input(z.object({ driveId: z.string() }))
+      .query(({ input }) => ({
+        studentId: "student-rahul-sharma",
+        driveId: input.driveId,
+        eligible: true,
+        reasons: [
+          "Cumulative CGPA: Actual 8.42 >= Required 7.5 [PASS]",
+          "Active Backlogs: Actual 0 = Required 0 [PASS]",
+          "DSA Score: Actual 78 >= Required 70 [PASS]",
+          "Python Score: Actual 84 >= Required 65 [PASS]",
+          "Internship Status: Actual COMPLETED = Required COMPLETED [PASS]",
+        ],
+        criteriaResults: [
+          {
+            passed: true,
+            reason: "Cumulative CGPA: Actual 8.42 >= Required 7.5 [PASS]",
+            field: "cgpa",
+            actualValue: 8.42,
+            expectedValue: 7.5,
+            operator: ">=",
+          },
+          {
+            passed: true,
+            reason: "Active Backlogs: Actual 0 = Required 0 [PASS]",
+            field: "active_backlogs",
+            actualValue: 0,
+            expectedValue: 0,
+            operator: "=",
+          },
+          {
+            passed: true,
+            reason: "DSA Score: Actual 78 >= Required 70 [PASS]",
+            field: "skill.DSA",
+            actualValue: 78,
+            expectedValue: 70,
+            operator: ">=",
+          },
+          {
+            passed: true,
+            reason: "Python Score: Actual 84 >= Required 65 [PASS]",
+            field: "skill.Python",
+            actualValue: 84,
+            expectedValue: 65,
+            operator: ">=",
+          },
+          {
+            passed: true,
+            reason: "Internship Status: Actual COMPLETED = Required COMPLETED [PASS]",
+            field: "internship_status",
+            actualValue: "COMPLETED",
+            expectedValue: "COMPLETED",
+            operator: "=",
+          },
+        ],
+        companyName: "ABC Technologies",
+        jobTitle: "Associate Software Engineer",
+        ctcOrStipend: "14.5 LPA",
+        candidateSnapshot: {
+          id: "student-rahul-sharma",
+          name: "Rahul Sharma",
+          cgpa: 8.42,
+          activeBacklogs: 0,
+          skills: { DSA: 78, Python: 84 },
+          internshipStatus: "COMPLETED" as const,
+        },
+      })),
+    getDrives: publicProcedure.query(() => [
+      {
+        id: "drive-abc-tech",
+        companyName: "ABC Technologies",
+        jobTitle: "Associate Software Engineer",
+        description:
+          "Core software engineering and systems development role requiring robust foundation in data structures, algorithms, python, and verified internship experience.",
+        ctcOrStipend: "14.5 LPA",
+        applicationDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        status: "PUBLISHED" as const,
+        createdAt: new Date(),
+        ruleVersion: 1,
+        ruleDefinition: {
+          operator: "AND" as const,
+          conditions: [
+            { field: "cgpa", operator: ">=" as const, value: 7.5 },
+            { field: "active_backlogs", operator: "=" as const, value: 0 },
+            { field: "skill.DSA", operator: ">=" as const, value: 70 },
+            { field: "skill.Python", operator: ">=" as const, value: 65 },
+            { field: "internship_status", operator: "=" as const, value: "COMPLETED" },
+          ],
+        },
+        eligibleCount: 18,
+        totalEvaluated: 24,
+      },
+    ]),
+    getDriveById: publicProcedure
+      .input(z.object({ driveId: z.string() }))
+      .query(({ input }) => ({
+        drive: {
+          id: input.driveId,
+          companyName: "ABC Technologies",
+          jobTitle: "Associate Software Engineer",
+          description: "Core software engineering and systems development role.",
+          ctcOrStipend: "14.5 LPA",
+          applicationDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          status: "PUBLISHED" as const,
+          createdAt: new Date(),
+        },
+        rule: {
+          operator: "AND" as const,
+          conditions: [
+            { field: "cgpa", operator: ">=" as const, value: 7.5 },
+            { field: "active_backlogs", operator: "=" as const, value: 0 },
+            { field: "skill.DSA", operator: ">=" as const, value: 70 },
+            { field: "skill.Python", operator: ">=" as const, value: 65 },
+            { field: "internship_status", operator: "=" as const, value: "COMPLETED" },
+          ],
+        },
+      })),
+    getBenchmarkDrive: publicProcedure.query(() => ({
+      drive: {
+        id: "drive-abc-tech",
+        companyName: "ABC Technologies",
+        jobTitle: "Associate Software Engineer",
+        description: "Core software engineering role.",
+        ctcOrStipend: "14.5 LPA",
+        applicationDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        status: "PUBLISHED" as const,
+        createdAt: new Date(),
+      },
+      rule: {
+        operator: "AND" as const,
+        conditions: [
+          { field: "cgpa", operator: ">=" as const, value: 7.5 },
+          { field: "active_backlogs", operator: "=" as const, value: 0 },
+          { field: "skill.DSA", operator: ">=" as const, value: 70 },
+          { field: "skill.Python", operator: ">=" as const, value: 65 },
+          { field: "internship_status", operator: "=" as const, value: "COMPLETED" },
+        ],
+      },
+    })),
+    evaluateRoster: publicProcedure
+      .input(z.object({ driveId: z.string() }))
+      .mutation(({ input }) => ({
+        driveId: input.driveId,
+        companyName: "ABC Technologies",
+        jobTitle: "Associate Software Engineer",
+        totalEvaluated: 42,
+        eligibleCount: 31,
+        ineligibleCount: 11,
+        results: [
+          {
+            studentId: "student-rahul-sharma",
+            studentName: "Rahul Sharma",
+            enrollmentNumber: "CSE2024042",
+            eligible: true,
+            reasons: ["All benchmarks passed"],
+            criteriaResults: [],
+            snapshot: {
+              id: "student-rahul-sharma",
+              name: "Rahul Sharma",
+              cgpa: 8.42,
+              activeBacklogs: 0,
+              skills: { DSA: 78, Python: 84 },
+              internshipStatus: "COMPLETED" as const,
+            },
+          },
+        ],
+      })),
+    saveRule: publicProcedure
+      .input(
+        z.object({
+          driveId: z.string(),
+          rule: z.object({
+            operator: z.enum(["AND", "OR"]),
+            conditions: z.array(z.any()),
+          }),
+        })
+      )
+      .mutation(({ input }) => ({
+        id: "rule-new",
+        recruitmentDriveId: input.driveId,
+        version: 2,
+        ruleDefinition: input.rule,
+        isActive: true,
+        createdAt: new Date(),
+      })),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
