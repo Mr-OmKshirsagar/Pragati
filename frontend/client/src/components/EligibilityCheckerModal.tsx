@@ -34,6 +34,7 @@ export default function EligibilityCheckerModal({
   onClose,
   onApply,
 }: EligibilityCheckerModalProps) {
+  const utils = trpc.useUtils();
   const eligibilityQuery = trpc.placement.checkMyEligibility.useQuery(
     { driveId },
     {
@@ -41,18 +42,30 @@ export default function EligibilityCheckerModal({
     }
   );
 
+  const applyMutation = trpc.recruitment.applyToDrive.useMutation({
+    onSuccess: () => {
+      toast.success(`Application submitted for ${companyName}!`, {
+        description: "Your verified profile and snapshot have been recorded in the T&P candidate pipeline.",
+      });
+      utils.recruitment.getMyApplications.invalidate();
+      if (onApply) {
+        onApply();
+      }
+      onClose();
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to submit application");
+    },
+  });
+
   const { data, isLoading, isError, error } = eligibilityQuery;
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (!data?.eligible) {
       toast.error("You are not eligible to apply for this opportunity yet.");
       return;
     }
-    if (onApply) {
-      onApply();
-    }
-    toast.success(`Application submitted for ${companyName}!`);
-    onClose();
+    await applyMutation.mutateAsync({ driveId });
   };
 
   return (
@@ -312,15 +325,24 @@ export default function EligibilityCheckerModal({
           </button>
           <button
             onClick={handleApply}
-            disabled={!data?.eligible}
+            disabled={!data?.eligible || applyMutation.isPending}
             className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold text-white shadow-sm transition ${
-              data?.eligible
+              data?.eligible && !applyMutation.isPending
                 ? "bg-[#13876f] hover:bg-[#0f6c58] cursor-pointer"
                 : "bg-slate-300 cursor-not-allowed opacity-60"
             }`}
           >
-            <span>Proceed to Apply</span>
-            <ArrowRight className="h-4 w-4" />
+            {applyMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Submitting Application...</span>
+              </>
+            ) : (
+              <>
+                <span>Proceed to Apply</span>
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </button>
         </div>
       </div>

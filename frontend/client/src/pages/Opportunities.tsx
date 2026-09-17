@@ -45,6 +45,9 @@ export default function Opportunities() {
     refetchOnWindowFocus: false,
     retry: false,
   });
+  const myApplicationsQuery = (trpc as any).recruitment?.getMyApplications?.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
   const createMutation = trpc.tnp.createPlacement.useMutation({
     onSuccess: () => {
       utils.student.opportunities.invalidate();
@@ -145,19 +148,44 @@ export default function Opportunities() {
                   </p>
                 </div>
                 <div className="shrink-0 flex items-center gap-2">
-                  <button
-                    onClick={() =>
-                      setEligibilityModalDrive({
-                        id: benchmarkQuery.data.drive.id,
-                        companyName: benchmarkQuery.data.drive.companyName,
-                        roleName: benchmarkQuery.data.drive.jobTitle,
-                      })
-                    }
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition"
-                  >
-                    <ShieldCheck className="h-4 w-4 text-emerald-300" />
-                    <span>Check My Eligibility</span>
-                  </button>
+                  {myApplicationsQuery?.data?.some(
+                    (app: any) =>
+                      app.recruitmentDriveId === benchmarkQuery.data.drive.id ||
+                      app.companyName?.toLowerCase() === "abc technologies"
+                  ) ? (
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-100 border border-emerald-300 px-3.5 py-2 text-xs font-bold text-emerald-800 shadow-2xs">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                        <span>Application Submitted</span>
+                      </span>
+                      <button
+                        onClick={() =>
+                          setEligibilityModalDrive({
+                            id: benchmarkQuery.data.drive.id,
+                            companyName: benchmarkQuery.data.drive.companyName,
+                            roleName: benchmarkQuery.data.drive.jobTitle,
+                          })
+                        }
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                      >
+                        <span>Review Criteria</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        setEligibilityModalDrive({
+                          id: benchmarkQuery.data.drive.id,
+                          companyName: benchmarkQuery.data.drive.companyName,
+                          roleName: benchmarkQuery.data.drive.jobTitle,
+                        })
+                      }
+                      className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition"
+                    >
+                      <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                      <span>Check &amp; Apply</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

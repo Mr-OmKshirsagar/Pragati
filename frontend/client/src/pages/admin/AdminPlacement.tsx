@@ -52,6 +52,7 @@ export default function AdminPlacement() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [rosterModalData, setRosterModalData] = useState<any | null>(null);
   const [isEvaluatingRoster, setIsEvaluatingRoster] = useState(false);
+  const [pipelineDrive, setPipelineDrive] = useState<any | null>(null);
 
   const handleRunRosterEvaluation = async (driveId?: string) => {
     const targetDriveId = driveId || benchmarkQuery?.data?.drive?.id;
@@ -326,6 +327,13 @@ export default function AdminPlacement() {
                   {/* Actions */}
                   <div className="flex items-center gap-1.5 shrink-0 sm:self-start">
                     <button
+                      title="Candidate Pipeline & Applicants"
+                      onClick={() => setPipelineDrive(placement)}
+                      className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-emerald-600 transition"
+                    >
+                      <Users className="h-4 w-4" />
+                    </button>
+                    <button
                       title="View Details"
                       onClick={() => setSelectedPlacement(placement)}
                       className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-indigo-600 transition"
@@ -450,6 +458,14 @@ export default function AdminPlacement() {
           <RosterEvaluationModal
             data={rosterModalData}
             onClose={() => setRosterModalData(null)}
+          />
+        )}
+
+        {/* Candidate Pipeline Modal */}
+        {pipelineDrive && (
+          <CandidatePipelineModal
+            drive={pipelineDrive}
+            onClose={() => setPipelineDrive(null)}
           />
         )}
       </div>
@@ -867,6 +883,243 @@ function CreatePlacementModal({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function CandidatePipelineModal({
+  drive,
+  onClose,
+}: {
+  drive: any;
+  onClose: () => void;
+}) {
+  const applicantsQuery = (trpc as any).recruitment?.getDriveApplicants?.useQuery(
+    { driveId: drive.id },
+    { refetchOnWindowFocus: false }
+  );
+
+  const updateStatusMutation = (trpc as any).recruitment?.updateApplicantStatus?.useMutation({
+    onSuccess: () => {
+      toast.success("Candidate stage updated successfully");
+      applicantsQuery.refetch();
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to update candidate status");
+    },
+  });
+
+  const [filterStage, setFilterStage] = useState<string>("ALL");
+  const applicants: any[] = applicantsQuery.data ?? [];
+
+  const filtered = applicants.filter((a) => {
+    if (filterStage === "ALL") return true;
+    return a.status === filterStage;
+  });
+
+  const stages = ["APPLIED", "SHORTLISTED", "INTERVIEWING", "OFFERED", "REJECTED"] as const;
+
+  const stageColors: Record<string, { bg: string; text: string; border: string }> = {
+    APPLIED: { bg: "bg-blue-50", text: "text-blue-800", border: "border-blue-200" },
+    SHORTLISTED: { bg: "bg-purple-50", text: "text-purple-800", border: "border-purple-200" },
+    INTERVIEWING: { bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-200" },
+    OFFERED: { bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200" },
+    REJECTED: { bg: "bg-rose-50", text: "text-rose-800", border: "border-rose-200" },
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+      <div className="w-full max-w-4xl rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 bg-gradient-to-r from-slate-900 to-indigo-950 text-white">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 border border-white/20 text-emerald-400">
+              <Users className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-extrabold tracking-tight">
+                Candidate Pipeline &amp; Applicants
+              </h2>
+              <p className="text-xs text-blue-200/80">
+                {drive.company} — {drive.role}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-xl p-2 text-white/70 hover:bg-white/10 hover:text-white transition"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Pipeline Summary & Filter Bar */}
+        <div className="p-5 bg-slate-50 border-b border-slate-200/70 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFilterStage("ALL")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                filterStage === "ALL"
+                  ? "bg-slate-800 text-white"
+                  : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              All ({applicants.length})
+            </button>
+            {stages.map((stg) => {
+              const count = applicants.filter((a) => a.status === stg).length;
+              return (
+                <button
+                  key={stg}
+                  onClick={() => setFilterStage(stg)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                    filterStage === stg
+                      ? "bg-slate-800 text-white"
+                      : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {stg} ({count})
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="text-xs text-slate-500 font-medium">
+            Showing {filtered.length} candidates
+          </div>
+        </div>
+
+        {/* Applicants List */}
+        <div className="p-6 overflow-y-auto space-y-3.5 flex-1">
+          {applicantsQuery.isLoading ? (
+            <div className="py-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+              <span>Loading candidate applications...</span>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-12 text-center text-slate-400 text-xs">
+              No applicants found for this recruitment drive.
+            </div>
+          ) : (
+            filtered.map((app) => {
+              const colors = stageColors[app.status] || stageColors.APPLIED;
+              return (
+                <div
+                  key={app.applicationId}
+                  className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 transition shadow-2xs"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 font-extrabold text-sm">
+                        {app.studentName?.charAt(0) || "S"}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900 text-sm">
+                          {app.studentName}
+                        </div>
+                        <div className="text-xs text-slate-500 font-mono">
+                          {app.enrollmentNumber} · {app.studentEmail}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${colors.bg} ${colors.text} ${colors.border}`}
+                      >
+                        {app.status}
+                      </span>
+
+                      <select
+                        value={app.status}
+                        onChange={(e) =>
+                          updateStatusMutation.mutate({
+                            applicationId: app.applicationId,
+                            status: e.target.value as any,
+                          })
+                        }
+                        disabled={updateStatusMutation.isPending}
+                        className="rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-500"
+                      >
+                        {stages.map((stg) => (
+                          <option key={stg} value={stg}>
+                            Move to {stg}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Candidate Metrics Snapshot */}
+                  {app.snapshot && (
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">CGPA</span>
+                        <span className="font-bold text-slate-800">
+                          {app.snapshot.cgpa ?? "—"}
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">Backlogs</span>
+                        <span className="font-bold text-slate-800">
+                          {app.snapshot.activeBacklogs ?? "0"}
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">DSA Score</span>
+                        <span className="font-bold text-slate-800">
+                          {app.snapshot.skills?.DSA ?? "—"}
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">Python Score</span>
+                        <span className="font-bold text-slate-800">
+                          {app.snapshot.skills?.Python ?? "—"}
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">Internship</span>
+                        <span className="font-bold text-slate-800">
+                          {app.snapshot.internshipStatus ?? "NONE"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
+                    <span>
+                      Applied: {new Date(app.appliedAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                    <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      Verified Profile
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 flex items-center justify-between">
+          <div className="text-xs text-slate-500">
+            Pipeline transitions are logged to the immutable compliance ledger.
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-xl bg-slate-800 px-5 py-2 text-xs font-bold text-white hover:bg-slate-900 transition"
+          >
+            Close Pipeline View
+          </button>
+        </div>
       </div>
     </div>
   );
