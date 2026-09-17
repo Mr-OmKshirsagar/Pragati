@@ -453,76 +453,33 @@ export default function HodDashboard() {
 
   return (
     <PragatiFrame title="Department Overview" activePath="/overview">
-      <main className="min-h-[calc(100vh-70px)] px-4 pb-14 pt-7 sm:px-7 xl:px-10">
+      <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-14 pt-7 sm:px-7 xl:px-10">
         <div className="mx-auto max-w-[1340px]">
-          {/* Header Section */}
-          <header className="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-            <div>
+          {/* Executive Header Section */}
+          <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+            <div className="max-w-3xl">
               <div className="mb-2 flex items-center gap-2">
-                <span className="flex h-2.5 w-2.5 rounded-full bg-[#7C6FD4] shadow-[0_0_0_4px_rgba(94,83,186,0.18)]" />
+                <span
+                  className="flex h-2.5 w-2.5 rounded-full shadow-[0_0_0_4px_rgba(234,88,12,0.18)]"
+                  style={{ backgroundColor: theme.activePillBg }}
+                />
                 <span className="eyebrow" style={{ color: theme.activePillBg }}>
-                  Computer Science & Engineering · HOD Command Center
+                  Computer Science &amp; Engineering · HOD Command Center
                 </span>
               </div>
-              <h1 className="text-[28px] font-extrabold tracking-[-0.04em] text-[#16223b] sm:text-[34px]">
-                Department Analytics & Cohort Overview
+              <h1 className="text-[28px] font-extrabold tracking-[-0.035em] text-[#16223b] sm:text-[34px] leading-tight">
+                Department Analytics &amp; Cohort Overview
               </h1>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#687691]">
+              <p className="mt-1.5 text-sm leading-relaxed text-[#687691]">
                 Real-time visibility into 248 CSE students, faculty mentoring workloads, curriculum skill gap triggers, and accreditation readiness.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5">
-              {/* Cohort filter pills */}
-              <div className="flex items-center rounded-xl border border-purple-200/70 bg-white p-1 shadow-2xs">
-                <button
-                  onClick={() => setSelectedCohort("ALL")}
-                  style={selectedCohort === "ALL" ? { backgroundColor: theme.activePillBg, boxShadow: theme.activePillShadow } : undefined}
-                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-150 ${
-                    selectedCohort === "ALL"
-                      ? "text-white shadow-sm"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  All Cohorts
-                </button>
-                <button
-                  onClick={() => setSelectedCohort("FINAL")}
-                  style={selectedCohort === "FINAL" ? { backgroundColor: theme.activePillBg, boxShadow: theme.activePillShadow } : undefined}
-                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-150 ${
-                    selectedCohort === "FINAL"
-                      ? "text-white shadow-sm"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  2021-25 (Sem 6)
-                </button>
-                <button
-                  onClick={() => setSelectedCohort("PRE_FINAL")}
-                  style={selectedCohort === "PRE_FINAL" ? { backgroundColor: theme.activePillBg, boxShadow: theme.activePillShadow } : undefined}
-                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-150 ${
-                    selectedCohort === "PRE_FINAL"
-                      ? "text-white shadow-sm"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  2022-26 (Sem 4)
-                </button>
-              </div>
-
-              {/* Action Buttons */}
-              <button
-                onClick={handleSyncData}
-                disabled={isSyncing}
-                title="Synchronize real-time metrics"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-2xs transition hover:bg-slate-50 hover:text-slate-900 active:scale-95"
-              >
-                <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} style={isSyncing ? { color: theme.activePillBg } : undefined} />
-              </button>
-
+            {/* Top Action CTAs */}
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
               <button
                 onClick={handleExportReport}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-purple-50/60 hover:text-purple-800 hover:border-purple-300"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-orange-50/60 hover:text-orange-800 hover:border-orange-300"
               >
                 <Download className="h-4 w-4" style={{ color: theme.activePillBg }} />
                 <span>Export Audit PDF</span>
@@ -534,13 +491,72 @@ export default function HodDashboard() {
                   backgroundColor: theme.activePillBg,
                   boxShadow: theme.activePillShadow,
                 }}
-                className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-white transition hover:brightness-105 active:scale-95 shadow-sm"
+                className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold text-white transition hover:brightness-105 active:scale-95 shadow-sm"
               >
                 <PlusCircle className="h-4 w-4" />
                 <span>Schedule Remedial Clinic</span>
               </button>
             </div>
-          </header>
+          </div>
+
+          {/* Dedicated Filter & Telemetry Bar */}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-2.5 shadow-2xs">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pl-1.5">
+                Cohort:
+              </span>
+              <div className="flex items-center rounded-xl border border-orange-200/70 bg-slate-50/60 p-1">
+                <button
+                  onClick={() => setSelectedCohort("ALL")}
+                  style={selectedCohort === "ALL" ? { backgroundColor: theme.activePillBg, boxShadow: theme.activePillShadow } : undefined}
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-150 ${
+                    selectedCohort === "ALL"
+                      ? "text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                  }`}
+                >
+                  All Cohorts
+                </button>
+                <button
+                  onClick={() => setSelectedCohort("FINAL")}
+                  style={selectedCohort === "FINAL" ? { backgroundColor: theme.activePillBg, boxShadow: theme.activePillShadow } : undefined}
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-150 ${
+                    selectedCohort === "FINAL"
+                      ? "text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                  }`}
+                >
+                  2021-25 (Sem 6)
+                </button>
+                <button
+                  onClick={() => setSelectedCohort("PRE_FINAL")}
+                  style={selectedCohort === "PRE_FINAL" ? { backgroundColor: theme.activePillBg, boxShadow: theme.activePillShadow } : undefined}
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-150 ${
+                    selectedCohort === "PRE_FINAL"
+                      ? "text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                  }`}
+                >
+                  2022-26 (Sem 4)
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 pr-1.5">
+              <span className="text-[11px] font-medium text-slate-400 hidden sm:inline">
+                Live telemetry synchronized
+              </span>
+              <button
+                onClick={handleSyncData}
+                disabled={isSyncing}
+                title="Synchronize real-time metrics"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-slate-900 active:scale-95"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} style={isSyncing ? { color: theme.activePillBg } : undefined} />
+                <span>{isSyncing ? "Syncing..." : "Sync ERP"}</span>
+              </button>
+            </div>
+          </div>
 
           {/* Top 4 KPI Metrics Grid */}
           <div className="mb-7 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -564,7 +580,7 @@ export default function HodDashboard() {
                           : idx === 0
                           ? { backgroundColor: "#edf0ff", color: "#425ec7" }
                           : idx === 2
-                          ? { backgroundColor: "#ede9fb", color: "#5E53BA" }
+                          ? { backgroundColor: "#fff7ed", color: "#ea580c" }
                           : { backgroundColor: "#fff4e5", color: "#cf7913" }
                       }
                     >
@@ -649,7 +665,7 @@ export default function HodDashboard() {
 
               <div className="mt-5 flex items-center justify-between rounded-xl border border-[#e5ecf6] bg-[#f9fafc] p-3 text-xs text-[#5c6b84]">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-[#7C6FD4]" />
+                  <ShieldCheck className="h-4 w-4" style={{ color: theme.activePillBg }} />
                   <span>Criterion 2.6.2 Compliance: Verified through faculty evaluation logs</span>
                 </div>
                 <span className="font-semibold" style={{ color: theme.activePillBg }}>Audit Ready ✓</span>
@@ -660,8 +676,11 @@ export default function HodDashboard() {
             <div className="rounded-2xl border border-[#dfe5ef] bg-white p-6 shadow-sm">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5E53BA]">
-                    T&P Placement Alignment
+                  <div
+                    className="text-[11px] font-bold uppercase tracking-[0.08em]"
+                    style={{ color: theme.activePillBg }}
+                  >
+                    T&amp;P Placement Alignment
                   </div>
                   <h2 className="text-lg font-extrabold text-[#17243e]">Drive Eligibility Pipeline</h2>
                 </div>
@@ -676,14 +695,14 @@ export default function HodDashboard() {
               </div>
 
               <div className="space-y-3.5">
-                <div className="rounded-xl border border-[#e0d9fb] bg-[#f5f2fd] p-3.5">
+                <div className="rounded-xl border border-orange-200/80 bg-orange-50/60 p-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#2d2568]">Tier-1 Product Eligible</span>
-                    <span className="text-base font-extrabold text-[#5E53BA]">
+                    <span className="text-xs font-bold text-orange-950">Tier-1 Product Eligible</span>
+                    <span className="text-base font-extrabold text-[#ea580c]">
                       {data.placementReadiness.eligibleTier1} / 248
                     </span>
                   </div>
-                  <p className="mt-1 text-[11px] text-[#5048a0]">
+                  <p className="mt-1 text-[11px] text-orange-800/90">
                     Criteria: CGPA ≥ 7.5, DSA ≥ 70, Zero backlogs, verified internship
                   </p>
                 </div>
@@ -1146,7 +1165,7 @@ export default function HodDashboard() {
                           {faculty.flaggedCount > 0 ? (
                             <span className="font-bold text-[#cf3813]">{faculty.flaggedCount} flagged</span>
                           ) : (
-                            <span className="font-bold text-[#7C6FD4]">All on track</span>
+                            <span className="font-bold text-emerald-600">All on track</span>
                           )}
                         </div>
                       </div>
@@ -1160,9 +1179,9 @@ export default function HodDashboard() {
 
                       <div>
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold ${
                             faculty.complianceRate >= 95
-                              ? "bg-[#ede9fb] text-[#5E53BA]"
+                              ? "bg-orange-100 text-orange-900 border border-orange-200"
                               : "bg-[#fff7e6] text-[#b7791f]"
                           }`}
                         >

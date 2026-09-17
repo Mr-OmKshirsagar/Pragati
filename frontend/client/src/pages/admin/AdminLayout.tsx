@@ -22,6 +22,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import UserNav from "@/components/UserNav";
 
 type IconType = typeof Users;
@@ -83,10 +84,11 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children, currentPage }: AdminLayoutProps) {
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const handleNavigation = (route: string) => {
-    window.location.assign(route);
+    navigate(route);
     setMobileNavOpen(false);
   };
 

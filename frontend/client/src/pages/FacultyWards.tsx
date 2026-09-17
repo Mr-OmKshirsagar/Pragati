@@ -59,31 +59,30 @@ export default function FacultyWards() {
     <PragatiFrame title="Faculty Ward Roster" activePath="/faculty/wards">
       <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10">
         <div className="mx-auto max-w-[1320px]">
-          {/* Header */}
-          <header className="mb-7 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-            <div>
-              <div className="mb-2 flex items-center gap-2">
-                <span
-                  className="h-2 w-2 rounded-full shadow-[0_0_0_4px_rgba(48,72,168,0.15)]"
-                  style={{ backgroundColor: theme.activePillBg }}
-                />
-                <span className="eyebrow" style={{ color: theme.activePillBg }}>Teacher-Guardian Workspace</span>
+          {/* Faculty Desk Page Header */}
+          <div className="mb-8">
+            <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold text-[#71809a]">
+              <span>Faculty Desk</span>
+              <span className="text-[#d0d8e6]">/</span>
+              <span className="text-primary font-bold">Assigned Wards</span>
+            </div>
+            <div className="grid grid-cols-[1fr_auto] items-start gap-4 sm:items-end">
+              <div>
+                <h1 className="text-[28px] font-extrabold tracking-[-0.04em] text-[#182643] sm:text-[34px]">
+                  Assigned Student Wards
+                </h1>
+                <p className="mt-1.5 max-w-2xl text-sm text-[#6c7890] leading-relaxed">
+                  Monitor continuous progress across your assigned mentees, review algorithmically flagged skill gaps, and schedule closed-loop interventions.
+                </p>
               </div>
-              <h1 className="text-[30px] font-extrabold tracking-[-0.045em] text-[#182643] sm:text-[36px]">
-                Assigned Student Wards
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm text-[#6c7890]">
-                Monitor continuous progress across your assigned mentees, review
-                algorithmically flagged skill gaps, and schedule closed-loop
-                interventions.
-              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-xl border border-emerald-200/80 bg-emerald-50/90 px-4 py-2.5 text-xs font-bold text-emerald-800 shadow-2xs">
+                  <Users className="h-4 w-4 text-emerald-600" />
+                  {wards.length} Mentees Assigned
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5 rounded-xl border border-[#dfe5ef] bg-white px-3.5 py-2.5 text-xs font-bold text-[#52617d] shadow-sm">
-                <Users className="h-4 w-4" style={{ color: theme.activePillBg }} /> {wards.length} Mentees Assigned
-              </span>
-            </div>
-          </header>
+          </div>
 
           {/* KPI Summary Cards */}
           <div className="mb-6 grid grid-cols-2 gap-3.5 sm:grid-cols-4">

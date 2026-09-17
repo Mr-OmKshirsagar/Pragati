@@ -1,9 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
-import PersonaSwitcher from "./components/PersonaSwitcher";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Achievements from "./pages/Achievements";
 import AuthPage from "./pages/Auth";
@@ -22,7 +21,6 @@ import AssessmentOverview from "./pages/AssessmentOverview";
 import AssessmentAttempt from "./pages/AssessmentAttempt";
 import AssessmentReview from "./pages/AssessmentReview";
 import AssessmentResult from "./pages/AssessmentResult";
-import PlacementDashboard from "./pages/tnp/PlacementDashboard";
 import { WorkspacePage } from "./pages/WorkspacePages";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -54,7 +52,6 @@ function RoleAwareDashboard() {
   if (role === "ADMIN") return <AdminOverview />;
   if (role === "HOD") return <HodDashboard />;
   if (role === "FACULTY") return <FacultyWards />;
-  if (role === "TNP_COORDINATOR") return <AdminPlacement />;
   return <Home />;
 }
 
@@ -71,10 +68,10 @@ function Router() {
 
       {/* ── Role-aware Overview / Dashboard ── */}
       <Route path="/overview">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]}><RoleAwareDashboard /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><RoleAwareDashboard /></ProtectedRoute>}
       </Route>
       <Route path="/dashboard">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]}><RoleAwareDashboard /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><RoleAwareDashboard /></ProtectedRoute>}
       </Route>
       <Route path="/hod">
         {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><HodDashboard /></ProtectedRoute>}
@@ -115,30 +112,22 @@ function Router() {
         {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Internship /></ProtectedRoute>}
       </Route>
 
-      {/* ── STUDENT + TNP + HOD + ADMIN ── */}
+      {/* ── STUDENT + HOD + ADMIN ── */}
       <Route path="/opportunities">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "TNP_COORDINATOR", "HOD", "ADMIN"]}><Opportunities /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "HOD", "ADMIN"]}><Opportunities /></ProtectedRoute>}
       </Route>
 
-      {/* ── FACULTY + HOD + TNP + ADMIN ── */}
+      {/* ── FACULTY + HOD + ADMIN ── */}
       <Route path="/faculty">
-        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]}><FacultyWards /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><FacultyWards /></ProtectedRoute>}
       </Route>
       <Route path="/faculty/wards">
-        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "TNP_COORDINATOR", "ADMIN"]}><FacultyWards /></ProtectedRoute>}
-      </Route>
-
-      {/* ── TNP COORDINATOR & ADMIN PLACEMENT ROUTES ── */}
-      <Route path="/tnp">
-        {() => <ProtectedRoute allowedRoles={["TNP_COORDINATOR", "ADMIN"]}><AdminPlacement /></ProtectedRoute>}
-      </Route>
-      <Route path="/tnp/placements">
-        {() => <ProtectedRoute allowedRoles={["TNP_COORDINATOR", "ADMIN"]}><AdminPlacement /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><FacultyWards /></ProtectedRoute>}
       </Route>
 
       {/* ── ADMIN ROUTES ── */}
       <Route path="/admin/overview">
-        {() => <ProtectedRoute allowedRoles={["ADMIN", "TNP_COORDINATOR"]}><AdminOverview /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminOverview /></ProtectedRoute>}
       </Route>
       <Route path="/admin/users">
         {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminUsers /></ProtectedRoute>}
@@ -162,16 +151,16 @@ function Router() {
         {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminAssessments /></ProtectedRoute>}
       </Route>
       <Route path="/admin/verification">
-        {() => <ProtectedRoute allowedRoles={["ADMIN", "TNP_COORDINATOR"]}><AdminVerification /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminVerification /></ProtectedRoute>}
       </Route>
       <Route path="/admin/internships">
-        {() => <ProtectedRoute allowedRoles={["ADMIN", "TNP_COORDINATOR"]}><AdminInternships /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminInternships /></ProtectedRoute>}
       </Route>
       <Route path="/admin/placement">
-        {() => <ProtectedRoute allowedRoles={["ADMIN", "TNP_COORDINATOR"]}><AdminPlacement /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminPlacement /></ProtectedRoute>}
       </Route>
       <Route path="/admin/recruitment">
-        {() => <ProtectedRoute allowedRoles={["ADMIN", "TNP_COORDINATOR"]}><AdminRecruitment /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminRecruitment /></ProtectedRoute>}
       </Route>
       <Route path="/admin/audit-logs">
         {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminAuditLogs /></ProtectedRoute>}
@@ -203,7 +192,6 @@ export default function App() {
           <TooltipProvider>
             <Toaster />
             <Router />
-            <PersonaSwitcher />
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>

@@ -3,7 +3,6 @@ import { getRoleSidebarTheme } from "@/lib/roleTheme";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowRight,
-  BriefcaseBusiness,
   Building2,
   CheckCircle2,
   Eye,
@@ -30,7 +29,6 @@ const ROLES: { role: PragatiRole; icon: React.ComponentType<{ className?: string
   { role: "STUDENT", icon: GraduationCap },
   { role: "FACULTY", icon: UserCheck },
   { role: "HOD", icon: Building2 },
-  { role: "TNP_COORDINATOR", icon: BriefcaseBusiness },
   { role: "ADMIN", icon: ShieldCheck },
 ];
 
@@ -78,19 +76,6 @@ const STATIC_DEMO_ACCOUNTS: Record<PragatiRole, PragatiUser & { hintPassword: st
     roleId: "HOD-CSE-001",
     designation: "Head of Department (CSE)",
     avatar: "SR",
-    hintPassword: "password123",
-  },
-  TNP_COORDINATOR: {
-    id: "user-tnp-1",
-    name: "Prof. Vikram Mehta",
-    email: "vikram.mehta@northstar.edu",
-    role: "TNP_COORDINATOR",
-    department: "Training & Placement Cell",
-    departmentId: "CSE",
-    institutionId: "NIT-001",
-    roleId: "TNP-ENG-042",
-    designation: "Head of Training & Placement",
-    avatar: "VM",
     hintPassword: "password123",
   },
   ADMIN: {
@@ -402,8 +387,6 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                             ? "FAC-CS-104"
                             : selectedRole === "HOD"
                             ? "HOD-CSE-001"
-                            : selectedRole === "TNP_COORDINATOR"
-                            ? "TNP-ENG-042"
                             : "ADM-SYS-001"
                         }
                         value={roleId}
@@ -470,8 +453,6 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                         ? "meera.nair@northstar.edu"
                         : selectedRole === "HOD"
                         ? "sunita.rao@northstar.edu"
-                        : selectedRole === "TNP_COORDINATOR"
-                        ? "vikram.mehta@northstar.edu"
                         : "admin@northstar.edu"
                     }
                     value={email}
@@ -581,8 +562,6 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                           ? "MN"
                           : role === "HOD"
                           ? "SR"
-                          : role === "TNP_COORDINATOR"
-                          ? "VM"
                           : "SA"}
                       </span>
                       <div className="min-w-0">
@@ -653,12 +632,6 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
                   <div className="grid grid-cols-[auto_1fr] items-center gap-2 text-[#d2dcff]">
                     <CheckCircle2 className="h-3.5 w-3.5 text-[#16a889]" />
                     <span>
-                      <strong>T&amp;P:</strong> Recruitment drive publishing, criteria matching, placement rosters.
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-[auto_1fr] items-center gap-2 text-[#d2dcff]">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#16a889]" />
-                    <span>
                       <strong>Admin:</strong> Campus system governance, RBAC privileges, tamper verification audit.
                     </span>
                   </div>
@@ -690,4 +663,3 @@ export default function AuthPage({ initialMode = "login" }: AuthProps) {
     </div>
   );
 }
-

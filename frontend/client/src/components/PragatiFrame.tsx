@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   Menu,
   Route,
-  Sparkles,
   Target,
   TrendingUp,
   UsersRound,
@@ -90,24 +89,6 @@ const hodSections: NavSection[] = [
   },
 ];
 
-const tnpSections: NavSection[] = [
-  {
-    title: "PLACEMENT DESK",
-    items: [
-      { label: "Placement Drives", path: "/admin/placement", icon: Target },
-      { label: "Student Opportunities", path: "/opportunities", icon: Sparkles },
-      { label: "Candidate Pipeline", path: "/faculty", icon: UsersRound },
-    ],
-  },
-  {
-    title: "CAREER OPERATIONS",
-    items: [
-      { label: "Corporate Internships", path: "/admin/internships", icon: BriefcaseBusiness },
-      { label: "Evidence Verification", path: "/admin/verification", icon: FileCheck2 },
-    ],
-  },
-];
-
 const adminSections: NavSection[] = [
   {
     title: "ADMINISTRATION",
@@ -137,39 +118,23 @@ const WORKSPACES_BY_ROLE: Record<
   PragatiRole,
   { sections: NavSection[]; workspaceName: string }
 > = {
-  STUDENT: {
-    sections: studentSections,
-    workspaceName: "Student workspace",
-  },
-  FACULTY: {
-    sections: facultySections,
-    workspaceName: "Faculty workspace",
-  },
-  HOD: {
-    sections: hodSections,
-    workspaceName: "Department workspace",
-  },
-  TNP_COORDINATOR: {
-    sections: tnpSections,
-    workspaceName: "Placement workspace",
-  },
-  ADMIN: {
-    sections: adminSections,
-    workspaceName: "Admin workspace",
-  },
+  STUDENT: { sections: studentSections, workspaceName: "Student workspace" },
+  FACULTY: { sections: facultySections, workspaceName: "Faculty workspace" },
+  HOD: { sections: hodSections, workspaceName: "Department workspace" },
+  ADMIN: { sections: adminSections, workspaceName: "Admin workspace" },
 };
 
 const PAGE_THEMES: Record<string, PageTheme> = {
   dashboard: {
-    primary: "#0F766E",
-    soft: "#CCFBF1",
-    border: "#99F6E4",
-    surface: "#F0FDFA",
-    assistantBg: "#0C2D48",
-    assistantHover: "#103E54",
-    assistantAccent: "#67E8F9",
-    roleBg: "#CCFBF1",
-    roleText: "#115E59",
+    primary: "#2563EB",
+    soft: "#EFF6FF",
+    border: "#BFDBFE",
+    surface: "#F0F7FF",
+    assistantBg: "#0F172A",
+    assistantHover: "#1E40AF",
+    assistantAccent: "#60A5FA",
+    roleBg: "#EFF6FF",
+    roleText: "#1D4ED8",
   },
   progress: {
     primary: "#2563EB",
@@ -249,15 +214,15 @@ const PAGE_THEMES: Record<string, PageTheme> = {
     roleText: "#3730A3",
   },
   faculty: {
-    primary: "#16A34A",
-    soft: "#DCFCE7",
-    border: "#BBF7D0",
+    primary: "#059669",
+    soft: "#ECFDF5",
+    border: "#A7F3D0",
     surface: "#F0FDF4",
-    assistantBg: "#14532D",
-    assistantHover: "#166534",
-    assistantAccent: "#86EFAC",
-    roleBg: "#DCFCE7",
-    roleText: "#166534",
+    assistantBg: "#064E3B",
+    assistantHover: "#065F46",
+    assistantAccent: "#6EE7B7",
+    roleBg: "#ECFDF5",
+    roleText: "#047857",
   },
   assessments: {
     primary: "#9333EA",
@@ -281,10 +246,24 @@ const PAGE_THEMES: Record<string, PageTheme> = {
     roleBg: "#FEE2E2",
     roleText: "#991B1B",
   },
+  hod: {
+    primary: "#EA580C",
+    soft: "#FFF7ED",
+    border: "#FED7AA",
+    surface: "#FFFDFB",
+    assistantBg: "#431407",
+    assistantHover: "#7C2D12",
+    assistantAccent: "#FB923C",
+    roleBg: "#FFF7ED",
+    roleText: "#C2410C",
+  },
 };
 
 function getPageTheme(activePath: string, title: string, role: PragatiRole) {
   if (role === "ADMIN" || activePath.startsWith("/admin")) return PAGE_THEMES.admin;
+  if (role === "FACULTY") return PAGE_THEMES.faculty;
+  if (role === "HOD") return PAGE_THEMES.hod;
+  if (role === "STUDENT") return PAGE_THEMES.dashboard;
   if (activePath === "/overview" && title.toLowerCase().includes("department")) return PAGE_THEMES.skills;
   if (activePath === "/overview") return PAGE_THEMES.dashboard;
   if (activePath === "/career-passport") return PAGE_THEMES.passport;
@@ -292,7 +271,7 @@ function getPageTheme(activePath: string, title: string, role: PragatiRole) {
   if (activePath.includes("progress")) return PAGE_THEMES.progress;
   if (activePath.includes("skills")) return PAGE_THEMES.skills;
   if (activePath.includes("mentoring")) return PAGE_THEMES.mentoring;
-  if (activePath.includes("opportunities") || activePath.includes("tnp")) return PAGE_THEMES.opportunities;
+  if (activePath.includes("opportunities")) return PAGE_THEMES.opportunities;
   if (activePath.includes("achievements")) return PAGE_THEMES.achievements;
   if (activePath.includes("internship")) return PAGE_THEMES.internship;
   if (activePath.includes("faculty")) return PAGE_THEMES.faculty;
@@ -340,6 +319,7 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
                 items={section.items}
                 activePath={activePath}
                 onNavigate={nav}
+                theme={theme}
               />
             ))}
           </div>
@@ -383,29 +363,7 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
                   PRAGATI / {title}
                 </div>
               </div>
-              <button
-                onClick={() => window.location.assign("/mentoring")}
-                className="hidden justify-self-center md:inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:opacity-95"
-                style={{ backgroundColor: pageTheme.assistantBg }}
-                onMouseEnter={(event) => {
-                  event.currentTarget.style.backgroundColor = pageTheme.assistantHover;
-                }}
-                onMouseLeave={(event) => {
-                  event.currentTarget.style.backgroundColor = pageTheme.assistantBg;
-                }}
-              >
-                <Sparkles className="h-3.5 w-3.5" style={{ color: pageTheme.assistantAccent }} />
-                <span>PRAGATI AI Assistant</span>
-                <span
-                  className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                  style={{
-                    backgroundColor: `${pageTheme.assistantAccent}24`,
-                    color: pageTheme.assistantAccent,
-                  }}
-                >
-                  Assistant
-                </span>
-              </button>
+              <div />
               <div className="grid grid-flow-col auto-cols-max items-center gap-2 justify-self-end sm:gap-3">
                 <div className="hidden">
                   <span className="text-xs">Search your workspace</span>
@@ -455,8 +413,11 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
 function Brand({ theme }: { theme: RoleSidebarTheme }) {
   return (
     <div className="grid h-[86px] grid-cols-[auto_1fr] items-center gap-3 px-5 border-b border-slate-100/80">
-      {/* Geometric ShikshaSetu-like colored icon emblem */}
-      <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-tr from-[#0F766E] to-[#06B6D4] text-white shadow-xs">
+      {/* Geometric role-themed icon emblem */}
+      <div
+        className="relative grid h-10 w-10 place-items-center rounded-xl text-white shadow-xs"
+        style={{ backgroundColor: theme.brandBg }}
+      >
         <Compass className="h-5 w-5" />
       </div>
       <div>
@@ -480,11 +441,13 @@ function NavGroup({
   items,
   activePath,
   onNavigate,
+  theme,
 }: {
   label: string;
   items: NavItem[];
   activePath: string;
   onNavigate: (item: NavItem) => void;
+  theme: RoleSidebarTheme;
 }) {
   return (
     <div className="mb-4 pt-2">
@@ -510,22 +473,35 @@ function NavGroup({
               aria-current={active ? "page" : undefined}
               className={`group flex items-center justify-between gap-3 rounded-2xl px-3.5 py-2.5 text-sm transition-all duration-150 ${
                 active
-                  ? "bg-emerald-50/90 text-emerald-800 font-bold shadow-2xs border border-emerald-200/70"
+                  ? "font-bold shadow-2xs border"
                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
               }`}
+              style={
+                active
+                  ? {
+                      backgroundColor: theme.accentBg,
+                      borderColor: `${theme.activePillBg}35`,
+                      color: theme.accentText,
+                    }
+                  : undefined
+              }
             >
               <div className="flex items-center gap-3 min-w-0">
                 <Icon
                   className={`h-[18px] w-[18px] shrink-0 transition-colors ${
                     active
-                      ? "text-emerald-700"
+                      ? ""
                       : "text-slate-400 group-hover:text-slate-600"
                   }`}
+                  style={active ? { color: theme.activePillBg } : undefined}
                 />
                 <span className="truncate">{item.label}</span>
               </div>
               {active && (
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span
+                  className="h-1.5 w-1.5 rounded-full shrink-0"
+                  style={{ backgroundColor: theme.activeDot || theme.activePillBg }}
+                />
               )}
             </Link>
           );
@@ -548,8 +524,6 @@ function UserFooter({ role, user }: { role: PragatiRole; user: any }) {
       ? "Faculty Mentor"
       : role === "HOD"
       ? "Department Head"
-      : role === "TNP_COORDINATOR"
-      ? "Placement Officer"
       : "Platform Admin";
 
   return (
@@ -607,6 +581,7 @@ function MobileNav({
               items={section.items}
               activePath={activePath}
               onNavigate={() => onClose()}
+              theme={getRoleSidebarTheme(role)}
             />
           ))}
         </div>

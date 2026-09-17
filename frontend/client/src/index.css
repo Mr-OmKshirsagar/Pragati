@@ -85,64 +85,50 @@
 
 /* ── Role-specific UI themes (Dynamic across the whole app) ── */
 [data-role="STUDENT"] {
-  --primary: #4A43B3;
-  --ring: #4A43B3;
-  --chart-1: #4A43B3;
-  --secondary: #f0f2fb;
-  --secondary-foreground: #403b99;
-  --accent: #e7eafb;
-  --accent-foreground: #403b99;
-  --sidebar: #141B2A;
-  --sidebar-primary: #4A43B3;
-  --role-primary: #4A43B3;
-  --role-bg: #141B2A;
-  --role-accent: #EEF0FB;
+  --primary: #2563EB;
+  --ring: #2563EB;
+  --chart-1: #2563EB;
+  --secondary: #eff6ff;
+  --secondary-foreground: #1d4ed8;
+  --accent: #dbeafe;
+  --accent-foreground: #1d4ed8;
+  --sidebar: #0F172A;
+  --sidebar-primary: #2563EB;
+  --role-primary: #2563EB;
+  --role-bg: #0F172A;
+  --role-accent: #EFF6FF;
 }
 
 [data-role="FACULTY"] {
-  --primary: #156963;
-  --ring: #156963;
-  --chart-1: #156963;
+  --primary: #059669;
+  --ring: #059669;
+  --chart-1: #059669;
   --secondary: #edf9f7;
-  --secondary-foreground: #145a55;
-  --accent: #d8f4ee;
-  --accent-foreground: #145a55;
+  --secondary-foreground: #047857;
+  --accent: #d1fae5;
+  --accent-foreground: #047857;
   --sidebar: #0D2421;
-  --sidebar-primary: #156963;
-  --role-primary: #156963;
+  --sidebar-primary: #059669;
+  --role-primary: #059669;
   --role-bg: #0D2421;
   --role-accent: #EAF7F5;
 }
 
 [data-role="HOD"] {
-  --primary: #5E53BA;
-  --ring: #5E53BA;
-  --chart-1: #5E53BA;
-  --secondary: #f4f2fc;
-  --secondary-foreground: #4e479a;
-  --accent: #ebe7fb;
-  --accent-foreground: #4e479a;
-  --sidebar: #241B46;
-  --sidebar-primary: #5E53BA;
-  --role-primary: #5E53BA;
-  --role-bg: #241B46;
-  --role-accent: #F0EEFB;
+  --primary: #EA580C;
+  --ring: #EA580C;
+  --chart-1: #EA580C;
+  --secondary: #fff7ed;
+  --secondary-foreground: #c2410c;
+  --accent: #ffedd5;
+  --accent-foreground: #c2410c;
+  --sidebar: #1c1917;
+  --sidebar-primary: #EA580C;
+  --role-primary: #EA580C;
+  --role-bg: #1c1917;
+  --role-accent: #FFF7ED;
 }
 
-[data-role="TNP_COORDINATOR"] {
-  --primary: #AB6515;
-  --ring: #AB6515;
-  --chart-1: #AB6515;
-  --secondary: #fff8ea;
-  --secondary-foreground: #865417;
-  --accent: #f9edcf;
-  --accent-foreground: #865417;
-  --sidebar: #261A0D;
-  --sidebar-primary: #AB6515;
-  --role-primary: #AB6515;
-  --role-bg: #261A0D;
-  --role-accent: #FBF2E5;
-}
 
 [data-role="ADMIN"] {
   --primary: #B22746;
@@ -215,7 +201,7 @@
   .form-input { @apply w-full rounded-lg border border-[#dfe5ef] bg-white px-3 py-2.5 text-sm text-[#304063] outline-none transition placeholder:text-[#a4afbf] focus:border-primary focus:ring-2 focus:ring-primary/15; }
   .dashboard-grid {
     background:
-      radial-gradient(circle at 18% 4%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 30%),
+      radial-gradient(circle at 18% 4%, color-mix(in srgb, var(--primary) 13%, transparent), transparent 32%),
       linear-gradient(rgba(90,111,169,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(90,111,169,0.03) 1px, transparent 1px),
       #f5f7fb;

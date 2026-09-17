@@ -1,8 +1,9 @@
 import PragatiFrame from "@/components/PragatiFrame";
 import EligibilityCheckerModal from "@/components/EligibilityCheckerModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import type { Opportunity } from "@shared/pragati";
+import { opportunitiesData, type Opportunity } from "@shared/pragati";
 import {
   AlertTriangle,
   ArrowRight,
@@ -55,6 +56,7 @@ export default function Opportunities() {
     },
   });
   const [filter, setFilter] = useState<FilterValue>("All");
+  const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Opportunity | null>(null);
   const [appliedIds, setAppliedIds] = useState<string[]>([]);
@@ -64,9 +66,10 @@ export default function Opportunities() {
     companyName: string;
     roleName: string;
   } | null>(null);
-  const canManageOpportunities = role === "TNP_COORDINATOR" || role === "ADMIN";
+  const canManageOpportunities = role === "ADMIN";
 
-  const opportunities = query.data?.opportunities ?? [];
+  const data = query.data ?? opportunitiesData;
+  const opportunities = data.opportunities;
   const visible = useMemo(() => opportunities.filter(item => {
     const haystack = `${item.company} ${item.role} ${item.type} ${item.location} ${item.skills.join(" ")}`.toLowerCase();
     const matchesSearch = haystack.includes(search.toLowerCase());
@@ -74,9 +77,6 @@ export default function Opportunities() {
     const matchesFilter = filter === "All" || filter === "Eligible" && item.eligibilityStatus === "Eligible" || filter === "Internship" && item.type === "Internship" || filter === "Placement" && item.type === "Placement" || filter === "Applied" && applied || filter === "Closing Soon" && item.closingSoon;
     return matchesSearch && matchesFilter;
   }), [appliedIds, filter, opportunities, search]);
-
-  if (query.isLoading) return <PageSkeleton />;
-  if (query.isError || !query.data) return <div className="grid min-h-screen place-items-center bg-[#f5f7fb] text-sm text-[#64718a]">We couldn&apos;t load opportunities. Please try again.</div>;
 
   const apply = (item: Opportunity) => {
     if (item.eligibilityStatus !== "Eligible") {
@@ -91,27 +91,27 @@ export default function Opportunities() {
     <PragatiFrame title="Opportunities" activePath="/opportunities">
       <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10">
         <div className="mx-auto max-w-[1420px]">
-          <div className="relative mb-7 overflow-hidden rounded-3xl bg-gradient-to-r from-[#07172B] via-[#0C2D48] to-[#143D66] p-6 sm:p-8 text-white shadow-sm">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-blue-600/15 blur-3xl" />
-            <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-indigo-600/15 blur-3xl" />
-
-            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-blue-200 border border-white/15 backdrop-blur-xs">
-                  <Sparkles className="h-3.5 w-3.5 text-blue-300" />
-                  <span>VERIFIED PROFILE MATCHING</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">Opportunities</h1>
-                <p className="max-w-2xl text-xs sm:text-sm text-slate-200 leading-relaxed">
+          {/* Opportunities Page Header */}
+          <div className="mb-8">
+            <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold text-[#71809a]">
+              <span>Learner Workspace</span>
+              <span className="text-[#d0d8e6]">/</span>
+              <span className="text-primary font-bold">Opportunities</span>
+            </div>
+            <div className="grid grid-cols-[1fr_auto] items-start gap-4 sm:items-end">
+              <div>
+                <h1 className="text-[28px] font-extrabold tracking-[-0.04em] text-[#182643] sm:text-[34px]">
+                  Opportunities
+                </h1>
+                <p className="mt-1.5 max-w-2xl text-sm text-[#6c7890] leading-relaxed">
                   Explore internships and placement drives matched against your verified academic, skill, and evidence profile.
                 </p>
               </div>
-
-              <div className="shrink-0">
-                <div className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-xs font-medium text-white shadow-xs backdrop-blur-xs">
-                  <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                  <span>Matching uses verified records</span>
-                </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-xl border border-blue-200/80 bg-blue-50/90 px-4 py-2.5 text-xs font-bold text-blue-800 shadow-2xs">
+                  <ShieldCheck className="h-4 w-4 text-blue-600" />
+                  Matching uses verified records
+                </span>
               </div>
             </div>
           </div>
@@ -193,10 +193,10 @@ export default function Opportunities() {
 
           <div className="mb-5 grid grid-cols-2 gap-3.5 xl:grid-cols-4">
             {[
-              ["Eligible opportunities", query.data.summary.eligible, "of 4 drives", "bg-[#edf0ff] text-[#5268cb]"],
-              ["Internship opportunities", query.data.summary.internships, "available now", "bg-[#e5f7f2] text-[#13876f]"],
-              ["Placement drives", query.data.summary.placements, "this cycle", "bg-[#f0ebff] text-[#7358c9]"],
-              ["Applications submitted", query.data.summary.applications, "1 in review", "bg-[#fff1dc] text-[#bd7a27]"],
+              ["Eligible opportunities", data.summary.eligible, "of 4 drives", "bg-[#edf0ff] text-[#5268cb]"],
+              ["Internship opportunities", data.summary.internships, "available now", "bg-[#e5f7f2] text-[#13876f]"],
+              ["Placement drives", data.summary.placements, "this cycle", "bg-[#f0ebff] text-[#7358c9]"],
+              ["Applications submitted", data.summary.applications, "1 in review", "bg-[#fff1dc] text-[#bd7a27]"],
             ].map(([label, value, helper, tone]) => (
               <div key={String(label)} className="premium-card motion-enter p-4 sm:p-5">
                 <div className="mb-4 grid grid-cols-[auto_auto] justify-between items-start">
@@ -575,6 +575,8 @@ function OpportunityDrawer({
   onClose: () => void;
   onApply: () => void;
 }) {
+  const [, navigate] = useLocation();
+
   return (
     <div className="fixed inset-0 z-50">
       <button
@@ -711,7 +713,7 @@ function OpportunityDrawer({
                         </strong>
                       </span>
                       <button
-                        onClick={() => window.location.assign("/skills")}
+                        onClick={() => navigate("/skills")}
                         className="rounded-lg bg-primary px-2 py-1.5 text-[10px] font-bold text-white transition hover:opacity-90"
                       >
                         Open Skills
@@ -766,4 +768,3 @@ function OpportunityDrawer({
 }
 
 function PageSkeleton() { return <div className="min-h-screen bg-[#f5f7fb] p-6"><div className="mx-auto max-w-6xl animate-pulse space-y-5"><div className="h-16 rounded-2xl bg-white" /><div className="h-32 rounded-2xl bg-[#dfe5f4]" /><div className="grid grid-cols-4 gap-4"><div className="col-span-4 h-24 rounded-2xl bg-white" /></div><div className="h-80 rounded-2xl bg-white" /></div></div>; }
-

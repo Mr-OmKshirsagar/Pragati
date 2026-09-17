@@ -43,21 +43,53 @@ const pageCopy: Record<string, { eyebrow: string; title: string; description: st
 
 export function WorkspacePage({ kind }: { kind: keyof typeof pageCopy }) {
   const copy = pageCopy[kind];
+  const { role } = useAuth();
+  const isFaculty = role === "FACULTY";
+
   return (
     <PragatiFrame title={copy.title} activePath={kind === "passport" ? "/career-passport" : `/${kind}`}>
       <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10">
         <div className="mx-auto max-w-[1240px]">
-          <div className="relative mb-7 overflow-hidden rounded-3xl bg-gradient-to-r from-[#07172B] via-[#0C2D48] to-[#143D66] p-6 sm:p-8 text-white shadow-sm">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-blue-600/15 blur-3xl" />
-            <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-indigo-600/15 blur-3xl" />
-
-            <div className="relative z-10 space-y-2">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-blue-200 border border-white/15 backdrop-blur-xs">
-                <Sparkles className="h-3.5 w-3.5 text-blue-300" />
-                <span>{copy.eyebrow.toUpperCase()}</span>
+          {/* Universal Clean Page Header (Gradient UI) */}
+          <div className="mb-8">
+            <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold text-[#71809a]">
+              <span>
+                {isFaculty
+                  ? (kind === "internship" ? "Academic Review" : "Faculty Desk")
+                  : "Learner Workspace"}
+              </span>
+              <span className="text-[#d0d8e6]">/</span>
+              <span className="text-primary font-bold">
+                {isFaculty
+                  ? (kind === "internship" ? "Internship Approvals" : kind === "mentoring" ? "Mentoring Logs" : copy.title)
+                  : copy.title}
+              </span>
+            </div>
+            <div className="grid grid-cols-[1fr_auto] items-start gap-4 sm:items-end">
+              <div>
+                <h1 className="text-[28px] font-extrabold tracking-[-0.04em] text-[#182643] sm:text-[34px]">
+                  {isFaculty
+                    ? (kind === "internship" ? "Internship Approvals" : kind === "mentoring" ? "Mentoring Logs" : copy.title)
+                    : copy.title}
+                </h1>
+                <p className="mt-1.5 max-w-2xl text-sm text-[#6c7890] leading-relaxed">
+                  {copy.description}
+                </p>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">{copy.title}</h1>
-              <p className="max-w-2xl text-xs sm:text-sm text-slate-200 leading-relaxed">{copy.description}</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold shadow-2xs ${
+                  isFaculty
+                    ? "border-emerald-200/80 bg-emerald-50/90 text-emerald-800"
+                    : "border-blue-200/80 bg-blue-50/90 text-blue-800"
+                }`}>
+                  {kind === "internship" ? (
+                    <BriefcaseBusiness className={`h-4 w-4 ${isFaculty ? "text-emerald-600" : "text-blue-600"}`} />
+                  ) : (
+                    <Route className={`h-4 w-4 ${isFaculty ? "text-emerald-600" : "text-blue-600"}`} />
+                  )}
+                  <span>{isFaculty ? (kind === "internship" ? "Evidence Review" : "Active Logs") : "Verified Track"}</span>
+                </span>
+              </div>
             </div>
           </div>
           {kind === "progress" && <ProgressPage />}
