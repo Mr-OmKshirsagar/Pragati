@@ -121,6 +121,48 @@ export async function logAuditEntry(entry: {
 }
 
 /**
+ * Log an immutable audit event for compliance ledger tracking (Phase 11 Specification)
+ */
+export async function logAuditEvent(params: {
+  institutionId: string;
+  userId?: string;
+  action:
+    | "INTERNSHIP_VERIFIED"
+    | "INTERNSHIP_REJECTED"
+    | "EVIDENCE_UPLOADED"
+    | "SKILL_GAP_DETECTED"
+    | "INTERVENTION_CREATED"
+    | "INTERVENTION_RESOLVED"
+    | "PLACEMENT_RULE_MODIFIED"
+    | "DRIVE_PUBLISHED"
+    | "APPLICATION_SUBMITTED"
+    | string;
+  resourceType:
+    | "INTERNSHIP"
+    | "EVIDENCE"
+    | "SKILL_GAP"
+    | "DRIVE"
+    | "APPLICATION"
+    | string;
+  resourceId?: string;
+  metadata?: Record<string, unknown>;
+  ipAddress?: string;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(auditLogs).values({
+    institutionId: params.institutionId,
+    userId: params.userId,
+    action: params.action,
+    resourceType: params.resourceType,
+    resourceId: params.resourceId,
+    metadata: params.metadata || {},
+    ipAddress: params.ipAddress,
+  });
+}
+
+/**
  * Log internship mutation
  */
 export async function logInternshipMutation(data: {
