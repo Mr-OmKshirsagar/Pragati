@@ -15,29 +15,40 @@ export default function Skills() {
   if (query.isLoading) return <SkillsSkeleton />;
   if (query.isError || !query.data) return <div className="grid min-h-screen place-items-center bg-[#f5f7fb] text-sm text-[#64718a]">We couldn&apos;t load Skills &amp; Assessments.</div>;
   return (
-    <PragatiFrame title="Skills & Assessments" activePath="/skills">
+    <PragatiFrame title="Skills & assessments" activePath="/skills">
       <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10">
         <div className="mx-auto max-w-[1240px]">
-          <header className="mb-7 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div>
-              <div className="mb-2 eyebrow">Capability map</div>
-              <h1 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#182643] sm:text-[34px]">Skills &amp; Assessments</h1>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6c7890]">Explore verified capability scores, assessment history, related gaps, and the interventions that move a skill forward.</p>
-            </div>
-            <div className="grid grid-flow-col auto-cols-max items-center gap-3">
-              <div className="grid grid-cols-[auto_1fr] items-center gap-2 rounded-xl border border-[#dfe5ef] bg-white px-3 py-2.5 text-xs font-medium text-[#6e7b93] shadow-sm">
-                <ShieldCheck className="h-4 w-4 text-[#16a889]" />
-                <span>{skills.length} skills tracked</span>
+          <div className="relative mb-7 overflow-hidden rounded-3xl bg-gradient-to-r from-[#07172B] via-[#0C2D48] to-[#143D66] p-6 sm:p-8 text-white shadow-sm">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-blue-600/15 blur-3xl" />
+            <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-indigo-600/15 blur-3xl" />
+
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-blue-200 border border-white/15 backdrop-blur-xs">
+                  <Sparkles className="h-3.5 w-3.5 text-blue-300" />
+                  <span>CAPABILITY MAP</span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">Skills &amp; Assessments</h1>
+                <p className="max-w-2xl text-xs sm:text-sm text-slate-200 leading-relaxed">
+                  Explore verified capability scores, assessment history, related gaps, and the interventions that move a skill forward.
+                </p>
               </div>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="grid grid-flow-col auto-cols-max items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-md transition hover:opacity-90 active:scale-95"
-              >
-                <PlusCircle className="h-4 w-4" />
-                <span>Take Assessment</span>
-              </button>
+
+              <div className="flex flex-wrap items-center gap-3 shrink-0">
+                <div className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3.5 py-2.5 text-xs font-medium text-white shadow-xs backdrop-blur-xs">
+                  <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                  <span>{skills.length} skills tracked</span>
+                </div>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-950/20 hover:from-[#EA580C] hover:to-[#C2410C] active:scale-95 transition-all"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  <span>Take Assessment</span>
+                </button>
+              </div>
             </div>
-          </header>
+          </div>
 
           <div className="mb-5 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
             {[

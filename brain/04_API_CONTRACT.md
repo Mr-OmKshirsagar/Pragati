@@ -1,4 +1,4 @@
-﻿# PRAGATI — API CONTRACT
+# PRAGATI — API CONTRACT
 
 ## 1. Base URL
 
@@ -137,7 +137,7 @@ Only authorized users can verify.
 
 ---
 
-## 13. Placement
+## 13. Placement & Career Governance (Unified Admin & T&P Architecture)
 
 ```text
 POST /recruitment-drives
@@ -146,7 +146,10 @@ GET  /recruitment-drives/{id}
 POST /recruitment-drives/{id}/evaluate
 GET  /recruitment-drives/{id}/eligible-students
 POST /recruitment-drives/{id}/publish
+DELETE /recruitment-drives/{id}
 ```
+
+> **System Design Note**: Training & Placement (T&P) operations and System Administration are merged into a unified Institutional Administration & Placement Governance desk (`/admin/placement` & `/tnp`). Both `ADMIN` and `TNP_COORDINATOR` share unified management over placement drives, applicant rosters, AST eligibility criteria, and Excel exports.
 
 ---
 
@@ -160,12 +163,14 @@ GET  /recruitment-drives/{id}/applications
 
 ---
 
-## 15. Reports
+## 15. Reports & Governance Dashboards
 
 ```text
+GET /admin/overview
+GET /admin/placement
 GET /hod/dashboard
 GET /faculty/dashboard
-GET /tnp/dashboard
+GET /tnp/dashboard (aliased to /admin/placement)
 GET /students/me/dashboard
 ```
 

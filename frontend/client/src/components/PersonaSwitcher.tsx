@@ -38,13 +38,13 @@ export default function PersonaSwitcher() {
     },
     {
       role: "TNP_COORDINATOR",
-      label: "T&P Officer",
+      label: "T&P & Placement",
       name: "Vikram Malhotra",
       icon: Briefcase,
     },
     {
       role: "ADMIN",
-      label: "Admin",
+      label: "System & Placement Admin",
       name: "Platform Admin",
       icon: ShieldCheck,
     },

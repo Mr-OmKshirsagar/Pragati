@@ -120,7 +120,14 @@ const academicYearColumns: TableColumn<AcademicYear>[] = [
     key: "status",
     label: "Status",
     width: "15%",
-    render: (value) => <StatusBadge status={value} />,
+    render: (value) => {
+      const yearStatusMap: Record<string, "active" | "inactive" | "archived"> = {
+        active: "active",
+        inactive: "inactive",
+        archived: "archived",
+      };
+      return <StatusBadge status={yearStatusMap[value as string] ?? "inactive"} />;
+    },
   },
 ];
 

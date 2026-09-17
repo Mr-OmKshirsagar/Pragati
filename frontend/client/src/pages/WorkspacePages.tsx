@@ -6,14 +6,39 @@ import { AlertTriangle, BookOpenCheck, BriefcaseBusiness, CalendarDays, Check, C
 const pageCopy: Record<string, { eyebrow: string; title: string; description: string }> = {
   progress: { eyebrow: "Student trajectory", title: "My Progress", description: "See how your academic, skill, and evidence milestones are building toward career readiness." },
   skills: { eyebrow: "Capability map", title: "Skills & Assessments", description: "Track verified skill scores, assessment history, and the interventions that can move your profile forward." },
-  internship: { eyebrow: "Evidence trail", title: "Internship Evidence", description: "Collect, organize, and follow the verification state of every internship milestone." },
+  internship: { eyebrow: "Evidence trail", title: "Internship evidence", description: "Collect, organize, and follow the verification state of every internship milestone." },
   passport: { eyebrow: "Shareable profile", title: "Career Passport", description: "A trusted, evidence-aware profile that brings academics, skills, achievements, and opportunities together." },
   mentoring: { eyebrow: "Human support", title: "Mentoring", description: "Turn rule-generated findings into focused conversations, sessions, and measurable outcomes." },
 };
 
 export function WorkspacePage({ kind }: { kind: keyof typeof pageCopy }) {
   const copy = pageCopy[kind];
-  return <PragatiFrame title={copy.title} activePath={kind === "passport" ? "/career-passport" : `/${kind}`}><main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10"><div className="mx-auto max-w-[1240px]"><header className="mb-7"><div className="mb-2 eyebrow">{copy.eyebrow}</div><h1 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#182643] sm:text-[34px]">{copy.title}</h1><p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6c7890]">{copy.description}</p></header>{kind === "progress" && <ProgressPage />}{kind === "skills" && <SkillsPage />}{kind === "internship" && <InternshipPage />}{kind === "passport" && <PassportPage />}{kind === "mentoring" && <MentoringPage />}</div></main></PragatiFrame>;
+  return (
+    <PragatiFrame title={copy.title} activePath={kind === "passport" ? "/career-passport" : `/${kind}`}>
+      <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-12 pt-7 sm:px-7 xl:px-10">
+        <div className="mx-auto max-w-[1240px]">
+          <div className="relative mb-7 overflow-hidden rounded-3xl bg-gradient-to-r from-[#07172B] via-[#0C2D48] to-[#143D66] p-6 sm:p-8 text-white shadow-sm">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-blue-600/15 blur-3xl" />
+            <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-indigo-600/15 blur-3xl" />
+
+            <div className="relative z-10 space-y-2">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-blue-200 border border-white/15 backdrop-blur-xs">
+                <Sparkles className="h-3.5 w-3.5 text-blue-300" />
+                <span>{copy.eyebrow.toUpperCase()}</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">{copy.title}</h1>
+              <p className="max-w-2xl text-xs sm:text-sm text-slate-200 leading-relaxed">{copy.description}</p>
+            </div>
+          </div>
+          {kind === "progress" && <ProgressPage />}
+          {kind === "skills" && <SkillsPage />}
+          {kind === "internship" && <InternshipPage />}
+          {kind === "passport" && <PassportPage />}
+          {kind === "mentoring" && <MentoringPage />}
+        </div>
+      </main>
+    </PragatiFrame>
+  );
 }
 
 function ProgressPage() {

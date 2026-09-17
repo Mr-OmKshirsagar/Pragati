@@ -107,17 +107,11 @@ export default function AssessmentPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden border-b border-[color:var(--primary)]/15 bg-gradient-to-r from-[color:var(--role-bg,#0b1226)] via-[color:var(--role-bg,#0b1226)] to-[color:var(--role-bg,#0b1226)] px-4 py-8 sm:px-7 text-white"
-          style={{
-            background: `
-              radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--primary) 24%, transparent), transparent 28%),
-              linear-gradient(135deg, var(--role-bg, #0b1226) 0%, color-mix(in srgb, var(--role-bg, #0b1226) 70%, var(--primary)) 52%, var(--primary) 100%)
-            `,
-          }}
+          className="relative overflow-hidden border-b border-blue-500/20 bg-gradient-to-r from-[#07172B] via-[#0C2D48] to-[#143D66] px-4 py-8 sm:px-7 text-white"
         >
           {/* Ambient glow */}
-          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ background: 'color-mix(in srgb, var(--primary) 20%, transparent)' }} />
-          <div className="pointer-events-none absolute right-1/3 -bottom-24 h-64 w-64 rounded-full blur-3xl" style={{ background: 'color-mix(in srgb, var(--primary) 12%, transparent)' }} />
+          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl bg-blue-600/15" />
+          <div className="pointer-events-none absolute right-1/3 -bottom-24 h-64 w-64 rounded-full blur-3xl bg-indigo-600/15" />
 
           <div className="relative z-10 max-w-7xl mx-auto">
             {/* Status Telemetry Row */}

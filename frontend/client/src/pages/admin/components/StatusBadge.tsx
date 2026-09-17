@@ -1,9 +1,9 @@
 interface StatusBadgeProps {
-  status: "healthy" | "degraded" | "down" | "active" | "inactive" | "pending" | "verified" | "rejected";
+  status: "healthy" | "degraded" | "down" | "active" | "inactive" | "pending" | "verified" | "rejected" | "archived" | string;
   label?: string;
 }
 
-const statusConfig = {
+const statusConfig: Record<string, { bg: string; text: string; dot: string; label: string }> = {
   healthy: {
     bg: "bg-[#e5f7f2]",
     text: "text-[#13876f]",
@@ -52,10 +52,23 @@ const statusConfig = {
     dot: "bg-[#e74c3c]",
     label: "Rejected",
   },
+  archived: {
+    bg: "bg-[#f0f2f6]",
+    text: "text-[#7d8ba3]",
+    dot: "bg-[#b4bcd1]",
+    label: "Archived",
+  },
+};
+
+const fallbackConfig = {
+  bg: "bg-[#f0f2f6]",
+  text: "text-[#7d8ba3]",
+  dot: "bg-[#b4bcd1]",
+  label: "Unknown",
 };
 
 export function StatusBadge({ status, label }: StatusBadgeProps) {
-  const config = statusConfig[status];
+  const config = statusConfig[status] ?? fallbackConfig;
 
   return (
     <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-semibold ${config.bg} ${config.text}`}>

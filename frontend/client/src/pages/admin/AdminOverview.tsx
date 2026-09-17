@@ -281,8 +281,8 @@ export default function AdminOverview() {
     <AdminLayout currentPage="/admin/overview">
       {/* Toast Notification */}
       {exportToast && (
-        <div className="fixed top-20 right-8 z-50 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-900 shadow-xl animate-in fade-in slide-in-from-top-3">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+        <div className="fixed top-20 right-8 z-50 flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-900 shadow-xl animate-in fade-in slide-in-from-top-3">
+          <CheckCircle2 className="h-4 w-4 text-rose-600 shrink-0" />
           <span>{exportToast}</span>
         </div>
       )}
@@ -305,8 +305,8 @@ export default function AdminOverview() {
                 <Fingerprint className="h-3 w-3 text-rose-300" />
                 Campus RBAC Active
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300 border border-emerald-500/20">
-                <ShieldCheck className="h-3 w-3 text-emerald-400" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-medium text-rose-300 border border-rose-500/20">
+                <ShieldCheck className="h-3 w-3 text-rose-400" />
                 SHA-256 Vault: Tamper-Proof
               </span>
             </div>
@@ -352,12 +352,12 @@ export default function AdminOverview() {
 
           {/* Scan Completion Banner */}
           {scanComplete && (
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-emerald-500/20 border border-emerald-500/40 p-3 text-xs font-semibold text-emerald-200 animate-in fade-in">
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-rose-500/20 border border-rose-500/40 p-3 text-xs font-semibold text-rose-200 animate-in fade-in">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <CheckCircle2 className="h-4 w-4 text-rose-400" />
                 <span>Cryptographic Audit Complete: All 1,247 student document hashes match SHA-256 institutional state. 0 tamper anomalies.</span>
               </div>
-              <span className="text-[10px] text-emerald-300 opacity-80">Cycle Check: PASSED</span>
+              <span className="text-[10px] text-rose-300 opacity-80">Cycle Check: PASSED</span>
             </div>
           )}
         </div>
@@ -374,7 +374,7 @@ export default function AdminOverview() {
             <div className="grid h-9 w-9 place-items-center rounded-xl bg-rose-50 text-[#CA183F] group-hover:bg-[#CA183F] group-hover:text-white transition-colors">
               <GraduationCap className="h-4 w-4" />
             </div>
-            <span className="flex items-center gap-0.5 text-[11px] font-bold text-emerald-600">
+            <span className="flex items-center gap-0.5 text-[11px] font-bold text-rose-600">
               <ArrowUpRight className="h-3 w-3" /> +12%
             </span>
           </div>
@@ -396,13 +396,13 @@ export default function AdminOverview() {
         {/* Faculty */}
         <div
           onClick={() => setLocation("/admin/faculty")}
-          className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md"
+          className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-rose-300 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-teal-50 text-teal-700 group-hover:bg-teal-700 group-hover:text-white transition-colors">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-rose-50 text-rose-700 group-hover:bg-rose-700 group-hover:text-white transition-colors">
               <Users className="h-4 w-4" />
             </div>
-            <span className="rounded bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold text-teal-700">
+            <span className="rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700">
               {kpiData.mentorRatio}
             </span>
           </div>
@@ -414,10 +414,10 @@ export default function AdminOverview() {
           </div>
           <div className="mt-3 flex items-center justify-between text-[10px] text-slate-500 font-medium">
             <span>Active Roster</span>
-            <span className="font-bold text-teal-700">100% Synced</span>
+            <span className="font-bold text-rose-700">100% Synced</span>
           </div>
           <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-            <div className="h-full rounded-full bg-teal-600" style={{ width: "100%" }} />
+            <div className="h-full rounded-full bg-rose-600" style={{ width: "100%" }} />
           </div>
         </div>
 
@@ -486,7 +486,7 @@ export default function AdminOverview() {
             <div className="grid h-9 w-9 place-items-center rounded-xl bg-orange-50 text-orange-700 group-hover:bg-orange-700 group-hover:text-white transition-colors">
               <AlertTriangle className="h-4 w-4" />
             </div>
-            <span className="flex items-center gap-0.5 text-[11px] font-bold text-emerald-600">
+            <span className="flex items-center gap-0.5 text-[11px] font-bold text-rose-600">
               <ArrowDownRight className="h-3 w-3" /> -15%
             </span>
           </div>
@@ -562,14 +562,14 @@ export default function AdminOverview() {
 
           <button
             onClick={() => setLocation("/admin/faculty")}
-            className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 text-left transition hover:border-teal-400 hover:bg-teal-50/30 group"
+            className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 text-left transition hover:border-rose-400 hover:bg-rose-50/30 group"
           >
             <div className="flex items-center gap-3">
-              <div className="grid h-8 w-8 place-items-center rounded-lg bg-white shadow-xs text-teal-700">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-white shadow-xs text-rose-700">
                 <Users className="h-4 w-4" />
               </div>
               <div>
-                <div className="text-xs font-bold text-slate-800 group-hover:text-teal-700">Rebalance Wards</div>
+                <div className="text-xs font-bold text-slate-800 group-hover:text-rose-700">Rebalance Wards</div>
                 <div className="text-[10px] text-slate-500">Maintain optimal 1:15 ratio</div>
               </div>
             </div>

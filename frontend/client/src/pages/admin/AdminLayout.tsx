@@ -99,7 +99,7 @@ export default function AdminLayout({ children, currentPage }: AdminLayoutProps)
         <aside className="sticky top-0 self-start hidden h-screen bg-white text-slate-800 lg:grid lg:grid-rows-[auto_1fr_auto] overflow-hidden z-40 border-r border-slate-200 shadow-2xs">
           {/* Brand Header */}
           <div className="grid h-[86px] grid-cols-[auto_1fr] items-center gap-3 px-5 border-b border-slate-100/80">
-            <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-tr from-[#0F766E] to-[#06B6D4] text-white shadow-xs">
+            <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-tr from-[#B22746] to-[#E05271] text-white shadow-xs">
               <Compass className="h-5 w-5" />
             </div>
             <div>
@@ -131,14 +131,14 @@ export default function AdminLayout({ children, currentPage }: AdminLayoutProps)
                         onClick={() => handleNavigation(item.route)}
                         className={`group flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-sm transition-all duration-150 ${
                           isActive
-                            ? "bg-emerald-50/90 text-emerald-800 font-bold shadow-2xs border border-emerald-200/70"
+                            ? "bg-rose-50/90 text-rose-800 font-bold shadow-2xs border border-rose-200/70"
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
                         }`}
                       >
                         <Icon
                           className={`h-[18px] w-[18px] shrink-0 transition-colors ${
                             isActive
-                              ? "text-emerald-700"
+                              ? "text-rose-700"
                               : "text-slate-400 group-hover:text-slate-600"
                           }`}
                         />
@@ -179,7 +179,7 @@ export default function AdminLayout({ children, currentPage }: AdminLayoutProps)
                     <span>Admin Workspace</span>
                     <span className="text-slate-300">/</span>
                     <span className="font-bold text-slate-900 capitalize">{pageTitle}</span>
-                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-teal-50 text-teal-800 border border-teal-200/70">
+                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-800 border border-rose-200/70">
                       ADMIN
                     </span>
                   </div>
@@ -218,7 +218,7 @@ export default function AdminLayout({ children, currentPage }: AdminLayoutProps)
               <aside className="relative grid h-full w-[276px] grid-rows-[auto_1fr_auto] bg-white text-slate-900 shadow-2xl">
                 <div className="grid grid-cols-[1fr_auto] items-center border-b border-slate-100">
                   <div className="grid h-[86px] grid-cols-[auto_1fr] items-center gap-3 px-5">
-                    <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-tr from-[#0F766E] to-[#06B6D4] text-white shadow-xs">
+                    <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-tr from-[#B22746] to-[#E05271] text-white shadow-xs">
                       <Compass className="h-5 w-5" />
                     </div>
                     <div>

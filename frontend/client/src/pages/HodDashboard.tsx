@@ -456,7 +456,7 @@ export default function HodDashboard() {
           <header className="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <span className="flex h-2.5 w-2.5 rounded-full bg-[#10b981] shadow-[0_0_0_4px_rgba(16,185,129,0.18)]" />
+                <span className="flex h-2.5 w-2.5 rounded-full bg-[#7C6FD4] shadow-[0_0_0_4px_rgba(94,83,186,0.18)]" />
                 <span className="eyebrow" style={{ color: theme.activePillBg }}>
                   Computer Science & Engineering · HOD Command Center
                 </span>
@@ -471,7 +471,7 @@ export default function HodDashboard() {
 
             <div className="flex flex-wrap items-center gap-2.5">
               {/* Cohort filter pills */}
-              <div className="flex items-center rounded-xl border border-emerald-200/70 bg-white p-1 shadow-2xs">
+              <div className="flex items-center rounded-xl border border-purple-200/70 bg-white p-1 shadow-2xs">
                 <button
                   onClick={() => setSelectedCohort("ALL")}
                   style={selectedCohort === "ALL" ? { backgroundColor: theme.activePillBg, boxShadow: theme.activePillShadow } : undefined}
@@ -519,7 +519,7 @@ export default function HodDashboard() {
 
               <button
                 onClick={handleExportReport}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-emerald-50/60 hover:text-emerald-800 hover:border-emerald-300"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-purple-50/60 hover:text-purple-800 hover:border-purple-300"
               >
                 <Download className="h-4 w-4" style={{ color: theme.activePillBg }} />
                 <span>Export Audit PDF</span>
@@ -561,7 +561,7 @@ export default function HodDashboard() {
                           : idx === 0
                           ? { backgroundColor: "#edf0ff", color: "#425ec7" }
                           : idx === 2
-                          ? { backgroundColor: "#e6f8f1", color: "#0d9468" }
+                          ? { backgroundColor: "#ede9fb", color: "#5E53BA" }
                           : { backgroundColor: "#fff4e5", color: "#cf7913" }
                       }
                     >
@@ -646,7 +646,7 @@ export default function HodDashboard() {
 
               <div className="mt-5 flex items-center justify-between rounded-xl border border-[#e5ecf6] bg-[#f9fafc] p-3 text-xs text-[#5c6b84]">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-[#10b981]" />
+                  <ShieldCheck className="h-4 w-4 text-[#7C6FD4]" />
                   <span>Criterion 2.6.2 Compliance: Verified through faculty evaluation logs</span>
                 </div>
                 <span className="font-semibold" style={{ color: theme.activePillBg }}>Audit Ready ✓</span>
@@ -657,7 +657,7 @@ export default function HodDashboard() {
             <div className="rounded-2xl border border-[#dfe5ef] bg-white p-6 shadow-sm">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#0d9468]">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5E53BA]">
                     T&P Placement Alignment
                   </div>
                   <h2 className="text-lg font-extrabold text-[#17243e]">Drive Eligibility Pipeline</h2>
@@ -673,14 +673,14 @@ export default function HodDashboard() {
               </div>
 
               <div className="space-y-3.5">
-                <div className="rounded-xl border border-[#dff2ea] bg-[#f2fbf7] p-3.5">
+                <div className="rounded-xl border border-[#e0d9fb] bg-[#f5f2fd] p-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#144f3b]">Tier-1 Product Eligible</span>
-                    <span className="text-base font-extrabold text-[#0d9468]">
+                    <span className="text-xs font-bold text-[#2d2568]">Tier-1 Product Eligible</span>
+                    <span className="text-base font-extrabold text-[#5E53BA]">
                       {data.placementReadiness.eligibleTier1} / 248
                     </span>
                   </div>
-                  <p className="mt-1 text-[11px] text-[#2c775f]">
+                  <p className="mt-1 text-[11px] text-[#5048a0]">
                     Criteria: CGPA ≥ 7.5, DSA ≥ 70, Zero backlogs, verified internship
                   </p>
                 </div>
@@ -871,7 +871,7 @@ export default function HodDashboard() {
                           {faculty.flaggedCount > 0 ? (
                             <span className="font-bold text-[#cf3813]">{faculty.flaggedCount} flagged</span>
                           ) : (
-                            <span className="font-bold text-[#10b981]">All on track</span>
+                            <span className="font-bold text-[#7C6FD4]">All on track</span>
                           )}
                         </div>
                       </div>
@@ -887,7 +887,7 @@ export default function HodDashboard() {
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
                             faculty.complianceRate >= 95
-                              ? "bg-[#e5f7ed] text-[#138753]"
+                              ? "bg-[#ede9fb] text-[#5E53BA]"
                               : "bg-[#fff7e6] text-[#b7791f]"
                           }`}
                         >
