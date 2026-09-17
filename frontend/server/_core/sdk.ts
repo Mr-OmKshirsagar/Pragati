@@ -7,6 +7,7 @@ import { SignJWT, jwtVerify } from "jose";
 import type { User } from "../../drizzle/schema";
 import * as db from "../db";
 import { ENV } from "./env";
+import { supabaseAdmin } from "./supabase";
 import type {
   ExchangeTokenRequest,
   ExchangeTokenResponse,
@@ -30,11 +31,8 @@ const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserI
 
 class OAuthService {
   constructor(private client: ReturnType<typeof axios.create>) {
-    console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
-    if (!ENV.oAuthServerUrl) {
-      console.error(
-        "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
-      );
+    if (ENV.oAuthServerUrl) {
+      console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
     }
   }
 
@@ -200,8 +198,16 @@ class SDKServer {
     cookieValue: string | undefined | null
   ): Promise<{ openId: string; appId: string; name: string } | null> {
     if (!cookieValue) {
-      console.warn("[Auth] Missing session cookie");
       return null;
+    }
+
+    if (cookieValue.startsWith("demo_")) {
+      const role = cookieValue.replace("demo_", "");
+      return {
+        openId: cookieValue,
+        appId: ENV.appId || "pragati",
+        name: `Demo ${role}`,
+      };
     }
 
     try {
@@ -216,7 +222,6 @@ class SDKServer {
         !isNonEmptyString(appId) ||
         !isNonEmptyString(name)
       ) {
-        console.warn("[Auth] Session payload missing required fields");
         return null;
       }
 
@@ -225,8 +230,7 @@ class SDKServer {
         appId,
         name,
       };
-    } catch (error) {
-      console.warn("[Auth] Session verification failed", String(error));
+    } catch {
       return null;
     }
   }
@@ -266,8 +270,63 @@ class SDKServer {
     if (!sessionToken) {
       const authHeader = req.headers.authorization;
       if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
-        sessionToken = authHeader.slice(7);
+        sessionToken = authHeader.slice(7).trim();
       }
+    }
+
+    if (!sessionToken) {
+      throw ForbiddenError("Invalid session cookie");
+    }
+
+    // 3. Fast-path: Handle demo persona tokens (demo_STUDENT, demo_FACULTY, etc.)
+    if (sessionToken.startsWith("demo_")) {
+      const roleStr = sessionToken.replace("demo_", "");
+      const now = new Date();
+      const personaNames: Record<string, string> = {
+        STUDENT: "Rahul Sharma",
+        FACULTY: "Dr. Anand Verma",
+        HOD: "Prof. Sunita Rao",
+        TNP_COORDINATOR: "Vikram Malhotra",
+        ADMIN: "Platform Administrator",
+      };
+      const demoName = personaNames[roleStr] || `Demo ${roleStr}`;
+
+      return {
+        id: -1,
+        openId: sessionToken,
+        name: demoName,
+        email: `${roleStr.toLowerCase()}@northstar.edu`,
+        loginMethod: "demo",
+        role: roleStr === "ADMIN" ? "admin" : "user",
+        createdAt: now,
+        updatedAt: now,
+        lastSignedIn: now,
+      } as AuthenticatedUser;
+    }
+
+    // 4. Supabase Auth token verification
+    try {
+      const {
+        data: { user: authUser },
+        error,
+      } = await supabaseAdmin.auth.getUser(sessionToken);
+
+      if (!error && authUser) {
+        const now = new Date();
+        return {
+          id: -1,
+          openId: authUser.id,
+          name: authUser.user_metadata?.name || authUser.email || "User",
+          email: authUser.email || null,
+          loginMethod: "supabase",
+          role: "user",
+          createdAt: now,
+          updatedAt: now,
+          lastSignedIn: now,
+        } as AuthenticatedUser;
+      }
+    } catch {
+      // Not a Supabase token or Supabase unconfigured, proceed to local session verification
     }
 
     const session = await this.verifySession(sessionToken);
@@ -289,8 +348,8 @@ class SDKServer {
     const signedInAt = new Date();
     let user = await db.getUserByOpenId(sessionUserId);
 
-    // If user not in DB, sync from OAuth server automatically
-    if (!user) {
+    // If user not in DB and OAuth is configured, sync from OAuth server automatically
+    if (!user && ENV.oAuthServerUrl) {
       try {
         const userInfo = await this.getUserInfoWithJwt(sessionToken ?? "");
         await db.upsertUser({
@@ -308,13 +367,25 @@ class SDKServer {
     }
 
     if (!user) {
-      throw ForbiddenError("User not found");
+      return {
+        id: -1,
+        openId: session.openId,
+        name: session.name || "User",
+        email: null,
+        loginMethod: "cookie",
+        role: "user",
+        createdAt: signedInAt,
+        updatedAt: signedInAt,
+        lastSignedIn: signedInAt,
+      } as AuthenticatedUser;
     }
 
-    await db.upsertUser({
-      openId: user.openId,
-      lastSignedIn: signedInAt,
-    });
+    try {
+      await db.upsertUser({
+        openId: user.openId,
+        lastSignedIn: signedInAt,
+      });
+    } catch {}
 
     return user;
   }

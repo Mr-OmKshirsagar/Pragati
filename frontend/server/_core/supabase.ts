@@ -1,4 +1,10 @@
+import { config as loadEnv } from "dotenv";
+import path from "path";
 import { createClient } from "@supabase/supabase-js";
+
+// Ensure environment variables are loaded from frontend/.env or backend/.env
+loadEnv();
+loadEnv({ path: path.resolve(process.cwd(), "../backend/.env"), override: false });
 
 const supabaseUrl = process.env.SUPABASE_URL || "";
 const supabaseServiceKey =
