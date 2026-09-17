@@ -2,7 +2,7 @@ import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import { COOKIE_NAME } from "@shared/const";
-import type { AppRouter } from "../../../server/routers";
+import type { AppRouter } from "../../../../backend/src/routers";
 
 export const trpc = createTRPCReact<AppRouter>();
 

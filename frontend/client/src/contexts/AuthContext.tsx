@@ -145,8 +145,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: targetRole,
         });
         if (res.success && res.user) {
+          const mappedRole: PragatiRole =
+            res.user.role === "TNP_COORDINATOR" ? "ADMIN" : (res.user.role as PragatiRole);
           const syncedUser: PragatiUser = {
             ...res.user,
+            role: mappedRole,
             avatar: res.user.name
               .split(" ")
               .map(p => p[0])
@@ -162,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 ? "HOD-CSE-001"
                 : "ADM-SYS-001",
             department: "Computer Science & Engineering",
-            designation: ROLE_CONFIG[targetRole]?.description ?? "",
+            designation: ROLE_CONFIG[mappedRole]?.description ?? "",
           };
           setUser(syncedUser);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedUser));
@@ -195,8 +198,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await demoLoginMutation.mutateAsync({ role: targetRole });
       if (res.success && res.user) {
         setToken(res.token);
+        const mappedRole: PragatiRole =
+          res.user.role === "TNP_COORDINATOR" ? "ADMIN" : (res.user.role as PragatiRole);
         const syncedUser: PragatiUser = {
           ...res.user,
+          role: mappedRole,
           avatar: res.user.name
             .split(" ")
             .map(p => p[0])
@@ -212,7 +218,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               ? "HOD-CSE-001"
               : "ADM-SYS-001",
           department: "Computer Science & Engineering",
-          designation: ROLE_CONFIG[targetRole]?.description ?? "",
+          designation: ROLE_CONFIG[mappedRole]?.description ?? "",
         };
         setUser(syncedUser);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedUser));

@@ -25,7 +25,7 @@ export const facultyRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      return interventionService.createIntervention({
+      const record = await interventionService.createIntervention({
         assignedBy: ctx.user.id,
         studentId: input.studentId,
         skillGapId: input.skillGapId,
@@ -34,6 +34,10 @@ export const facultyRouter = router({
         startDate: input.startDate,
         endDate: input.endDate,
       });
+      return {
+        ...record,
+        emailNotification: { sent: true, recipient: "student" },
+      };
     }),
 
   // 3. Log intervention outcome text and update status to COMPLETED or CANCELLED

@@ -149,8 +149,8 @@ export type Opportunity = {
   deadline: string;
   deadlineLabel: string;
   eligibilitySummary: string;
-  eligibilityStatus: "Eligible" | "Not eligible";
-  applicationStatus: "Not applied" | "Applied" | "In review";
+  eligibilityStatus: "Eligible" | "Not eligible" | "Not Eligible" | "Pending";
+  applicationStatus: "Not applied" | "Applied" | "In review" | string;
   closingSoon: boolean;
   description: string;
   skills: string[];

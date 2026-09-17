@@ -66,7 +66,7 @@ function StudentFullDashboard({
   opportunities,
   opportunitiesLoading,
 }: {
-  data: StudentDashboard;
+  data: any;
   opportunities: Opportunity[];
   opportunitiesLoading: boolean;
 }) {

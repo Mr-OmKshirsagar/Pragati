@@ -249,7 +249,7 @@ export default function Opportunities() {
           </div>
 
           <div className="grid gap-4 xl:grid-cols-2">
-            {visible.map((item, index) => (
+            {visible.map((item: any, index) => (
               <OpportunityCard key={item.id} item={item} index={index} applied={appliedIds.includes(item.id) || item.applicationStatus !== "Not applied"} onOpen={() => setSelected(item)} onApply={() => apply(item)} />
             ))}
           </div>

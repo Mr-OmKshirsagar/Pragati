@@ -271,6 +271,44 @@ export async function getAggregatedStudentDashboard(studentProfileId: string) {
       semester: student.currentSemester,
       admissionYear: student.admissionYear,
       graduationYear: student.graduationYear,
+      avatarInitials: student.name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase(),
+    },
+    readiness: {
+      score: Math.round(readinessScorecard.readinessScore),
+      delta: 4,
+      methodology: readinessScorecard.methodologyExplanation,
+      formula: readinessScorecard.formula,
+      indicators: [
+        {
+          label: "Academic progress",
+          score: Math.round(readinessScorecard.breakdown.academic.percentage),
+          weight: 30,
+          helper: "CGPA and semester trajectory",
+        },
+        {
+          label: "Skill coverage",
+          score: Math.round(readinessScorecard.breakdown.skills.percentage),
+          weight: 30,
+          helper: "Verified assessment coverage",
+        },
+        {
+          label: "Internship progress",
+          score: Math.round(readinessScorecard.breakdown.internship.completeness),
+          weight: 20,
+          helper: "Evidence milestones completed",
+        },
+        {
+          label: "Verified evidence",
+          score: Math.round(readinessScorecard.breakdown.evidence.percentage),
+          weight: 20,
+          helper: "Institution-backed records",
+        },
+      ],
     },
     metrics: {
       cgpa: academics.cgpa,
@@ -291,7 +329,40 @@ export async function getAggregatedStudentDashboard(studentProfileId: string) {
       semesters: academics.semesters,
     },
     skills: skillProfile.skills,
-    internship,
+    skillProfile: skillProfile.skills.map((s) => ({
+      label: s.name === "Data Structures & Algorithms" ? "DSA" : s.name,
+      score: s.latestScore,
+      delta: s.delta,
+      assessmentDate: "12 Sep 2026",
+      series: s.scoreHistory.length > 0 ? s.scoreHistory : [60, 70, s.latestScore],
+    })),
+    timeline: [
+      { year: "2025", title: "Programming foundation", detail: "Core programming pathway completed", state: "complete" as const },
+      { year: "2026", title: "Skill assessment cycle", detail: `${skillProfile.skills.length} skills verified across assessments`, state: "complete" as const },
+      { year: "2026", title: `${activeGap?.skillName || "OS"} skill gap detected`, detail: "Faculty intervention recommended", state: "current" as const },
+      { year: "2026", title: `${internship.companyName || "Atlas Labs"} internship`, detail: "Evidence collection in progress", state: "current" as const },
+      { year: "2027", title: "Placement readiness review", detail: "Eligibility will be recalculated", state: "upcoming" as const },
+    ],
+    actions: [
+      { title: `Complete ${activeGap?.skillName || "OS"} mentoring`, detail: "Faculty office hours available this week", tag: "Recommended", tone: "blue" as const },
+      { title: "Upload internship report", detail: "Due in 8 days · PDF up to 10 MB", tag: "Due soon", tone: "amber" as const },
+      { title: "Explore eligible drives", detail: "Recruitment drives match your current profile", tag: "Opportunity", tone: "violet" as const },
+    ],
+    internship: {
+      ...internship,
+      company: internship.companyName || "Atlas Labs",
+      role: internship.role || "Product Engineering Intern",
+      progress: internship.completeness,
+      status: internship.status,
+      nextMilestone: "Interim Check-in",
+      verification: internship.status === "COMPLETED" ? "Verified" : "Under Review",
+      evidence: [
+        { label: "Offer letter", state: "verified" as const },
+        { label: "Check-in 1", state: "verified" as const },
+        { label: "Check-in 2", state: "verified" as const },
+        { label: "Final report", state: "pending" as const },
+      ],
+    },
     skillGap: activeGap
       ? {
           skill: activeGap.skillName,

@@ -13,7 +13,7 @@ export interface Opportunity {
   deadline: string;
   deadlineLabel: string;
   eligibilitySummary: string;
-  eligibilityStatus: "Eligible" | "Not Eligible" | "Pending";
+  eligibilityStatus: "Eligible" | "Not Eligible" | "Not eligible" | "Pending";
   applicationStatus: string;
   closingSoon: boolean;
   description: string;

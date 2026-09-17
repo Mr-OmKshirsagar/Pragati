@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { departments, users } from "../../drizzle/schema";
 import { getDb } from "../db";
-import { adminProcedure, router } from "../_core/trpc";
+import { adminProcedure, requireRole, router } from "../_core/trpc";
 import * as approvalWorkflowService from "../services/approvalWorkflowService";
 
 export const adminRouter = router({
@@ -51,8 +51,8 @@ export const adminRouter = router({
       });
     }),
 
-  // 4. List all departments in the institution
-  listDepartments: adminProcedure.query(async ({ ctx }) => {
+  // 4. List all departments in the institution (Accessible by Admin and HOD)
+  listDepartments: requireRole(["ADMIN", "HOD"]).query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable." });
 
@@ -62,8 +62,8 @@ export const adminRouter = router({
       .where(eq(departments.institutionId, ctx.user.institutionId));
   }),
 
-  // 5. List all faculty and coordinators in the institution
-  listFaculty: adminProcedure.query(async ({ ctx }) => {
+  // 5. List all faculty and coordinators in the institution (Accessible by Admin and HOD)
+  listFaculty: requireRole(["ADMIN", "HOD"]).query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable." });
 
