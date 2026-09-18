@@ -11,6 +11,17 @@
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?logo=tailwindcss)](https://tailwindcss.com/)
 [![Vitest](https://img.shields.io/badge/Tests-150%2F150%20Passing%20(15%20Suites)-green?logo=vitest)](https://vitest.dev/)
 [![Security](https://img.shields.io/badge/Security-RLS%20%2B%20Zero--IDOR%20%2B%20SHA--256-blueviolet)](https://supabase.com/docs/guides/database/postgres/row-level-security)
+[![Vercel Frontend](https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel)](https://pragati-1.vercel.app/)
+[![Render Backend](https://img.shields.io/badge/Render-API%20Live-46E3B7?logo=render)](https://pragati-dm6s.onrender.com/health)
+
+---
+
+## 🌐 Live Production Deployments
+
+* **Frontend Web Application (Vercel)**: [https://pragati-1.vercel.app/](https://pragati-1.vercel.app/)
+* **Backend API & Health Monitor (Render)**: [https://pragati-dm6s.onrender.com/health](https://pragati-dm6s.onrender.com/health)
+* **Super Admin Governance Portal**: [https://pragati-1.vercel.app/super-admin-pragati01](https://pragati-1.vercel.app/super-admin-pragati01) *(Secured with Master Key & SMTP 2FA)*
+* **Comprehensive Deployment Guide**: See [deploy.md](deploy.md) for full step-by-step instructions for Vercel, Render, and Supabase.
 
 ---
 
@@ -67,6 +78,8 @@ $$\mathbf{Evidence + Monitoring + Intervention + Verification + Eligibility\ Pla
 | **Deterministic AST Placement Engine** | Pure functional recursive AST tree evaluator with boolean `AND`/`OR` nesting | Real-time candidate evaluation comparing actual vs. required values with itemized `[PASS]` and `[FAIL]` tags. |
 | **Portable Career Passport** | Official Northstar Institute transcript with certified ledger, verified skills, and 64-char SHA-256 hash | Replaces unverified paper resumes with a tamper-evident dossier formatted for web and `@media print` PDF export. |
 | **Department Analytics Hub** | Cohort skill heatmap matrix (S3–S6 vs Core Skills), intervention velocity, and placement histograms | Gives Department Heads (HODs) macro-level visibility into academic and employability health. |
+| **Super Admin Platform Governance** | Unlinked security portal (`/super-admin-pragati01`) with SMTP 2FA, tenant provisioning, and soft-delete recovery pool | Enables platform owners to manage institutions, monitor tenant health, and execute emergency lockouts. |
+| **Production Transactional SMTP** | Direct TLS/STARTTLS SMTP dispatcher for 2FA OTP codes, credential welcome emails, and first-login password resets | Delivers institutional emails via Gmail App Passwords or enterprise SMTP with in-memory fallback. |
 
 ---
 
@@ -76,6 +89,11 @@ PRAGATI enforces strict, server-side Role-Based Access Control (RBAC) via tRPC m
 
 ```text
                   ┌─────────────────────────────────────────┐
+                  │            SUPER ADMIN PORTAL           │
+                  │   Multi-Tenant Governance, 2FA, Lockout │
+                  └────────────────────┬────────────────────┘
+                                       │
+                  ┌────────────────────▼────────────────────┐
                   │            INSTITUTION ADMIN            │
                   │   Users, Depts, Master Taxonomy, Audit  │
                   └────────────────────┬────────────────────┘
@@ -97,26 +115,28 @@ PRAGATI enforces strict, server-side Role-Based Access Control (RBAC) via tRPC m
                                                       └───────────────────────┘
 ```
 
-### Role Permissions & Anti-IDOR Governance
+### Role Permissions & Governance
 
 * **Student (`STUDENT`)**:
-  * *Access*: Personal dashboard, semester GPA/CGPA ledger, take continuous assessments, submit milestone evidence, view transparent drive eligibility, 1-click apply, export Career Passport.
-  * *Anti-IDOR Guard*: Server derives student profile strictly from validated JWT session context (`ctx.user.studentProfile.id`). Spoofed client IDs are ignored.
+  * *Access*: Personal dashboard, semester GPA/CGPA ledger, continuous assessments, milestone evidence submission, transparent drive eligibility, 1-click apply, Career Passport export.
+  * *Anti-IDOR Guard*: Server derives student profile strictly from validated JWT session context (`ctx.user.studentProfile.id`). Spoofed client IDs are rejected.
 * **Faculty Mentor (`FACULTY`)**:
   * *Access*: Assigned ward roster (`Teacher-Guardian` scope), view skill-gap alerts, create and log mentoring sessions, review internship evidence, approve with `INSTITUTION_VERIFIED`.
   * *Forbidden*: Cannot modify academic marks, cannot self-assign unassigned cohorts.
 * **Department Head (`HOD`)**:
   * *Access*: Department-wide analytics, semester-wise skill heatmaps (S3–S6), faculty intervention velocity, placement distribution histograms.
-* **Training & Placement Officer (`TNP_COORDINATOR`)**:
+* **Training & Placement Officer (`TNP_COORDINATOR` / `ADMIN`)**:
   * *Access*: Create and publish recruitment drives, build multi-variable AST rules (CGPA, backlogs, skills, verified internships), run candidate roster evaluations, manage applicant pipelines.
 * **System Administrator (`ADMIN`)**:
   * *Access*: Manage institutions, user accounts, departments, master skill taxonomy, system health, and immutable audit logs.
+* **Super Admin / Platform Owner (`SUPER_ADMIN`)**:
+  * *Access*: `/super-admin-pragati01` portal, multi-institution tenant provisioning, soft-delete recovery pool (30-day lifecycle), tenant suspension/lockout, platform-wide metrics.
 
 ---
 
 ## 🏗️ System Architecture & Technology Stack
 
-PRAGATI separates client presentation from backend domain engines into a clean decoupled workspace:
+PRAGATI separates client presentation from backend domain engines into a clean decoupled monorepo:
 
 ```text
 d:\Project\Pragati\
@@ -124,20 +144,21 @@ d:\Project\Pragati\
 │   ├── src/
 │   │   ├── _core/            # Supabase admin client, context, auth, storage, tRPC setup
 │   │   ├── db.ts             # PostgreSQL client connection via postgres.js & Drizzle ORM
-│   │   ├── routers/          # tRPC API routers (auth, student, faculty, dashboard, etc.)
+│   │   ├── routers/          # tRPC API routers (auth, student, faculty, superAdmin, etc.)
 │   │   ├── rules/            # Deterministic engines (skillGapEngine, eligibilityEngine)
-│   │   └── services/         # Domain services (dashboard, internship, audit, ai, etc.)
+│   │   └── services/         # Domain services (email, 2fa, dashboard, internship, audit, ai)
 │   ├── drizzle/              # PostgreSQL schema (26 tables), migrations & RLS policies
 │   ├── scripts/              # Idempotent database seed fixtures (seed.ts)
 │   └── tests/                # 15 Vitest automated test suites (150 passing tests)
 ├── frontend/                 # React 19 + Vite + Tailwind CSS v4 + Radix UI
 │   ├── client/src/
-│   │   ├── components/       # UI library, modals (Eligibility, TamperDemo, Intervention)
+│   │   ├── components/       # UI library, PersonaSwitcher, ProtectedRoute, modals
 │   │   ├── contexts/         # AuthContext with 1-click persona switching, ThemeContext
-│   │   └── pages/            # Home, CareerPassport, HodDashboard, Opportunities, etc.
-│   └── server/               # Client-side tRPC router shims for end-to-end type safety
-├── specs/                    # 13 Independent Phase-Wise Technical Specifications
-└── brain/                    # Architecture logs, strict engineering rules, progress tracking
+│   │   └── pages/            # Home, FacultyWards, CareerPassport, SuperAdminPortal, etc.
+│   └── server/               # Full-stack dev runtime & client tRPC proxies
+├── specs/                    # 15 Independent Phase-Wise Technical Specifications
+├── deploy.md                 # Production deployment manual for Vercel, Render & Supabase
+└── README.md                 # Project documentation & reference
 ```
 
 ### Core Technologies
@@ -147,13 +168,14 @@ d:\Project\Pragati\
 * **Frontend Application**: React 19, Vite, TypeScript 5.7, Tailwind CSS v4, Radix UI primitives, Lucide React icons, Sonner notifications, Wouter routing.
 * **Deterministic Rule Engines**: Pure functional AST tree walkers evaluating boolean corporate criteria with zero opaque machine learning.
 * **Assistive AI**: Google Gemini API with system prompt versioning and zero-crash deterministic fallback.
-* **Automated Testing**: Vitest 3.0+ running 15 backend test suites (**150 tests, 100% passing**) and 5 frontend suites.
+* **Transactional Email**: Native Node.js SMTP service supporting TLS (port 465) and STARTTLS (port 587) with RFC 2822 compliance.
+* **Automated Testing**: Vitest 3.0+ running 15 backend test suites (**150 tests, 100% passing**) and frontend suites.
 
 ---
 
 ## 🗄️ Relational Database Schema (26 Tables)
 
-All tables are defined in [`backend/drizzle/schema.ts`](file:///d:/Project/Pragati/backend/drizzle/schema.ts) with strict foreign key constraints and Row Level Security:
+All tables are defined in [`backend/drizzle/schema.ts`](backend/drizzle/schema.ts) with strict foreign key constraints and Row Level Security:
 
 | Category | Tables | Primary Responsibilities |
 | :--- | :--- | :--- |
@@ -239,26 +261,53 @@ npm install
 
 ### 3. Environment Configuration
 
-Create a `.env` file in the `backend/` directory based on `.env.example`:
+#### Backend Configuration (`backend/.env`)
+Create `backend/.env` based on `backend/.env.example`:
 
 ```env
-PORT=5000
+PORT=3001
 NODE_ENV=development
 
-# Supabase PostgreSQL Connection
-DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@[YOUR-PROJECT-REF].supabase.co:5432/postgres
+# Supabase PostgreSQL Connection Pooler
+DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
 
 # Supabase Project Credentials
-SUPABASE_URL=https://[YOUR-PROJECT-REF].supabase.co
-SUPABASE_SERVICE_ROLE_KEY=[YOUR-SUPABASE-SERVICE-ROLE-KEY]
-SUPABASE_ANON_KEY=[YOUR-SUPABASE-ANON-KEY]
+SUPABASE_URL=https://[PROJECT-REF].supabase.co
+SUPABASE_ANON_KEY=[YOUR-ANON-KEY]
+SUPABASE_SERVICE_ROLE_KEY=[YOUR-SERVICE-ROLE-KEY]
 SUPABASE_STORAGE_BUCKET=evidence-vault
 
-# Authentication & Security
-JWT_SECRET=pragati_super_secret_jwt_key_2026_institutional_grade
+# Super Admin Platform Governance
+SUPER_ADMIN_EMAIL=platform-owner@northstar.edu
+SUPER_ADMIN_PASSWORD=replace-with-a-long-random-password
+SUPER_ADMIN_MASTER_KEY=pragati_master_secret_super_admin_key_2026
+
+# SMTP Transactional Email Service
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-16-char-app-password
+SMTP_FROM=your-email@gmail.com
+EMAIL_FROM=PRAGATI Platform
 
 # Google Gemini API (Assistive AI Diagnostics)
-GEMINI_API_KEY=[YOUR-GEMINI-API-KEY]
+GEMINI_API_KEY=[YOUR-GEMINI-KEY]
+GEMINI_MODEL=gemini-1.5-flash
+
+# CORS Whitelist (Comma-separated)
+FRONTEND_URL=http://localhost:3000,https://pragati-1.vercel.app
+VITE_APP_URL=http://localhost:3000
+```
+
+#### Frontend Configuration (`frontend/.env`)
+Create `frontend/.env` based on `frontend/.env.example`:
+
+```env
+VITE_API_URL=http://localhost:3001
+VITE_SUPABASE_URL=https://[PROJECT-REF].supabase.co
+VITE_SUPABASE_ANON_KEY=[YOUR-ANON-KEY]
+VITE_APP_URL=http://localhost:3000
 ```
 
 ### 4. Database Schema Push & Seed Fixtures
@@ -270,7 +319,7 @@ cd backend
 npm run db:push
 
 # Populate institutional master data and hero student journey
-npx tsx scripts/seed.ts
+npm run seed
 ```
 
 ### 5. Start Development Servers
@@ -287,28 +336,28 @@ cd frontend
 npm run dev
 ```
 
-* **Frontend UI**: [http://localhost:5173](http://localhost:5173)
-* **Backend API / Health**: [http://localhost:5000/health](http://localhost:5000/health)
+* **Frontend UI**: [http://localhost:3000](http://localhost:3000)
+* **Backend API / Health**: [http://localhost:3001/health](http://localhost:3001/health)
 
 ---
 
-## 🔑 Demo Personas (1-Click Fast Switcher)
+## 🔑 Demo Personas (Floating Fast Switcher)
 
-The application includes an interactive floating **Persona Switcher** in the bottom-right corner for fast evaluation:
+The application includes an interactive floating **Persona Switcher** in the bottom-right corner of every page for seamless live evaluation:
 
 | Role | Name | Email | Password | Primary Demo Screen |
 | :--- | :--- | :--- | :--- | :--- |
-| **STUDENT** | Rahul Sharma | `student@northstar.edu` | `Password123!` | `/dashboard`, `/career-passport`, `/opportunities` |
-| **FACULTY** | Dr. Anand Verma | `faculty@northstar.edu` | `Password123!` | `/faculty/wards`, `/internship` |
-| **HOD** | Dr. Rajesh Kulkarni | `hod@northstar.edu` | `Password123!` | `/hod` (Cohort Heatmaps & Velocity) |
-| **T&P OFFICER** | Prof. Sunita Rao | `tnp@northstar.edu` | `Password123!` | `/tnp`, `/admin/placement` |
-| **ADMIN** | Principal Sharma | `admin@northstar.edu` | `Password123!` | `/admin/overview`, `/admin/users` |
+| **STUDENT** | Rahul Sharma | `student@northstar.edu` | `password123` | `/dashboard`, `/career-passport`, `/opportunities` |
+| **FACULTY** | Dr. Anand Verma | `faculty@northstar.edu` | `password123` | `/faculty`, `/faculty/wards`, `/internship` |
+| **HOD** | Prof. Sunita Rao | `hod.cse@northstar.edu` | `password123` | `/hod` (Cohort Heatmaps & Velocity) |
+| **ADMIN** | Platform Administrator | `admin@northstar.edu` | `password123` | `/admin/overview`, `/admin/users`, `/admin/placement` |
+| **SUPER ADMIN** | Platform Owner | *Configured via `.env`* | *Configured via `.env`* | `/super-admin-pragati01` (Protected by 2FA) |
 
 ---
 
 ## 🧪 Automated Testing & Security Verification
 
-PRAGATI includes an extensive automated test suite with **15 backend suites (150 passing tests)** and **5 frontend suites**:
+PRAGATI includes an extensive automated test suite with **15 backend suites (150 passing tests)**:
 
 ```bash
 # Run all backend Vitest suites
@@ -350,25 +399,15 @@ Test Files  15 passed (15)
 
 ---
 
-## 🔒 Supabase Security Advisor Hardening
+## 🚢 Deployment Architecture
 
-If the Supabase Security Advisor displays warnings regarding `SECURITY DEFINER` functions (e.g. `public.rls_auto_enable()`):
+PRAGATI is architected to run across modern edge and container clouds:
 
-```sql
--- 1. Revoke public/anonymous execution privileges
-REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon;
-REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM authenticated;
+* **Frontend**: Hosted on [Vercel](https://vercel.com) Edge CDN with SPA client-side rewrite rules via `frontend/vercel.json`.
+* **Backend**: Hosted on [Render](https://render.com) as a Node.js Web Service running `node dist/src/index.js` with active health monitoring at `/health`.
+* **Database & Storage**: Powered by [Supabase](https://supabase.com) with AWS PostgreSQL pooling and S3-compatible private evidence storage.
 
--- 2. Restrict execution strictly to administrative roles
-GRANT EXECUTE ON FUNCTION public.rls_auto_enable() TO postgres;
-GRANT EXECUTE ON FUNCTION public.rls_auto_enable() TO service_role;
-
--- 3. Lock down search_path to eliminate search_path mutable warnings
-ALTER FUNCTION public.rls_auto_enable() SET search_path = public, pg_temp;
-```
-
-*This SQL query secures the trigger function while preserving 100% of the project's automatic table protection.*
+For complete, step-by-step production setup, CORS configuration, and environment secrets management, refer to the [Production Deployment Guide](deploy.md).
 
 ---
 
