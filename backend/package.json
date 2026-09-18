@@ -30,12 +30,12 @@
     "nanoid": "^3.3.8",
     "postgres": "^3.4.9",
     "superjson": "^1.13.3",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.10",
-    "tsx": "^4.19.2",
     "vitest": "^3.0.5"
   }
 }
