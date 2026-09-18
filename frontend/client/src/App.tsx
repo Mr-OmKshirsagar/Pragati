@@ -122,7 +122,7 @@ function Router() {
         {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Achievements /></ProtectedRoute>}
       </Route>
       <Route path="/student/career-passport">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Passport /></ProtectedRoute>}
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><CareerPassport /></ProtectedRoute>}
       </Route>
       <Route path="/student/internship">
         {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Internship /></ProtectedRoute>}

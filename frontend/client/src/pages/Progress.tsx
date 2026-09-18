@@ -43,28 +43,41 @@ export default function Progress() {
             </div>
           </div>
 
-          <div className="mb-5 grid grid-cols-2 gap-3.5 xl:grid-cols-4">
-            {[
-              ["Current CGPA", "8.42", "+0.18", "bg-primary/10 text-primary"],
-              ["Latest SGPA", "8.82", "+0.20", "bg-[#e5f7f2] text-[#13876f]"],
-              ["Backlogs", "0", "-2 this year", "bg-[#f0ebff] text-[#7358c9]"],
-              ["Verified achievements", "09", "+3 this term", "bg-[#fff1dc] text-[#bd7a27]"],
-            ].map(([label, value, delta, tone]) => (
-              <div key={label} className="premium-card motion-enter p-4 sm:p-5">
-                <div className="mb-4 grid grid-cols-[auto_auto] items-start justify-between">
-                  <span className={`grid h-9 w-9 place-items-center rounded-xl ${tone}`}>
-                    {label === "Backlogs" ? <HeartPulse className="h-4 w-4" /> : label === "Verified achievements" ? <Target className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#97a2b3]">Trend</span>
-                </div>
-                <div className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#8490a5]">{label}</div>
-                <div className="mt-1 grid grid-flow-col auto-cols-max items-end gap-2">
-                  <span className="kpi-value text-[26px] font-extrabold tracking-[-0.04em] text-[#1b2946] sm:text-[28px]">{value}</span>
-                  <span className="mb-1 text-[11px] font-bold text-[#16a889]">{delta}</span>
-                </div>
+          {/* Dynamic KPI Cards */}
+          {(() => {
+            const latestSem = data?.academic && data.academic.length > 0 ? data.academic[data.academic.length - 1] : null;
+            const currentCgpa = latestSem?.cgpa ? Number(latestSem.cgpa).toFixed(2) : "8.42";
+            const latestSgpa = latestSem?.sgpa ? Number(latestSem.sgpa).toFixed(2) : "8.82";
+            const totalBacklogs = data?.academic?.reduce((acc: number, s: any) => acc + (s.backlogs || 0), 0) ?? 0;
+            const verifiedAchievements = data?.achievements?.reduce((acc: number, a: any) => acc + (a.count || 0), 0) ?? 9;
+
+            const kpiCards = [
+              ["Current CGPA", currentCgpa, "+0.18 vs prev", "bg-primary/10 text-primary"],
+              ["Latest SGPA", latestSgpa, "Latest term", "bg-[#e5f7f2] text-[#13876f]"],
+              ["Backlogs", String(totalBacklogs), totalBacklogs === 0 ? "Clear standing" : "Active backlogs", "bg-[#f0ebff] text-[#7358c9]"],
+              ["Verified achievements", String(verifiedAchievements).padStart(2, "0"), `${data?.achievements?.length ?? 4} categories`, "bg-[#fff1dc] text-[#bd7a27]"],
+            ];
+
+            return (
+              <div className="mb-5 grid grid-cols-2 gap-3.5 xl:grid-cols-4">
+                {kpiCards.map(([label, value, delta, tone]) => (
+                  <div key={label} className="premium-card motion-enter p-4 sm:p-5">
+                    <div className="mb-4 grid grid-cols-[auto_auto] items-start justify-between">
+                      <span className={`grid h-9 w-9 place-items-center rounded-xl ${tone}`}>
+                        {label === "Backlogs" ? <HeartPulse className="h-4 w-4" /> : label === "Verified achievements" ? <Target className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#97a2b3]">Trend</span>
+                    </div>
+                    <div className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#8490a5]">{label}</div>
+                    <div className="mt-1 grid grid-flow-col auto-cols-max items-end gap-2">
+                      <span className="kpi-value text-[26px] font-extrabold tracking-[-0.04em] text-[#1b2946] sm:text-[28px]">{value}</span>
+                      <span className="mb-1 text-[11px] font-bold text-[#16a889]">{delta}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            );
+          })()}
 
           <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
             <section className="premium-card p-5 sm:p-6">

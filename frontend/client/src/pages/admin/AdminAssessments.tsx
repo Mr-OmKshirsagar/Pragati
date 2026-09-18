@@ -13,6 +13,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 interface Assessment {
   id: string;
@@ -155,7 +156,13 @@ export default function AdminAssessments() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
 
-  const filteredAssessments = mockAssessments.filter((a) => {
+  const assessmentsQuery = trpc.admin.listAssessments.useQuery();
+  const allAssessments: Assessment[] =
+    assessmentsQuery.data && assessmentsQuery.data.length > 0
+      ? (assessmentsQuery.data as any)
+      : mockAssessments;
+
+  const filteredAssessments = allAssessments.filter((a) => {
     const matchesStatus = statusFilter === "all" || a.status === statusFilter;
     const matchesSearch =
       a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -164,10 +171,10 @@ export default function AdminAssessments() {
   });
 
   const stats = {
-    total: mockAssessments.length,
-    published: mockAssessments.filter((a) => a.status === "published").length,
-    totalEnrolled: mockAssessments.reduce((sum, a) => sum + a.enrolledStudents, 0),
-    totalCompleted: mockAssessments.reduce((sum, a) => sum + a.completed, 0),
+    total: allAssessments.length,
+    published: allAssessments.filter((a) => a.status === "published").length,
+    totalEnrolled: allAssessments.reduce((sum, a) => sum + a.enrolledStudents, 0),
+    totalCompleted: allAssessments.reduce((sum, a) => sum + a.completed, 0),
   };
 
   return (

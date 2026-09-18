@@ -140,7 +140,7 @@ function CapabilityHeroBanner({ data }: { data: StudentDashboard }) {
             <span className="text-[#cbd5e1]">·</span>
             <span className="flex items-center gap-1.5">
               <Building2 className="h-3.5 w-3.5 text-[#8290a7]" />
-              <span>{data.student.institution} · CS-2023-0842</span>
+              <span>{data.student.institution} · {(data.student as any).enrollmentNumber || (data.student as any).id || "CS-2023-0842"}</span>
             </span>
           </div>
         </div>
@@ -337,13 +337,24 @@ function CareerReadinessScorecardSection({ data }: { data: any }) {
 // 3. Four Student Metric Cards Row
 // ═══════════════════════════════════════════════════════════════════════════
 
-function StudentMetricsRow({ data }: { data: StudentDashboard }) {
+function StudentMetricsRow({ data }: { data: any }) {
   const [, navigate] = useLocation();
+  const rawCgpa = data.metrics?.cgpa ?? data.academics?.cgpa ?? 8.42;
+  const verifiedSkills = data.metrics?.verifiedSkillsCount ?? data.skills?.filter((s: any) => (s.latestScore ?? s.score) >= 70).length ?? 7;
+  const totalSkills = data.metrics?.totalSkillsCount ?? data.skills?.length ?? 8;
+  const totalEvidence = data.metrics?.totalEvidenceDocuments ?? 10;
+  const verifiedEvidence = data.metrics?.verifiedEvidenceDocuments ?? 9;
+  const internshipCompany = data.internship?.company || data.internship?.companyName || "Atlas Labs";
+  const internshipProgress = data.metrics?.internshipCompleteness ?? data.internship?.progress ?? data.internship?.completeness ?? 68;
+
   const cards = [
     {
       label: "ACADEMIC CGPA",
-      value: "8.42",
-      delta: "+0.18 vs last semester",
+      value: Number(rawCgpa).toFixed(2),
+      delta:
+        (data.metrics?.activeBacklogs ?? data.academics?.activeBacklogsCount ?? 0) > 0
+          ? `${data.metrics?.activeBacklogs ?? data.academics?.activeBacklogsCount} active backlog`
+          : `${data.academics?.semesters?.length ?? 6} terms · Clear standing`,
       icon: GraduationCap,
       color: "bg-blue-50 text-blue-700",
       link: "/student/progress",
@@ -351,8 +362,8 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
     },
     {
       label: "VERIFIED SKILLS",
-      value: "07",
-      delta: "+2 this semester",
+      value: String(verifiedSkills).padStart(2, "0"),
+      delta: `${totalSkills} curriculum competencies`,
       icon: Target,
       color: "bg-emerald-50 text-emerald-700",
       link: "/student/skills",
@@ -360,8 +371,8 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
     },
     {
       label: "ACHIEVEMENTS",
-      value: "12",
-      delta: "09 verified across 4 categories",
+      value: String(totalEvidence).padStart(2, "0"),
+      delta: `${verifiedEvidence} verified cryptographic records`,
       icon: Award,
       color: "bg-purple-50 text-purple-700",
       link: "/student/achievements",
@@ -369,8 +380,8 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
     },
     {
       label: "INTERNSHIP",
-      value: "Active",
-      delta: "Atlas Labs · 68% completed",
+      value: data.metrics?.internshipStatus || (internshipProgress >= 100 ? "Completed" : "Active"),
+      delta: `${internshipCompany} · ${internshipProgress}% completed`,
       icon: Briefcase,
       color: "bg-amber-50 text-amber-700",
       link: "/student/internship",
@@ -425,7 +436,7 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
 // 4. Targeted Skill Gap & Deterministic Rule Finding
 // ═══════════════════════════════════════════════════════════════════════════
 
-function TargetedSkillGapAlert({ data }: { data: StudentDashboard }) {
+function TargetedSkillGapAlert({ data }: { data: any }) {
   const [, navigate] = useLocation();
 
   return (
@@ -442,17 +453,15 @@ function TargetedSkillGapAlert({ data }: { data: StudentDashboard }) {
               <span>DETERMINISTIC RULE ENGINE</span>
             </div>
             <h3 className="text-lg font-bold text-slate-900 mt-1">
-              {data.skillGap.skill} Performance Drift (61%)
+              {data.skillGap.skill} Performance Drift ({data.skillGap.severity} Severity)
             </h3>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-700 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-2xs">
-          <span>78%</span>
-          <span className="text-amber-500">→</span>
-          <span>70%</span>
-          <span className="text-amber-600">→</span>
-          <span className="text-amber-700 font-extrabold">61%</span>
+          <span>Target: 75%</span>
+          <span className="text-amber-500">·</span>
+          <span className="text-amber-700 font-extrabold">{data.skillGap.severity} Priority</span>
         </div>
       </div>
 
@@ -463,7 +472,7 @@ function TargetedSkillGapAlert({ data }: { data: StudentDashboard }) {
             <span>Rule Trigger Reason:</span>
           </div>
           <p className="text-amber-800 leading-relaxed font-medium">
-            {data.skillGap.reason} OS score dropped by 9% across two assessment cycles while the OS backlog remains unverified.
+            {data.skillGap.reason}
           </p>
         </div>
 

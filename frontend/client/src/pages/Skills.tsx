@@ -98,11 +98,14 @@ export default function Skills() {
                 </div>
               </div>
               <div className="grid grid-flow-col auto-cols-max gap-2 flex-wrap">
-                {["Python · 84%", "OOP · 81%", "DSA · 78%"].map(item => (
-                  <span key={item} className="rounded-xl bg-[#e5f7f2] px-3 py-2 text-xs font-semibold text-[#13876f]">
-                    {item}
-                  </span>
-                ))}
+                {[...skills]
+                  .sort((a, b) => (b.current ?? 0) - (a.current ?? 0))
+                  .slice(0, 3)
+                  .map((item) => (
+                    <span key={item.label} className="rounded-xl bg-[#e5f7f2] px-3 py-2 text-xs font-semibold text-[#13876f]">
+                      {item.label} · {item.current}%
+                    </span>
+                  ))}
               </div>
             </div>
 
@@ -115,10 +118,21 @@ export default function Skills() {
                 </div>
               </div>
               <div className="space-y-3">
-                {["Operating Systems · 20 Sep", "Computer Networks · 24 Sep"].map(item => (
-                  <div key={item} className="grid grid-cols-[1fr_auto] items-center rounded-xl bg-[#f8f9fc] px-3 py-3 text-xs font-semibold text-[#52617d]">
-                    <span>{item}</span>
-                    <span className="rounded-full bg-[#fff1dc] px-2 py-1 text-[9px] font-semibold text-[#bd7a27]">Scheduled</span>
+                {(assessmentsQuery.data && assessmentsQuery.data.length > 0
+                  ? assessmentsQuery.data.slice(0, 2).map((a: any) => ({
+                      name: `${a.name} · ${a.durationMinutes || 60} mins`,
+                      status: a.status || "Published",
+                    }))
+                  : [
+                      { name: "Operating Systems · Continuous Cycle", status: "Scheduled" },
+                      { name: "Computer Networks · Practical Evaluation", status: "Scheduled" },
+                    ]
+                ).map((item) => (
+                  <div key={item.name} className="grid grid-cols-[1fr_auto] items-center rounded-xl bg-[#f8f9fc] px-3 py-3 text-xs font-semibold text-[#52617d]">
+                    <span>{item.name}</span>
+                    <span className="rounded-full bg-[#fff1dc] px-2 py-1 text-[9px] font-semibold text-[#bd7a27]">
+                      {item.status}
+                    </span>
                   </div>
                 ))}
               </div>

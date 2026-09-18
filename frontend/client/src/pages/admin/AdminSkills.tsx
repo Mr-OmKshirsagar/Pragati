@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 interface Skill {
   id: string;
@@ -123,7 +124,13 @@ export default function AdminSkills() {
   const [statusFilter, setStatusFilter] = useState("active");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
-  const filteredSkills = mockSkills.filter((skill) => {
+  const skillsQuery = trpc.admin.listSkills.useQuery();
+  const allSkills: Skill[] =
+    skillsQuery.data && skillsQuery.data.length > 0
+      ? (skillsQuery.data as any)
+      : mockSkills;
+
+  const filteredSkills = allSkills.filter((skill) => {
     const matchesSearch =
       skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       skill.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -133,7 +140,7 @@ export default function AdminSkills() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const categories = Array.from(new Set(mockSkills.map((s) => s.category)));
+  const categories = Array.from(new Set(allSkills.map((s) => s.category)));
 
   return (
     <AdminLayout currentPage="/admin/skills">

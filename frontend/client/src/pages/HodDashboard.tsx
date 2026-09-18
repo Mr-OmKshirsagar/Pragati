@@ -1187,7 +1187,7 @@ export default function HodDashboard() {
                       >
                         {faculty.name
                           .split(" ")
-                          .map((p) => p[0])
+                          .map((p: string) => p[0])
                           .slice(-2)
                           .join("")}
                       </div>

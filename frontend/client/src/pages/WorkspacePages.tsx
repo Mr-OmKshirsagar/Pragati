@@ -30,7 +30,7 @@ import {
   UsersRound,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 
@@ -908,8 +908,39 @@ function PassportPage() {
 }
 
 function MentoringPage() {
-  const interventionsQuery = trpc.student.getInterventions.useQuery();
-  const interventions = interventionsQuery.data ?? [];
+  const { role } = useAuth();
+  const isFaculty = role === "FACULTY" || role === "HOD";
+
+  const studentInterventionsQuery = trpc.student.getInterventions.useQuery(undefined, {
+    enabled: !isFaculty,
+  });
+  const facultyWardsQuery = trpc.faculty.getWards.useQuery(undefined, {
+    enabled: isFaculty,
+  });
+
+  const interventions = useMemo(() => {
+    if (isFaculty) {
+      const wards = facultyWardsQuery.data ?? [];
+      const list: any[] = [];
+      for (const ward of wards) {
+        if (ward.activeGaps) {
+          for (const gap of ward.activeGaps) {
+            list.push({
+              id: gap.id,
+              skillGap: { skillName: gap.skillName },
+              type: "REMEDIAL_MENTORING",
+              status: "SCHEDULED",
+              description: `Remedial intervention planned for ${ward.name} (${ward.enrollmentNumber}) in ${gap.skillName}.`,
+              assignedFacultyName: "You (Teacher Guardian)",
+              startDate: (gap as any).detectedAt || new Date().toISOString(),
+            });
+          }
+        }
+      }
+      return list;
+    }
+    return studentInterventionsQuery.data ?? [];
+  }, [isFaculty, facultyWardsQuery.data, studentInterventionsQuery.data]);
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">

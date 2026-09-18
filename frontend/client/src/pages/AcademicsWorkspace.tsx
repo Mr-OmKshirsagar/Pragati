@@ -389,7 +389,22 @@ function FacultyAcademicsView() {
 
 function StudentAcademicsView() {
   const mySubjectsQuery = trpc.subject.getMySubjectsForStudent.useQuery({});
+  const academicsQuery = trpc.student.getAcademics.useQuery();
   const subjects = mySubjectsQuery.data ?? [];
+  const academics = academicsQuery.data;
+
+  const avgAttendance =
+    subjects.length > 0
+      ? (
+          subjects.reduce(
+            (sum: number, s: any) => sum + (s.attendancePercentage ?? 80),
+            0
+          ) / subjects.length
+        ).toFixed(1) + "%"
+      : "84.2%";
+
+  const activeBacklogs = academics?.activeBacklogsCount ?? 0;
+  const currentCgpa = academics?.cgpa ? Number(academics.cgpa).toFixed(2) : "8.42";
 
   return (
     <div className="space-y-6">
@@ -408,27 +423,29 @@ function StudentAcademicsView() {
           <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">
             Aggregate Attendance
           </div>
-          <div className="mt-1.5 text-2xl font-extrabold text-emerald-700">84.2%</div>
+          <div className="mt-1.5 text-2xl font-extrabold text-emerald-700">{avgAttendance}</div>
           <span className="mt-2.5 inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-            Above 75% Cutoff
+            {parseFloat(avgAttendance) >= 75 ? "Above 75% Cutoff" : "Attendance Warning"}
           </span>
         </div>
         <div className="metric-card p-5">
           <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">
             Active Backlogs
           </div>
-          <div className="mt-1.5 text-2xl font-extrabold text-amber-600">01</div>
+          <div className="mt-1.5 text-2xl font-extrabold text-amber-600">
+            {String(activeBacklogs).padStart(2, "0")}
+          </div>
           <span className="mt-2.5 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-            CS401 OS Review
+            {activeBacklogs > 0 ? "Subject Review Required" : "Clear Academic Record"}
           </span>
         </div>
         <div className="metric-card p-5">
           <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">
-            Continuous Grade (SGPA)
+            Continuous Grade (CGPA)
           </div>
-          <div className="mt-1.5 text-2xl font-extrabold text-slate-900">8.42</div>
+          <div className="mt-1.5 text-2xl font-extrabold text-slate-900">{currentCgpa}</div>
           <span className="mt-2.5 inline-flex rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700">
-            Tier-1 Eligible
+            {parseFloat(currentCgpa) >= 8.0 ? "Tier-1 Eligible" : "Standard Standing"}
           </span>
         </div>
       </div>
