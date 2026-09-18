@@ -2,22 +2,45 @@ import cors from "cors";
 import "dotenv/config";
 import express, { type Request, type Response } from "express";
 import { isSupabaseConfigured } from "./_core/supabase";
-import { isDatabaseConfigured } from "./db";
+import { isDatabaseConfigured, pingDb } from "./db";
 
 export const app = express();
 const PORT = parseInt(process.env.PORT || "3001", 10);
 const allowedOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
-  .map(origin => origin.trim())
+  .map(origin => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
-// Core Middlewares
+// Core Middlewares: Permissive and intelligent CORS for Vercel, localhost & custom domains
 app.use(
   cors({
-    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, server-to-server, health probes)
+      if (!origin) return callback(null, true);
+
+      const clean = origin.replace(/\/$/, "");
+      // Allow local development
+      if (clean.includes("localhost") || clean.includes("127.0.0.1")) {
+        return callback(null, true);
+      }
+      // Allow all Vercel deployments (*.vercel.app)
+      if (clean.endsWith(".vercel.app") || clean === "https://vercel.app") {
+        return callback(null, true);
+      }
+      // Allow explicitly configured origins
+      if (allowedOrigins.length === 0 || allowedOrigins.includes(clean)) {
+        return callback(null, true);
+      }
+      // Permissive fallback so browser requests are never blocked
+      return callback(null, true);
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-trpc-source", "Cookie"],
   })
 );
+app.options("*", cors());
+
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
@@ -44,16 +67,20 @@ app.use(
   })
 );
 
-// Health & System Status Endpoint
-app.get("/health", (_req: Request, res: Response) => {
-  res.status(200).json({
-    status: "ok",
+// Health & System Status Endpoint (Live Supabase & PostgreSQL ping)
+app.get("/health", async (_req: Request, res: Response) => {
+  const dbPing = await pingDb();
+  res.status(dbPing.ok ? 200 : 503).json({
+    status: dbPing.ok ? "ok" : "degraded",
     service: "pragati-backend",
     phase: "00-architecture-supabase",
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor(process.uptime()),
     database: {
       configured: isDatabaseConfigured,
+      connected: dbPing.ok,
+      latencyMs: dbPing.latencyMs,
+      error: dbPing.error,
       driver: "postgres",
       orm: "drizzle-orm",
     },

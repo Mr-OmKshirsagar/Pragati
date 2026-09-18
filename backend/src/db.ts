@@ -15,6 +15,7 @@ export async function getDb() {
         max: 10,
         idle_timeout: 20,
         connect_timeout: 10,
+        ssl: "require",
       });
       _db = drizzle(_client, { schema });
     } catch (error) {
@@ -23,6 +24,19 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+export async function pingDb(): Promise<{ ok: boolean; latencyMs?: number; error?: string }> {
+  if (!process.env.DATABASE_URL) return { ok: false, error: "DATABASE_URL not configured" };
+  const start = Date.now();
+  try {
+    const db = await getDb();
+    if (!db || !_client) return { ok: false, error: "Database client unavailable" };
+    await _client`SELECT 1 as ping`;
+    return { ok: true, latencyMs: Date.now() - start };
+  } catch (err: any) {
+    return { ok: false, error: err.message, latencyMs: Date.now() - start };
+  }
 }
 
 export async function closeDb() {
