@@ -1,6 +1,6 @@
 import { useAuth, type PragatiRole, ROLE_CONFIG } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
-import { ShieldCheck, Lock, Users, Building2, LogIn } from "lucide-react";
+import { ShieldCheck, Lock, Users, Building2, LogIn, GraduationCap } from "lucide-react";
 
 // ─── Role → allowed paths map ─────────────────────────────────────────────────
 export const ROLE_ROUTES: Record<PragatiRole, string[]> = {
@@ -94,6 +94,20 @@ export function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) 
           </div>
 
           <div className="mt-5 space-y-2">
+            {allowedRoles.includes("STUDENT") && role !== "STUDENT" && (
+              <button
+                type="button"
+                onClick={async () => {
+                  await switchRole("STUDENT");
+                  navigate("/student/overview");
+                }}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-4 py-3 text-xs font-bold text-white hover:bg-[#1d4ed8] transition shadow-sm"
+              >
+                <GraduationCap className="h-4 w-4" />
+                Switch to Student (Rahul Sharma)
+              </button>
+            )}
+
             {allowedRoles.includes("FACULTY") && role !== "FACULTY" && (
               <button
                 type="button"

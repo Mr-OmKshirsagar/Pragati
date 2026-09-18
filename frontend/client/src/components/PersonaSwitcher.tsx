@@ -72,8 +72,8 @@ export default function PersonaSwitcher() {
                     key={item.role}
                     disabled={isLoading}
                     onClick={async () => {
-                      await loginWithDemo(item.role);
                       setIsOpen(false);
+                      await loginWithDemo(item.role);
                       setLocation(ROLE_CONFIG[item.role].defaultPath);
                     }}
                     style={

@@ -79,24 +79,64 @@ export const ROLE_CONFIG: Record<
   },
 };
 
-export const DEFAULT_STUDENT: PragatiUser = {
-  id: "user-student-1",
-  name: "Rahul Sharma",
-  email: "student@northstar.edu",
-  role: "STUDENT",
-  department: "Computer Science & Engineering",
-  departmentId: "CSE",
-  institutionId: "NIT-001",
-  roleId: "CS-2023-0842",
-  designation: "B.Tech CSE · Sem 6",
-  avatar: "RS",
-  studentProfile: {
-    id: "student-rahul-sharma",
-    enrollmentNumber: "CSE2024042",
-    program: "B.Tech Computer Science and Engineering",
-    currentSemester: 6,
+export const STATIC_DEMO_PERSONAS: Record<PragatiRole, PragatiUser> = {
+  STUDENT: {
+    id: "10000000-0000-0000-0000-000000000005",
+    name: "Rahul Sharma",
+    email: "student@northstar.edu",
+    role: "STUDENT",
+    department: "Computer Science & Engineering",
+    departmentId: "CSE",
+    institutionId: "NIT-001",
+    roleId: "CS-2023-0842",
+    designation: "B.Tech CSE · Sem 6",
+    avatar: "RS",
+    studentProfile: {
+      id: "student-rahul-sharma",
+      enrollmentNumber: "CSE2024042",
+      program: "B.Tech Computer Science and Engineering",
+      currentSemester: 6,
+    },
+  },
+  FACULTY: {
+    id: "10000000-0000-0000-0000-000000000001",
+    name: "Dr. Anand Verma",
+    email: "faculty@northstar.edu",
+    role: "FACULTY",
+    department: "Computer Science & Engineering",
+    departmentId: "CSE",
+    institutionId: "NIT-001",
+    roleId: "FAC-CS-104",
+    designation: "Faculty Mentor & Advisor",
+    avatar: "AV",
+  },
+  HOD: {
+    id: "10000000-0000-0000-0000-000000000002",
+    name: "Prof. Sunita Rao",
+    email: "hod.cse@northstar.edu",
+    role: "HOD",
+    department: "Computer Science & Engineering",
+    departmentId: "CSE",
+    institutionId: "NIT-001",
+    roleId: "HOD-CSE-001",
+    designation: "Head of Department (CSE)",
+    avatar: "SR",
+  },
+  ADMIN: {
+    id: "10000000-0000-0000-0000-000000000004",
+    name: "Platform Administrator",
+    email: "admin@northstar.edu",
+    role: "ADMIN",
+    department: "Central Administration",
+    departmentId: "ADMIN",
+    institutionId: "NIT-001",
+    roleId: "ADM-SYS-001",
+    designation: "System & Placement Admin",
+    avatar: "PA",
   },
 };
+
+export const DEFAULT_STUDENT: PragatiUser = STATIC_DEMO_PERSONAS.STUDENT;
 
 interface AuthContextType {
   user: PragatiUser | null;
@@ -107,7 +147,7 @@ interface AuthContextType {
   login: (user: PragatiUser) => void;
   loginWithDemo: (role: PragatiRole) => Promise<void>;
   logout: () => void;
-  switchRole: (role: PragatiRole) => void;
+  switchRole: (role: PragatiRole) => Promise<void>;
   updateMustChangePassword: (mustChange: boolean) => void;
 }
 
@@ -135,51 +175,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const utils = trpc.useUtils();
   const demoLoginMutation = trpc.auth.demoLogin.useMutation();
 
-  const syncUser = async (authToken: string) => {
-    if (authToken.startsWith("demo_")) {
-      const targetRole = authToken.replace("demo_", "") as PragatiRole;
-      try {
-        const res = await demoLoginMutation.mutateAsync({
-          role: targetRole,
-        });
-        if (res.success && res.user) {
-          const syncedUser: PragatiUser = {
-            ...res.user,
-            role: (res.user.role === "TNP_COORDINATOR" ? "ADMIN" : res.user.role) as PragatiRole,
-            avatar: res.user.name
-              .split(" ")
-              .map((p: string) => p[0])
-              .slice(0, 2)
-              .join("")
-              .toUpperCase(),
-            roleId:
-              targetRole === "STUDENT"
-                ? "CS-2023-0842"
-                : targetRole === "FACULTY"
-                  ? "FAC-CS-104"
-                  : targetRole === "HOD"
-                    ? "HOD-CSE-001"
-                    : "ADM-SYS-001",
-            department: "Computer Science & Engineering",
-            designation: ROLE_CONFIG[targetRole]?.description ?? "",
-          };
-          setUser(syncedUser);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedUser));
-          localStorage.setItem(TOKEN_KEY, res.token);
-        }
-      } catch (err: any) {
-        console.error("[AuthContext] Failed to sync user:", err);
-      }
-    }
-  };
-
+  // On initial mount only, sync with database in background
   useEffect(() => {
-    if (token) {
-      syncUser(token);
+    const savedToken = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+    if (savedToken && savedToken.startsWith("demo_")) {
+      const targetRole = savedToken.replace("demo_", "") as PragatiRole;
+      demoLoginMutation
+        .mutateAsync({ role: targetRole })
+        .then((res) => {
+          if (res.success && res.user) {
+            setUser((prev) => {
+              if (!prev || prev.role !== targetRole) return prev;
+              const updated: PragatiUser = {
+                ...prev,
+                ...res.user,
+                role: (res.user.role === "TNP_COORDINATOR" ? "ADMIN" : res.user.role) as PragatiRole,
+              };
+              try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+              } catch { }
+              return updated;
+            });
+          }
+        })
+        .catch(() => {});
     }
-  }, [token]);
+  }, []);
 
   const login = (newUser: PragatiUser) => {
     setUser(newUser);
@@ -191,41 +215,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginWithDemo = async (targetRole: PragatiRole) => {
-    setIsLoading(true);
+    // 1. INSTANT OPTIMISTIC UPDATE (0ms delay, no screen freeze or access flicker)
+    const persona = STATIC_DEMO_PERSONAS[targetRole] || DEFAULT_STUDENT;
+    setUser(persona);
+    setToken(`demo_${targetRole}`);
     try {
-      const res = await demoLoginMutation.mutateAsync({ role: targetRole });
-      if (res.success && res.user) {
-        setToken(res.token);
-        const syncedUser: PragatiUser = {
-          ...res.user,
-          role: (res.user.role === "TNP_COORDINATOR" ? "ADMIN" : res.user.role) as PragatiRole,
-          avatar: res.user.name
-            .split(" ")
-            .map((p: string) => p[0])
-            .slice(0, 2)
-            .join("")
-            .toUpperCase(),
-          roleId:
-            targetRole === "STUDENT"
-              ? "CS-2023-0842"
-              : targetRole === "FACULTY"
-                ? "FAC-CS-104"
-                : targetRole === "HOD"
-                  ? "HOD-CSE-001"
-                  : "ADM-SYS-001",
-          department: "Computer Science & Engineering",
-          designation: ROLE_CONFIG[targetRole]?.description ?? "",
-        };
-        setUser(syncedUser);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedUser));
-        localStorage.setItem(TOKEN_KEY, res.token);
-        toast.success(`Logged in as ${res.user.name} (${res.user.role})`);
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to switch role.");
-    } finally {
-      setIsLoading(false);
-    }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persona));
+      localStorage.setItem(TOKEN_KEY, `demo_${targetRole}`);
+    } catch { }
+
+    // Update document theme synchronously
+    const theme = getRoleSidebarTheme(targetRole);
+    document.documentElement.setAttribute("data-role", targetRole);
+    document.documentElement.style.setProperty("--primary", theme.activePillBg);
+    document.documentElement.style.setProperty("--color-primary", theme.activePillBg);
+    document.documentElement.style.setProperty("--ring", theme.activePillBg);
+    document.documentElement.style.setProperty("--sidebar", theme.sidebarBg);
+    document.documentElement.style.setProperty("--sidebar-primary", theme.activePillBg);
+    document.documentElement.style.setProperty("--role-primary", theme.activePillBg);
+    document.documentElement.style.setProperty("--role-bg", theme.sidebarBg);
+
+    toast.success(`Logged in as ${persona.name} (${ROLE_CONFIG[targetRole]?.label || targetRole})`);
+
+    // Invalidate query cache in background so fresh data loads for the new role
+    utils.invalidate().catch(() => {});
+
+    // 2. Background database sync with Supabase
+    demoLoginMutation
+      .mutateAsync({ role: targetRole })
+      .then((res) => {
+        if (res.success && res.user) {
+          const syncedUser: PragatiUser = {
+            ...persona,
+            ...res.user,
+            role: (res.user.role === "TNP_COORDINATOR" ? "ADMIN" : res.user.role) as PragatiRole,
+            avatar: res.user.name
+              .split(" ")
+              .map((p: string) => p[0])
+              .slice(0, 2)
+              .join("")
+              .toUpperCase(),
+          };
+          setUser((prev) => (prev?.role === targetRole ? syncedUser : prev));
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedUser));
+            localStorage.setItem(TOKEN_KEY, res.token);
+          } catch { }
+        }
+      })
+      .catch((err) => {
+        console.warn("[AuthContext] Background persona sync skipped:", err);
+      });
   };
 
   const logout = () => {
@@ -237,8 +277,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     toast.info("Logged out of PRAGATI.");
   };
 
-  const switchRole = (newRole: PragatiRole) => {
-    loginWithDemo(newRole);
+  const switchRole = async (newRole: PragatiRole) => {
+    await loginWithDemo(newRole);
   };
 
   const updateMustChangePassword = (mustChange: boolean) => {
