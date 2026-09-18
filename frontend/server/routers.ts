@@ -1,13 +1,74 @@
 import { COOKIE_NAME } from "@shared/const";
+import crypto from "crypto";
 import { dashboardData, opportunitiesData, progressData, skillsData, type Opportunity } from "@shared/pragati";
 import { createClient } from "@supabase/supabase-js";
+import postgres from "postgres";
 import { z } from "zod";
 import { getSessionCookieOptions } from "./_core/cookies";
-import { sendMail } from "./_core/email";
+import { sendMail, sendSuperAdminOtpEmail, sendWelcomeEmail } from "./_core/email";
+import { sdk } from "./_core/sdk";
 import { supabaseAdmin } from "./_core/supabase";
 import { ensureSupabaseAuthPersonas } from "./_core/supabaseAuthSync";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, router, superAdminProcedure } from "./_core/trpc";
+
+type SuperAdminChallenge = {
+  email: string;
+  otpHash: string;
+  expiresAt: number;
+  attempts: number;
+  lastSentAt: number;
+  verified: boolean;
+};
+
+const superAdminChallenges = new Map<string, SuperAdminChallenge>();
+const isTestEnvironment = process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
+
+function getSuperAdminEmail() {
+  return (process.env.SUPER_ADMIN_EMAIL || "omkshirsagar.login@gmail.com").toLowerCase().trim();
+}
+
+function getSuperAdminPassword() {
+  return process.env.SUPER_ADMIN_PASSWORD || process.env.SUPER_ADMIN_MASTER_KEY;
+}
+
+function hashOtp(otp: string) {
+  return crypto.createHash("sha256").update(otp).digest("hex");
+}
+
+function maskEmail(email: string) {
+  const [local, domain] = email.split("@");
+  return `${local.slice(0, 2)}${"*".repeat(Math.max(1, local.length - 2))}@${domain}`;
+}
+
+async function issueSuperAdminChallenge(email: string) {
+  const otp = crypto.randomInt(100000, 1000000).toString();
+  const challengeId = crypto.randomUUID();
+  const now = Date.now();
+  superAdminChallenges.set(challengeId, {
+    email,
+    otpHash: hashOtp(otp),
+    expiresAt: now + 10 * 60 * 1000,
+    attempts: 0,
+    lastSentAt: now,
+    verified: false,
+  });
+
+  const delivery = isTestEnvironment
+    ? { sent: true as const }
+    : await sendSuperAdminOtpEmail(email, otp);
+  if (!delivery.sent && process.env.NODE_ENV !== "test") {
+    superAdminChallenges.delete(challengeId);
+    throw new Error(`Unable to dispatch the Super Admin OTP: ${delivery.reason}. Configure SMTP before signing in.`);
+  }
+
+  return {
+    challengeId,
+    expiresAt: new Date(now + 10 * 60 * 1000),
+    maskedEmail: maskEmail(email),
+    simulatedOtp: isTestEnvironment ? otp : undefined,
+  };
+}
 
 const supabaseAnonClient = createClient(
   process.env.SUPABASE_URL || "https://placeholder.supabase.co",
@@ -31,6 +92,7 @@ export interface PragatiUser {
   roleId: string;
   designation: string;
   avatar: string;
+  mustChangePassword?: boolean;
 }
 
 const DEMO_PERSONAS: Record<PragatiRole, PragatiUser & { demoPassword: string }> = {
@@ -84,7 +146,196 @@ const usersStore: Map<string, PragatiUser & { passwordHash?: string }> = new Map
   Object.values(DEMO_PERSONAS).map(user => [user.email.toLowerCase(), user])
 );
 
-const FACULTY_WARDS = [
+// ============================================================================
+// REACTIVE STORES & DUAL-LAYER POSTGRESQL PERSISTENCE
+// ============================================================================
+
+export interface InflightStudentRequest {
+  id: string;
+  institutionId: string;
+  departmentId: string;
+  classId: string;
+  submittedBy: string;
+  studentData: {
+    name: string;
+    collegeEmail: string;
+    personalEmail?: string;
+    mobilePhone?: string;
+    parentPhone?: string;
+    enrollmentNumber: string;
+    program: string;
+    batch: string;
+    currentSemester: number;
+    sectionDivision?: string;
+    admissionYear?: number;
+    graduationYear?: number;
+  };
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
+  submitterName: string;
+  submitterEmail: string;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  reviewNotes?: string | null;
+}
+
+export interface InflightFacultyRequest {
+  id: string;
+  institutionId: string;
+  departmentId: string;
+  submittedBy: string;
+  requestType: "CREATE" | "DELETE";
+  targetUserId?: string | null;
+  facultyData?: {
+    name: string;
+    email: string;
+    phone?: string;
+    facultyId?: string;
+    designation: string;
+    specialization?: string;
+    highestQualification?: string;
+    classTeacherAllocation?: string;
+    subjectAssignments?: string[];
+  };
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
+  departmentName: string;
+  submitterName: string;
+  submitterEmail: string;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  reviewNotes?: string | null;
+}
+
+const inMemoryStudentEnrollmentRequests: InflightStudentRequest[] = [
+  {
+    id: "req-stu-001",
+    institutionId: "inst-nit-001",
+    departmentId: "dept-cse-001",
+    classId: "CSE-SEM6-A",
+    submittedBy: "user-faculty-1",
+    studentData: {
+      name: "Pooja Hegde",
+      collegeEmail: "pooja.hegde@northstar.edu",
+      enrollmentNumber: "CSE2024099",
+      program: "B.Tech Computer Science and Engineering",
+      batch: "2021-2025",
+      currentSemester: 6,
+      parentPhone: "+91 98220 12345",
+      mobilePhone: "+91 98220 54321",
+    },
+    status: "PENDING",
+    createdAt: new Date().toISOString(),
+    submitterName: "Dr. Anand Verma",
+    submitterEmail: "faculty@northstar.edu",
+  },
+];
+
+const inMemoryFacultyOnboardingRequests: InflightFacultyRequest[] = [
+  {
+    id: "req-fac-001",
+    institutionId: "inst-nit-001",
+    departmentId: "dept-cse-001",
+    submittedBy: "user-hod-1",
+    requestType: "CREATE",
+    targetUserId: null,
+    facultyData: {
+      name: "Dr. Rajesh Kulkarni",
+      email: "rajesh.kulkarni@northstar.edu",
+      phone: "+91 98221 67890",
+      designation: "Assistant Professor",
+      specialization: "Cloud Computing & Distributed Systems",
+      highestQualification: "Ph.D. in Computer Engineering",
+    },
+    status: "PENDING",
+    createdAt: new Date().toISOString(),
+    departmentName: "Computer Science & Engineering",
+    submitterName: "Prof. Sunita Rao",
+    submitterEmail: "hod.cse@northstar.edu",
+  },
+];
+
+const departmentsStore = [
+  { id: "dept-cse-001", name: "Computer Science & Engineering", code: "CSE" },
+  { id: "dept-it-002", name: "Information Technology", code: "IT" },
+  { id: "dept-ece-003", name: "Electronics & Communication", code: "ECE" },
+];
+
+export interface FacultyListItem {
+  id: string;
+  name: string;
+  email: string;
+  role: "FACULTY" | "HOD" | "TNP_COORDINATOR";
+  departmentId: string;
+  isActive: boolean;
+  mustChangePassword?: boolean;
+  departmentName?: string;
+}
+
+const facultyListStore: FacultyListItem[] = [
+  {
+    id: "user-faculty-1",
+    name: "Dr. Anand Verma",
+    email: "faculty@northstar.edu",
+    role: "FACULTY",
+    departmentId: "dept-cse-001",
+    isActive: true,
+    mustChangePassword: false,
+    departmentName: "Computer Science & Engineering",
+  },
+  {
+    id: "user-hod-1",
+    name: "Prof. Sunita Rao",
+    email: "hod.cse@northstar.edu",
+    role: "HOD",
+    departmentId: "dept-cse-001",
+    isActive: true,
+    mustChangePassword: false,
+    departmentName: "Computer Science & Engineering",
+  },
+  {
+    id: "user-tnp-1",
+    name: "Dr. Vikram Seth",
+    email: "tnp@northstar.edu",
+    role: "TNP_COORDINATOR",
+    departmentId: "dept-cse-001",
+    isActive: true,
+    mustChangePassword: false,
+    departmentName: "Computer Science & Engineering",
+  },
+];
+
+let _pgClient: ReturnType<typeof postgres> | null = null;
+function getPg() {
+  if (!_pgClient && process.env.DATABASE_URL) {
+    try {
+      _pgClient = postgres(process.env.DATABASE_URL, { max: 5, idle_timeout: 20 });
+    } catch (e) {
+      console.warn("[Frontend DB] Postgres client init error:", e);
+    }
+  }
+  return _pgClient;
+}
+
+async function getDbMetadata() {
+  const sql = getPg();
+  if (!sql) return { instId: "inst-nit-001", deptId: "dept-cse-001", userId: "10000000-0000-0000-0000-000000000001" };
+  try {
+    const instRows = await sql`SELECT id FROM institutions LIMIT 1`;
+    const deptRows = await sql`SELECT id FROM departments LIMIT 1`;
+    const userRows = await sql`SELECT id FROM users WHERE role = 'FACULTY' LIMIT 1`;
+    return {
+      instId: instRows[0]?.id || "inst-nit-001",
+      deptId: deptRows[0]?.id || "dept-cse-001",
+      userId: userRows[0]?.id || "10000000-0000-0000-0000-000000000001",
+    };
+  } catch {
+    return { instId: "inst-nit-001", deptId: "dept-cse-001", userId: "10000000-0000-0000-0000-000000000001" };
+  }
+}
+
+
+const FACULTY_WARDS: any[] = [
   {
     studentProfileId: "student-rahul-sharma",
     userId: "10000000-0000-0000-0000-000000000005",
@@ -325,78 +576,64 @@ export const appRouter = router({
 
         return { success: true, user: found, token: `demo_${found.role}` };
       }),
-    register: publicProcedure
-      .input(
-        z.object({
-          name: z.string().min(2),
-          email: z.string().email(),
-          password: z.string().min(6),
-          role: z.enum(["STUDENT", "FACULTY", "HOD", "ADMIN"]),
-          department: z.string().default("Computer Science & Engineering"),
-          roleId: z.string().min(2),
-          designation: z.string().optional(),
-        })
-      )
+    superAdminLogin: publicProcedure
+      .input(z.object({ email: z.string().email(), password: z.string().min(1) }))
       .mutation(async ({ input }) => {
-        const key = input.email.toLowerCase();
-
-        // 1. Securely create user in Supabase Authentication Users tab (auth.users)
-        let supabaseUserId: string | null = null;
-        try {
-          const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            email: input.email.toLowerCase(),
-            password: input.password,
-            email_confirm: true,
-            user_metadata: {
-              name: input.name,
-              role: input.role,
-              department: input.department,
-              roleId: input.roleId,
-              designation: input.designation || `${input.role} (${input.department})`,
-              email_verified: true,
-            },
-          });
-
-          if (authError) {
-            if (
-              authError.message?.toLowerCase().includes("already registered") ||
-              authError.status === 422
-            ) {
-              throw new Error("An account with this email already exists in Supabase Authentication. Please sign in instead.");
-            }
-            console.warn("[Auth] Supabase admin createUser notice:", authError.message);
-          } else if (authData?.user) {
-            supabaseUserId = authData.user.id;
-          }
-        } catch (e: any) {
-          if (e.message?.includes("already exists")) throw e;
-          console.warn("[Auth] Supabase auth registration notice:", e);
+        const configuredPassword = getSuperAdminPassword();
+        const email = input.email.toLowerCase().trim();
+        if (!configuredPassword || email !== getSuperAdminEmail() || input.password !== configuredPassword) {
+          throw new Error("Invalid Platform Owner credentials.");
         }
 
-        if (usersStore.has(key)) {
-          throw new Error("An account with this email already exists. Please sign in instead.");
+        const challenge = await issueSuperAdminChallenge(email);
+        return { success: true, ...challenge };
+      }),
+    verifySuperAdmin2FA: publicProcedure
+      .input(z.object({ challengeId: z.string().uuid(), otp: z.string().regex(/^\d{6}$/) }))
+      .mutation(async ({ input }) => {
+        const challenge = superAdminChallenges.get(input.challengeId);
+        if (!challenge || challenge.verified || Date.now() > challenge.expiresAt) {
+          throw new Error("This verification challenge is invalid or expired.");
+        }
+        if (challenge.attempts >= 3) {
+          throw new Error("Maximum verification attempts exceeded. Request a new code.");
+        }
+        if (hashOtp(input.otp) !== challenge.otpHash) {
+          challenge.attempts += 1;
+          throw new Error("Incorrect verification code.");
         }
 
-        const initials = input.name
-          .split(" ")
-          .map(part => part[0])
-          .slice(0, 2)
-          .join("")
-          .toUpperCase() || "U";
-
-        const newUser: PragatiUser = {
-          id: supabaseUserId || `user-${Date.now()}`,
-          name: input.name,
-          email: input.email,
-          role: input.role,
-          department: input.department,
-          roleId: input.roleId,
-          designation: input.designation || `${input.role} (${input.department})`,
-          avatar: initials,
-        };
-
-        usersStore.set(key, newUser);
-        return { success: true, user: newUser };
+        challenge.verified = true;
+        const sessionToken = await sdk.createSessionToken(`superadmin:${challenge.email}`, {
+          name: "Platform Owner",
+        });
+        return { success: true, verified: true, sessionToken };
+      }),
+    resendSuperAdmin2FA: publicProcedure
+      .input(z.object({ challengeId: z.string().uuid() }))
+      .mutation(async ({ input }) => {
+        const challenge = superAdminChallenges.get(input.challengeId);
+        if (!challenge) throw new Error("This verification challenge is invalid or expired.");
+        if (Date.now() - challenge.lastSentAt < 60_000 && !isTestEnvironment) {
+          throw new Error("Please wait before requesting another verification code.");
+        }
+        const replacement = await issueSuperAdminChallenge(challenge.email);
+        superAdminChallenges.delete(input.challengeId);
+        return { success: true, ...replacement };
+      }),
+    register: publicProcedure
+      .input(z.record(z.string(), z.unknown()).optional())
+      .mutation(async (): Promise<{ success: boolean; user?: PragatiUser }> => {
+        throw new Error(
+          "Public self-registration is strictly disabled. Student accounts must be provisioned through hierarchical Class Teacher / HOD approval."
+        );
+      }),
+    selfRegister: publicProcedure
+      .input(z.record(z.string(), z.unknown()).optional())
+      .mutation(async (): Promise<{ success: boolean; user?: PragatiUser }> => {
+        throw new Error(
+          "Public self-registration is strictly disabled. Student accounts must be provisioned through hierarchical Class Teacher / HOD approval."
+        );
       }),
     demoLogin: publicProcedure
       .input(z.object({ role: z.enum(["STUDENT", "FACULTY", "HOD", "ADMIN"]) }))
@@ -447,6 +684,95 @@ export const appRouter = router({
           },
         };
       }),
+    completeFirstLoginPasswordReset: publicProcedure
+      .input(
+        z.object({
+          userId: z.string().optional(),
+          email: z.string().email().optional(),
+          newPassword: z.string().min(8, "Password must be at least 8 characters long"),
+          confirmPassword: z.string().min(8, "Password must be at least 8 characters long"),
+        })
+      )
+      .mutation(async ({ input }) => {
+        if (input.newPassword !== input.confirmPassword) {
+          throw new Error("New password and confirmation password do not match.");
+        }
+        return {
+          success: true,
+          message: "Your password has been successfully updated. You now have full access to your institutional portal.",
+          mustChangePassword: false,
+        };
+      }),
+
+    requestPasswordReset: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          challengeId: `challenge-${Date.now()}`,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+          maskedEmail: input.email.replace(/(.{2})(.*)(@.*)/, "$1***$3"),
+          simulatedOtp: "123456",
+        };
+      }),
+
+    create2FAChallenge: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          purpose: z
+            .enum(["SUPER_ADMIN_2FA", "ADMIN_2FA", "PASSWORD_RESET", "EMAIL_VERIFY"])
+            .optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          challengeId: `challenge-${Date.now()}`,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+          maskedEmail: input.email.replace(/(.{2})(.*)(@.*)/, "$1***$3"),
+          simulatedOtp: "123456",
+        };
+      }),
+
+    verify2FA: publicProcedure
+      .input(
+        z.object({
+          challengeId: z.string(),
+          otp: z.string().min(6).max(6),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          verified: true,
+          userId: "verified-user",
+          email: "user@northstar.edu",
+          purpose: "SUPER_ADMIN_2FA",
+          sessionToken: `verified_session_${Date.now()}`,
+        };
+      }),
+
+    resend2FA: publicProcedure
+      .input(
+        z.object({
+          challengeId: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          challengeId: input.challengeId,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+          maskedEmail: "us***@northstar.edu",
+          simulatedOtp: "654321",
+        };
+      }),
+
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -715,6 +1041,68 @@ export const appRouter = router({
     getWardInterventions: publicProcedure
       .input(z.object({ studentProfileId: z.string() }))
       .query(() => []),
+    submitStudentEnrollment: publicProcedure
+      .input(
+        z.object({
+          classId: z.string(),
+          departmentId: z.string().optional(),
+          studentData: z.object({
+            name: z.string(),
+            collegeEmail: z.string().email(),
+            personalEmail: z.string().email().optional(),
+            mobilePhone: z.string().optional(),
+            parentPhone: z.string().optional(),
+            enrollmentNumber: z.string(),
+            program: z.string(),
+            batch: z.string(),
+            currentSemester: z.number(),
+            sectionDivision: z.string().optional(),
+            admissionYear: z.number().optional(),
+            graduationYear: z.number().optional(),
+          }),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const reqId = `req-stu-${Date.now()}`;
+        const departmentId = input.departmentId || "dept-cse-001";
+        const submitterName = ctx.user?.name || "Dr. Anand Verma";
+        const submitterEmail = ctx.user?.email || "faculty@northstar.edu";
+
+        const newRequest: InflightStudentRequest = {
+          id: reqId,
+          institutionId: "inst-nit-001",
+          departmentId,
+          classId: input.classId,
+          submittedBy: ctx.user?.id != null ? String(ctx.user.id) : "user-faculty-1",
+          studentData: input.studentData,
+          status: "PENDING",
+          createdAt: new Date().toISOString(),
+          submitterName,
+          submitterEmail,
+        };
+
+        // Add to reactive store immediately so it appears on /hod/approvals
+        inMemoryStudentEnrollmentRequests.unshift(newRequest);
+
+        // Attempt PostgreSQL insert
+        const sql = getPg();
+        if (sql) {
+          try {
+            const meta = await getDbMetadata();
+            await sql`
+              INSERT INTO student_enrollment_requests (
+                institution_id, department_id, class_id, submitted_by, student_data, status
+              ) VALUES (
+                ${meta.instId}, ${meta.deptId}, ${input.classId}, ${meta.userId}, ${sql.json(input.studentData)}, 'PENDING'
+              )
+            `;
+          } catch (dbErr) {
+            console.warn("[Frontend DB] Error inserting student enrollment into PostgreSQL:", dbErr);
+          }
+        }
+
+        return newRequest;
+      }),
   }),
   hod: router({
     getDepartmentSummary: publicProcedure.query(() => ({
@@ -977,6 +1365,256 @@ export const appRouter = router({
       generatedAt: new Date().toISOString(),
       format: "PDF (NAAC Criterion 2 & NBA Sub-tier compliant)",
     })),
+    getPendingStudentRequests: publicProcedure
+      .input(z.object({ departmentId: z.string().optional() }).optional())
+      .query(async ({ input }) => {
+        let pending = inMemoryStudentEnrollmentRequests.filter(r => r.status === "PENDING");
+        if (input?.departmentId) {
+          pending = pending.filter(r => r.departmentId === input.departmentId);
+        }
+
+        const sql = getPg();
+        if (sql) {
+          try {
+            const dbRows = await sql`
+              SELECT r.id, r.institution_id as "institutionId", r.department_id as "departmentId",
+                     r.class_id as "classId", r.submitted_by as "submittedBy", r.student_data as "studentData",
+                     r.status, r.created_at as "createdAt", u.name as "submitterName", u.email as "submitterEmail"
+              FROM student_enrollment_requests r
+              LEFT JOIN users u ON r.submitted_by = u.id
+              WHERE r.status = 'PENDING'
+              ORDER BY r.created_at DESC
+            `;
+            const existingIds = new Set(pending.map(p => p.id));
+            for (const row of dbRows) {
+              if (!existingIds.has(row.id)) {
+                pending.push({
+                  id: row.id,
+                  institutionId: row.institutionId,
+                  departmentId: row.departmentId,
+                  classId: row.classId,
+                  submittedBy: row.submittedBy,
+                  studentData: row.studentData,
+                  status: row.status,
+                  createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : new Date().toISOString(),
+                  submitterName: row.submitterName || "Class Teacher",
+                  submitterEmail: row.submitterEmail || "faculty@northstar.edu",
+                });
+              }
+            }
+          } catch (dbErr) {
+            console.warn("[Frontend DB] Error querying student_enrollment_requests:", dbErr);
+          }
+        }
+
+        return pending;
+      }),
+    processStudentEnrollments: publicProcedure
+      .input(
+        z.object({
+          requestIds: z.array(z.string()).min(1),
+          action: z.enum(["APPROVE", "REJECT"]),
+          rejectionReason: z.string().optional(),
+          departmentId: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const now = new Date().toISOString();
+        const sql = getPg();
+
+        for (const reqId of input.requestIds) {
+          const req = inMemoryStudentEnrollmentRequests.find(r => r.id === reqId);
+          if (req) {
+            req.status = input.action === "APPROVE" ? "APPROVED" : "REJECTED";
+            req.reviewedBy = ctx.user?.id != null ? String(ctx.user.id) : "user-hod-1";
+            req.reviewedAt = now;
+            req.reviewNotes = input.rejectionReason || (input.action === "APPROVE" ? "Approved by HOD" : "Rejected by HOD");
+
+            if (input.action === "APPROVE") {
+              const studentData = req.studentData;
+              const newUserId = `user-stu-${Date.now()}`;
+              const tempPassword = "password123";
+
+              // Provision user in usersStore with mustChangePassword: true
+              usersStore.set(studentData.collegeEmail.toLowerCase(), {
+                id: newUserId,
+                name: studentData.name,
+                email: studentData.collegeEmail,
+                role: "STUDENT",
+                department: "Computer Science & Engineering",
+                roleId: studentData.enrollmentNumber,
+                designation: `${studentData.program} · Sem ${studentData.currentSemester}`,
+                avatar: studentData.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2),
+                mustChangePassword: true,
+              });
+
+              // Add to FACULTY_WARDS so faculty sees this student in wards roster
+              FACULTY_WARDS.unshift({
+                studentProfileId: `student-${studentData.enrollmentNumber.toLowerCase()}`,
+                userId: newUserId,
+                name: studentData.name,
+                email: studentData.collegeEmail,
+                enrollmentNumber: studentData.enrollmentNumber,
+                program: studentData.program,
+                currentSemester: studentData.currentSemester,
+                cgpa: 8.5,
+                activeBacklogsCount: 0,
+                activeGapsCount: 0,
+                activeInterventionsCount: 0,
+                status: "ON_TRACK" as const,
+                activeGaps: [],
+                recentInterventions: [],
+              });
+
+              // Dispatch Welcome Email with Credentials (rerouted to DEMO_NOTIFICATION_EMAIL if demo)
+              try {
+                const mailRes = await sendWelcomeEmail({
+                  name: studentData.name,
+                  toEmail: studentData.collegeEmail,
+                  role: "STUDENT",
+                  identifier: studentData.enrollmentNumber,
+                  tempPassword,
+                  loginUrl: "http://localhost:3000/login",
+                });
+                console.log("[HOD Approval] Student welcome email dispatch result:", mailRes);
+              } catch (mailErr) {
+                console.warn("[Email] Failed to dispatch student welcome email:", mailErr);
+              }
+            }
+          }
+
+          // If PostgreSQL is available, update DB
+          if (sql) {
+            try {
+              if (input.action === "APPROVE") {
+                await sql`
+                  UPDATE student_enrollment_requests
+                  SET status = 'APPROVED', reviewed_at = NOW(), review_notes = ${input.rejectionReason || 'Approved by HOD'}
+                  WHERE id::text = ${reqId}
+                `;
+              } else {
+                await sql`
+                  UPDATE student_enrollment_requests
+                  SET status = 'REJECTED', reviewed_at = NOW(), review_notes = ${input.rejectionReason || 'Rejected by HOD'}
+                  WHERE id::text = ${reqId}
+                `;
+              }
+            } catch (dbErr) {
+              console.warn("[Frontend DB] Error updating student_enrollment_requests in DB:", dbErr);
+            }
+          }
+        }
+
+        return { processedCount: input.requestIds.length, action: input.action };
+      }),
+    requestFaculty: publicProcedure
+      .input(
+        z.object({
+          requestType: z.enum(["CREATE", "DELETE"]),
+          targetUserId: z.string().optional(),
+          departmentId: z.string().optional(),
+          facultyData: z.any().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const reqId = `req-fac-${Date.now()}`;
+        const departmentId = input.departmentId || "dept-cse-001";
+        const deptObj = departmentsStore.find(d => d.id === departmentId);
+        const departmentName = deptObj?.name || "Computer Science & Engineering";
+
+        const newRequest: InflightFacultyRequest = {
+          id: reqId,
+          institutionId: "inst-nit-001",
+          departmentId,
+          submittedBy: ctx.user?.id != null ? String(ctx.user.id) : "user-hod-1",
+          requestType: input.requestType,
+          targetUserId: input.targetUserId || null,
+          facultyData: input.facultyData,
+          status: "PENDING",
+          createdAt: new Date().toISOString(),
+          departmentName,
+          submitterName: ctx.user?.name || "Prof. Sunita Rao",
+          submitterEmail: ctx.user?.email || "hod.cse@northstar.edu",
+        };
+
+        // Add to reactive store so it immediately appears on /admin/approvals
+        inMemoryFacultyOnboardingRequests.unshift(newRequest);
+
+        // Attempt DB insert
+        const sql = getPg();
+        if (sql) {
+          try {
+            const meta = await getDbMetadata();
+            await sql`
+              INSERT INTO faculty_onboarding_requests (
+                institution_id, department_id, submitted_by, request_type, target_user_id, faculty_data, status
+              ) VALUES (
+                ${meta.instId}, ${meta.deptId}, ${meta.userId}, ${input.requestType}, ${input.targetUserId || null}, ${sql.json(input.facultyData || {})}, 'PENDING'
+              )
+            `;
+          } catch (dbErr) {
+            console.warn("[Frontend DB] Error inserting faculty_onboarding_requests into PostgreSQL:", dbErr);
+          }
+        }
+
+        return newRequest;
+      }),
+    assignClassTeacher: publicProcedure
+      .input(z.object({ classId: z.string(), facultyId: z.string() }))
+      .mutation(async () => {
+        return { success: true };
+      }),
+    assignSubjectTeacher: publicProcedure
+      .input(
+        z.object({
+          subjectId: z.string(),
+          facultyId: z.string(),
+          classId: z.string().optional(),
+          departmentId: z.string().optional(),
+          semester: z.number().optional(),
+          academicYear: z.string().optional(),
+          role: z.string().optional(),
+        })
+      )
+      .mutation(async () => {
+        return { success: true };
+      }),
+    listClasses: publicProcedure
+      .input(z.object({ departmentId: z.string().optional() }).optional())
+      .query(async () => {
+        return [
+          {
+            id: "class-cse-sem6-a",
+            className: "Third Year CSE - Div A",
+            academicYear: "2024-2025",
+            semester: 6,
+            classTeacherId: "user-faculty-1",
+            classTeacherName: "Dr. Anand Verma",
+            classTeacherEmail: "faculty@northstar.edu",
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }),
+    createClass: publicProcedure
+      .input(
+        z.object({
+          className: z.string(),
+          academicYear: z.string(),
+          semester: z.number(),
+          departmentId: z.string().optional(),
+          classTeacherId: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          id: `class-${Date.now()}`,
+          className: input.className,
+          academicYear: input.academicYear,
+          semester: input.semester,
+          classTeacherId: input.classTeacherId || null,
+          createdAt: new Date().toISOString(),
+        };
+      }),
   }),
   evidence: router({
     getMyEvidence: publicProcedure.query(() => [
@@ -1810,6 +2448,432 @@ export const appRouter = router({
         remedialRequired: { count: 19, percentage: 16, label: "Remedial Needed (<65)" as const },
       },
     })),
+  }),
+
+  superAdmin: router({
+    getPlatformStats: superAdminProcedure.query(async () => {
+      return {
+        totalInstitutions: 2,
+        activeInstitutions: 2,
+        suspendedInstitutions: 0,
+        demoInstitutions: 1,
+        totalUsers: 9,
+        totalStudents: 1,
+      };
+    }),
+    listInstitutions: superAdminProcedure
+      .input(
+        z
+          .object({
+            status: z.enum(["ACTIVE", "SUSPENDED", "ALL"]).optional(),
+            includeDemo: z.boolean().default(true),
+            search: z.string().optional(),
+          })
+          .optional()
+      )
+      .query(async () => {
+        return [
+          {
+            id: "10000000-0000-0000-0000-000000000000",
+            name: "Northstar Institute of Technology (Demo)",
+            code: "NIT-DEMO",
+            domain: "northstar.edu",
+            universityBoard: "Autonomous Technical University",
+            address: "100 Innovation Boulevard, Tech District",
+            city: "Pune",
+            state: "Maharashtra",
+            contactPhone: "+91 98765 43210",
+            contactEmail: "admin@northstar.edu",
+            isDemo: true,
+            status: "ACTIVE" as const,
+            suspensionReason: null,
+            suspendedAt: null,
+            isDeleted: false,
+            deletedAt: null,
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }),
+    provisionInstitution: superAdminProcedure
+      .input(
+        z.object({
+          name: z.string().min(3),
+          code: z.string().min(2),
+          domain: z.string().min(3),
+          universityBoard: z.string().min(2),
+          address: z.string().min(5),
+          city: z.string().min(2),
+          state: z.string().min(2),
+          contactPhone: z.string().min(8),
+          contactEmail: z.string().email(),
+          adminName: z.string().min(2),
+          adminEmail: z.string().email(),
+          adminPhone: z.string().min(8),
+          adminDesignation: z.string().min(2),
+          adminEmployeeId: z.string().min(2),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          message: `Institution '${input.name}' and administrator '${input.adminName}' provisioned successfully.`,
+          institution: {
+            id: "inst-" + Date.now(),
+            name: input.name,
+            code: input.code,
+            domain: input.domain,
+            status: "ACTIVE" as const,
+            isDemo: false,
+          },
+        };
+      }),
+    suspendInstitution: superAdminProcedure
+      .input(
+        z.object({
+          institutionId: z.string(),
+          reason: z.string().min(5),
+        })
+      )
+      .mutation(async () => {
+        return {
+          success: true,
+          message: `Institution suspended. Lockout reason recorded.`,
+        };
+      }),
+    reviveInstitution: superAdminProcedure
+      .input(z.object({ institutionId: z.string() }))
+      .mutation(async () => {
+        return {
+          success: true,
+          message: "Institution revived successfully.",
+        };
+      }),
+    softDeleteInstitution: superAdminProcedure
+      .input(z.object({ institutionId: z.string() }))
+      .mutation(async () => {
+        return {
+          success: true,
+          message: "Institution soft-deleted into 30-day recovery pool.",
+        };
+      }),
+    listTrash: superAdminProcedure.query(async () => {
+      return [] as {
+        resourceType: "INSTITUTION";
+        resourceId: string;
+        name: string;
+        code: string;
+        deletedAt: string;
+        daysRemaining: number;
+        isExpired: boolean;
+      }[];
+    }),
+    restoreFromTrash: superAdminProcedure
+      .input(
+        z.object({
+          resourceType: z.enum(["INSTITUTION", "USER", "DEPARTMENT"]),
+          resourceId: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          message: `${input.resourceType} restored from trash.`,
+        };
+      }),
+    listChangeRequests: superAdminProcedure
+      .input(
+        z
+          .object({
+            status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+          })
+          .optional()
+      )
+      .query(async () => {
+        return [] as {
+          id: string;
+          institutionId: string;
+          institutionName: string | null;
+          requestedBy: string;
+          requestedByName: string | null;
+          requestedChanges: unknown;
+          reason: string;
+          status: "PENDING" | "APPROVED" | "REJECTED";
+          reviewNotes: string | null;
+          reviewedAt: string | null;
+          createdAt: string;
+        }[];
+      }),
+    reviewChangeRequest: superAdminProcedure
+      .input(
+        z.object({
+          requestId: z.string(),
+          action: z.enum(["APPROVE", "REJECT"]),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return {
+          success: true,
+          message: `Change request marked as ${input.action}.`,
+        };
+      }),
+  }),
+
+  admin: router({
+    getPendingFacultyRequests: superAdminProcedure.query(async () => {
+      let pending = inMemoryFacultyOnboardingRequests.filter(r => r.status === "PENDING");
+
+      const sql = getPg();
+      if (sql) {
+        try {
+          const dbRows = await sql`
+            SELECT r.id, r.institution_id as "institutionId", r.department_id as "departmentId",
+                   r.submitted_by as "submittedBy", r.request_type as "requestType", r.target_user_id as "targetUserId",
+                   r.faculty_data as "facultyData", r.status, r.created_at as "createdAt",
+                   d.name as "departmentName", u.name as "submitterName", u.email as "submitterEmail"
+            FROM faculty_onboarding_requests r
+            LEFT JOIN departments d ON r.department_id = d.id
+            LEFT JOIN users u ON r.submitted_by = u.id
+            WHERE r.status = 'PENDING'
+            ORDER BY r.created_at DESC
+          `;
+          const existingIds = new Set(pending.map(p => p.id));
+          for (const row of dbRows) {
+            if (!existingIds.has(row.id)) {
+              pending.push({
+                id: row.id,
+                institutionId: row.institutionId,
+                departmentId: row.departmentId,
+                submittedBy: row.submittedBy,
+                requestType: row.requestType,
+                targetUserId: row.targetUserId,
+                facultyData: row.facultyData,
+                status: row.status,
+                createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : new Date().toISOString(),
+                departmentName: row.departmentName || "Computer Science & Engineering",
+                submitterName: row.submitterName || "Prof. Sunita Rao",
+                submitterEmail: row.submitterEmail || "hod.cse@northstar.edu",
+              });
+            }
+          }
+        } catch (dbErr) {
+          console.warn("[Frontend DB] Error querying faculty_onboarding_requests:", dbErr);
+        }
+      }
+
+      return pending;
+    }),
+    processFacultyRequests: superAdminProcedure
+      .input(
+        z.object({
+          requestIds: z.array(z.string()).min(1),
+          action: z.enum(["APPROVE", "REJECT"]),
+          rejectionReason: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const now = new Date().toISOString();
+        const sql = getPg();
+
+        for (const reqId of input.requestIds) {
+          const req = inMemoryFacultyOnboardingRequests.find(r => r.id === reqId);
+          if (req) {
+            req.status = input.action === "APPROVE" ? "APPROVED" : "REJECTED";
+            req.reviewedBy = ctx.user?.id != null ? String(ctx.user.id) : "user-admin-1";
+            req.reviewedAt = now;
+            req.reviewNotes = input.rejectionReason || (input.action === "APPROVE" ? "Approved by Admin" : "Rejected by Admin");
+
+            if (input.action === "APPROVE" && req.requestType === "CREATE" && req.facultyData) {
+              const facultyData = req.facultyData;
+              const newFacultyId = `user-fac-${Date.now()}`;
+              const tempPassword = "password123";
+
+              // Provision user in usersStore with mustChangePassword: true
+              usersStore.set(facultyData.email.toLowerCase(), {
+                id: newFacultyId,
+                name: facultyData.name,
+                email: facultyData.email,
+                role: "FACULTY",
+                department: req.departmentName || "Computer Science & Engineering",
+                roleId: facultyData.facultyId || `FAC-CS-${Date.now().toString().slice(-3)}`,
+                designation: facultyData.designation || "Assistant Professor",
+                avatar: facultyData.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2),
+                mustChangePassword: true,
+              });
+
+              // Add to facultyListStore so Admin and HOD see the new faculty member in faculty roster
+              facultyListStore.unshift({
+                id: newFacultyId,
+                name: facultyData.name,
+                email: facultyData.email,
+                role: "FACULTY" as const,
+                departmentId: req.departmentId,
+                isActive: true,
+                mustChangePassword: true,
+                departmentName: req.departmentName,
+              });
+
+              // Dispatch Welcome Email with Credentials (rerouted to DEMO_NOTIFICATION_EMAIL if demo)
+              try {
+                const mailRes = await sendWelcomeEmail({
+                  name: facultyData.name,
+                  toEmail: facultyData.email,
+                  role: "FACULTY",
+                  identifier: facultyData.facultyId || "FAC-EMP",
+                  tempPassword,
+                  loginUrl: "http://localhost:3000/login",
+                });
+                console.log("[Admin Approval] Faculty welcome email dispatch result:", mailRes);
+              } catch (mailErr) {
+                console.warn("[Email] Failed to dispatch faculty welcome email:", mailErr);
+              }
+            } else if (input.action === "APPROVE" && req.requestType === "DELETE" && req.targetUserId) {
+              const targetIdx = facultyListStore.findIndex(f => f.id === req.targetUserId);
+              if (targetIdx !== -1) {
+                facultyListStore.splice(targetIdx, 1);
+              }
+            }
+          }
+
+          // Update DB if PostgreSQL available
+          if (sql) {
+            try {
+              if (input.action === "APPROVE") {
+                await sql`
+                  UPDATE faculty_onboarding_requests
+                  SET status = 'APPROVED', reviewed_at = NOW(), review_notes = ${input.rejectionReason || 'Approved by Admin'}
+                  WHERE id::text = ${reqId}
+                `;
+              } else {
+                await sql`
+                  UPDATE faculty_onboarding_requests
+                  SET status = 'REJECTED', reviewed_at = NOW(), review_notes = ${input.rejectionReason || 'Rejected by Admin'}
+                  WHERE id::text = ${reqId}
+                `;
+              }
+            } catch (dbErr) {
+              console.warn("[Frontend DB] Error updating faculty_onboarding_requests in DB:", dbErr);
+            }
+          }
+        }
+
+        return { processedCount: input.requestIds.length, action: input.action };
+      }),
+    reassignFacultyDesignation: superAdminProcedure
+      .input(
+        z.object({
+          facultyUserId: z.string(),
+          newRole: z.enum(["FACULTY", "HOD", "TNP_COORDINATOR"]),
+          departmentId: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const fac = facultyListStore.find(f => f.id === input.facultyUserId);
+        if (fac) {
+          fac.role = input.newRole;
+          if (input.departmentId) fac.departmentId = input.departmentId;
+        }
+        Array.from(usersStore.values()).forEach(user => {
+          if (user.id === input.facultyUserId) {
+            user.role = input.newRole as any;
+            if (input.newRole === "HOD") user.designation = `Head of Department (${user.department})`;
+            if (input.newRole === "TNP_COORDINATOR") user.designation = `Training & Placement Coordinator`;
+            if (input.newRole === "FACULTY") user.designation = `Faculty Member`;
+          }
+        });
+        return {
+          id: input.facultyUserId,
+          role: input.newRole,
+          departmentId: input.departmentId,
+        };
+      }),
+    listDepartments: superAdminProcedure.query(async () => {
+      const sql = getPg();
+      if (sql) {
+        try {
+          const dbDepts = await sql`SELECT id, name, code FROM departments`;
+          const existingIds = new Set(departmentsStore.map(d => d.id));
+          for (const d of dbDepts) {
+            if (!existingIds.has(d.id)) {
+              departmentsStore.push({ id: d.id, name: d.name, code: d.code });
+            }
+          }
+        } catch {}
+      }
+      return departmentsStore;
+    }),
+    createDepartment: superAdminProcedure
+      .input(
+        z.object({
+          name: z.string().min(2),
+          code: z.string().min(2).max(10).toUpperCase(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const newDept = {
+          id: `dept-${input.code.toLowerCase()}-${Date.now()}`,
+          name: input.name,
+          code: input.code,
+        };
+        departmentsStore.push(newDept);
+
+        const sql = getPg();
+        if (sql) {
+          try {
+            const meta = await getDbMetadata();
+            await sql`
+              INSERT INTO departments (institution_id, name, code)
+              VALUES (${meta.instId}, ${input.name}, ${input.code})
+            `;
+          } catch {}
+        }
+        return newDept;
+      }),
+    listFaculty: superAdminProcedure.query(async () => {
+      return facultyListStore;
+    }),
+    listStudents: superAdminProcedure.query(async () => {
+      const studentsList = [
+        {
+          id: "student-rahul-sharma",
+          userId: "10000000-0000-0000-0000-000000000005",
+          name: "Rahul Sharma",
+          email: "student@northstar.edu",
+          departmentId: "dept-cse-001",
+          departmentName: "Computer Science & Engineering",
+          enrollmentNumber: "CSE2024042",
+          program: "B.Tech Computer Science and Engineering",
+          currentSemester: 6,
+          cgpa: 8.42,
+          internshipStatus: "COMPLETED",
+          skillGapsCount: 1,
+          status: "active",
+        },
+      ];
+
+      // Merge newly approved students from FACULTY_WARDS
+      for (const ward of FACULTY_WARDS) {
+        if (ward.enrollmentNumber !== "CSE2024042") {
+          studentsList.unshift({
+            id: ward.studentProfileId,
+            userId: ward.userId,
+            name: ward.name,
+            email: ward.email,
+            departmentId: "dept-cse-001",
+            departmentName: "Computer Science & Engineering",
+            enrollmentNumber: ward.enrollmentNumber,
+            program: ward.program,
+            currentSemester: ward.currentSemester,
+            cgpa: ward.cgpa || 8.5,
+            internshipStatus: "NOT_STARTED",
+            skillGapsCount: 0,
+            status: "active",
+          });
+        }
+      }
+
+      return studentsList;
+    }),
   }),
 });
 

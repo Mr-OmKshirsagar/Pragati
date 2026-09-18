@@ -13,6 +13,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { useLocation } from "wouter";
+import RoleSpecificUserModal from "@/components/RoleSpecificUserModal";
 
 interface FacultyMember {
   id: string;
@@ -146,12 +149,33 @@ const columns: TableColumn<FacultyMember>[] = [
 ];
 
 export default function AdminFaculty() {
+  const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [selectedFaculty, setSelectedFaculty] = useState<FacultyMember | null>(null);
+  const [facultyModalOpen, setFacultyModalOpen] = useState(false);
 
-  const filteredFaculty = mockFaculty.filter((faculty) => {
+  const facultyQuery = trpc.admin.listFaculty.useQuery();
+  const pendingFacultyQuery = trpc.admin.getPendingFacultyRequests.useQuery();
+  const pendingCount = (pendingFacultyQuery.data || []).length;
+
+  const facultyList: FacultyMember[] =
+    facultyQuery.data && facultyQuery.data.length > 0
+      ? facultyQuery.data.map((f, idx) => ({
+          id: f.id,
+          name: f.name,
+          email: f.email,
+          role: (f.role === "HOD" ? "HOD" : "Faculty") as "Faculty" | "HOD",
+          department: f.departmentName || "Computer Science",
+          assignedStudents: 35 + (idx % 4) * 10,
+          openInterventions: 2 + (idx % 3),
+          pendingVerifications: 3 + (idx % 4),
+          status: f.isActive ? ("active" as const) : ("inactive" as const),
+        }))
+      : mockFaculty;
+
+  const filteredFaculty = facultyList.filter((faculty) => {
     const matchesSearch =
       faculty.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       faculty.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -163,10 +187,10 @@ export default function AdminFaculty() {
   });
 
   const stats = {
-    totalFaculty: mockFaculty.length,
-    totalStudents: mockFaculty.reduce((sum, f) => sum + f.assignedStudents, 0),
-    openInterventions: mockFaculty.reduce((sum, f) => sum + f.openInterventions, 0),
-    pendingVerifications: mockFaculty.reduce((sum, f) => sum + f.pendingVerifications, 0),
+    totalFaculty: facultyList.length,
+    totalStudents: facultyList.reduce((sum, f) => sum + f.assignedStudents, 0),
+    openInterventions: facultyList.reduce((sum, f) => sum + f.openInterventions, 0),
+    pendingVerifications: facultyList.reduce((sum, f) => sum + f.pendingVerifications, 0),
   };
 
   return (
@@ -176,12 +200,42 @@ export default function AdminFaculty() {
         subtitle="Manage faculty assignments, student mappings, and departmental oversight."
         breadcrumbs={["Admin", "Faculty"]}
         actions={
-          <button className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition hover:opacity-90">
-            <Plus className="h-4 w-4" />
-            Add Faculty
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setFacultyModalOpen(true)}
+              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition hover:opacity-90 active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              Add / Onboard Faculty
+            </button>
+          </div>
         }
       />
+
+      {/* Pending Faculty Requests Banner */}
+      {pendingCount > 0 && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-300 bg-amber-50/80 p-4 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500 text-white shadow-xs">
+              <AlertCircle className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-extrabold text-amber-950">
+                Tier-2 Pending Approvals: {pendingCount} Faculty Onboarding {pendingCount === 1 ? "Request" : "Requests"} Pending
+              </h4>
+              <p className="text-xs text-amber-800">
+                Department HODs have requested faculty recruitments. Review qualifications, approve accounts, or assign faculty designations.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/admin/approvals")}
+            className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs font-extrabold text-white shadow-xs hover:bg-amber-700 active:scale-95 transition"
+          >
+            <span>Review in Approvals Desk</span>
+          </button>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -371,6 +425,17 @@ export default function AdminFaculty() {
           </div>
         </div>
       )}
+
+      {/* Faculty Onboarding Modal */}
+      <RoleSpecificUserModal
+        open={facultyModalOpen}
+        onOpenChange={setFacultyModalOpen}
+        mode="FACULTY_ONBOARDING"
+        onSuccess={() => {
+          facultyQuery.refetch();
+          pendingFacultyQuery.refetch();
+        }}
+      />
     </AdminLayout>
   );
 }

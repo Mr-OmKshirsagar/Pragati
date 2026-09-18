@@ -14,11 +14,13 @@ export interface StudentProfileContext {
 export interface AuthenticatedUser {
   id: string;
   email: string;
-  role: "STUDENT" | "FACULTY" | "HOD" | "TNP_COORDINATOR" | "ADMIN";
+  role: "STUDENT" | "FACULTY" | "HOD" | "TNP_COORDINATOR" | "ADMIN" | "SUPER_ADMIN";
   institutionId: string;
   departmentId?: string | null;
   name: string;
   studentProfile?: StudentProfileContext;
+  isSuperAdmin?: boolean;
+  mustChangePassword?: boolean;
 }
 
 export async function createContext({ req, res }: CreateExpressContextOptions) {
@@ -31,8 +33,17 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
     try {
       const db = await getDb();
       if (db) {
-        // 1. Check for Demo Fast-Switch Tokens (demo_STUDENT, demo_FACULTY, etc.)
-        if (token.startsWith("demo_")) {
+        // 1. Check for Demo Fast-Switch Tokens (demo_STUDENT, demo_FACULTY, demo_SUPER_ADMIN etc.)
+        if (token === "demo_SUPER_ADMIN") {
+          user = {
+            id: "00000000-0000-0000-0000-000000000000",
+            email: "omkshirsagar.login@gmail.com",
+            role: "SUPER_ADMIN",
+            institutionId: "00000000-0000-0000-0000-000000000000",
+            name: "Platform Owner",
+            isSuperAdmin: true,
+          };
+        } else if (token.startsWith("demo_")) {
           const targetRole = token.replace("demo_", "") as
             | "STUDENT"
             | "FACULTY"
@@ -73,6 +84,7 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
               departmentId: matchedUser.departmentId,
               name: matchedUser.name,
               studentProfile: studentProf,
+              mustChangePassword: matchedUser.mustChangePassword ?? false,
             };
           }
         } else {
@@ -83,40 +95,61 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
           } = await supabaseAdmin.auth.getUser(token);
 
           if (!error && authUser) {
-            const [profile] = await db
-              .select()
-              .from(users)
-              .where(eq(users.id, authUser.id))
-              .limit(1);
+            // Check for Super Admin privilege in Supabase Auth app_metadata or email
+            const isSuperAdminUser =
+              authUser.app_metadata?.role === "SUPER_ADMIN" ||
+              authUser.app_metadata?.is_super_admin === true ||
+              authUser.email?.toLowerCase() === "omkshirsagar.login@gmail.com";
 
-            if (profile) {
-              let studentProf: StudentProfileContext | undefined;
-              if (profile.role === "STUDENT") {
-                const [sp] = await db
-                  .select()
-                  .from(studentProfiles)
-                  .where(eq(studentProfiles.userId, profile.id))
-                  .limit(1);
-
-                if (sp) {
-                  studentProf = {
-                    id: sp.id,
-                    enrollmentNumber: sp.enrollmentNumber,
-                    program: sp.program,
-                    currentSemester: sp.currentSemester,
-                  };
-                }
-              }
-
+            if (isSuperAdminUser) {
               user = {
-                id: profile.id,
-                email: profile.email,
-                role: profile.role,
-                institutionId: profile.institutionId,
-                departmentId: profile.departmentId,
-                name: profile.name,
-                studentProfile: studentProf,
+                id: authUser.id,
+                email: authUser.email || "omkshirsagar.login@gmail.com",
+                role: "SUPER_ADMIN",
+                institutionId:
+                  (authUser.app_metadata?.institution_id as string) ||
+                  "00000000-0000-0000-0000-000000000000",
+                name: (authUser.user_metadata?.name as string) || "Platform Owner",
+                isSuperAdmin: true,
+                mustChangePassword: false,
               };
+            } else {
+              const [profile] = await db
+                .select()
+                .from(users)
+                .where(eq(users.id, authUser.id))
+                .limit(1);
+
+              if (profile) {
+                let studentProf: StudentProfileContext | undefined;
+                if (profile.role === "STUDENT") {
+                  const [sp] = await db
+                    .select()
+                    .from(studentProfiles)
+                    .where(eq(studentProfiles.userId, profile.id))
+                    .limit(1);
+
+                  if (sp) {
+                    studentProf = {
+                      id: sp.id,
+                      enrollmentNumber: sp.enrollmentNumber,
+                      program: sp.program,
+                      currentSemester: sp.currentSemester,
+                    };
+                  }
+                }
+
+                user = {
+                  id: profile.id,
+                  email: profile.email,
+                  role: profile.role,
+                  institutionId: profile.institutionId,
+                  departmentId: profile.departmentId,
+                  name: profile.name,
+                  studentProfile: studentProf,
+                  mustChangePassword: profile.mustChangePassword ?? false,
+                };
+              }
             }
           }
         }

@@ -335,6 +335,20 @@ class SDKServer {
       throw ForbiddenError("Invalid session cookie");
     }
 
+    if (session.openId.startsWith("superadmin:")) {
+      return {
+        id: -1,
+        openId: session.openId,
+        name: session.name || "Platform Owner",
+        email: session.openId.slice("superadmin:".length),
+        loginMethod: "super_admin",
+        role: "user",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastSignedIn: new Date(),
+      } as AuthenticatedUser;
+    }
+
     if (session.openId.startsWith(CRON_OPEN_ID_PREFIX)) {
       const userInfo = await this.getUserInfoWithJwt(sessionToken ?? "");
       const taskUid = userInfo.taskUid ?? null;

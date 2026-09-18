@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { facultyProcedure, router } from "../_core/trpc";
+import * as approvalWorkflowService from "../services/approvalWorkflowService";
 import * as interventionService from "../services/interventionService";
 
 export const facultyRouter = router({
@@ -57,5 +58,61 @@ export const facultyRouter = router({
     .input(z.object({ studentId: z.string().uuid() }))
     .query(async ({ input }) => {
       return interventionService.getStudentInterventions(input.studentId);
+    }),
+
+  // 5. Tier 1 Student Enrollment: Class Teacher submits student enrollment request to HOD
+  submitStudentEnrollment: facultyProcedure
+    .input(
+      z.object({
+        classId: z.string().min(1),
+        departmentId: z.string().uuid().optional(),
+        studentData: z.object({
+          name: z.string().min(2),
+          collegeEmail: z.string().email(),
+          personalEmail: z.string().email().optional(),
+          mobilePhone: z.string().optional(),
+          parentPhone: z.string().optional(),
+          enrollmentNumber: z.string().min(2),
+          program: z.string().min(2),
+          batch: z.string().min(2),
+          currentSemester: z.number().int().min(1).max(10),
+          sectionDivision: z.string().optional(),
+          admissionYear: z.number().int().optional(),
+          graduationYear: z.number().int().optional(),
+        }),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      let deptId = input.departmentId || ctx.user.departmentId;
+      if (!deptId) {
+        const db = await (await import("../db")).getDb();
+        if (db) {
+          const [firstDept] = await db
+            .select({ id: (await import("../../drizzle/schema")).departments.id })
+            .from((await import("../../drizzle/schema")).departments)
+            .where(
+              (await import("drizzle-orm")).eq(
+                (await import("../../drizzle/schema")).departments.institutionId,
+                ctx.user.institutionId
+              )
+            )
+            .limit(1);
+          deptId = firstDept?.id;
+        }
+      }
+      if (!deptId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Department ID is required to submit student enrollment.",
+        });
+      }
+
+      return approvalWorkflowService.submitStudentEnrollment({
+        institutionId: ctx.user.institutionId,
+        departmentId: deptId,
+        classId: input.classId,
+        submittedBy: ctx.user.id,
+        studentData: input.studentData,
+      });
     }),
 });

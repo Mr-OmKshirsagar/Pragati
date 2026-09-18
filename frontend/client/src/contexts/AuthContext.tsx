@@ -25,6 +25,7 @@ export interface PragatiUser {
   designation?: string;
   avatar?: string;
   studentProfile?: StudentProfileData;
+  mustChangePassword?: boolean;
 }
 export type UserData = PragatiUser;
 
@@ -107,6 +108,7 @@ interface AuthContextType {
   loginWithDemo: (role: PragatiRole) => Promise<void>;
   logout: () => void;
   switchRole: (role: PragatiRole) => void;
+  updateMustChangePassword: (mustChange: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -127,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return DEFAULT_STUDENT;
   });
 
@@ -145,6 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (res.success && res.user) {
           const syncedUser: PragatiUser = {
             ...res.user,
+            role: (res.user.role === "TNP_COORDINATOR" ? "ADMIN" : res.user.role) as PragatiRole,
             avatar: res.user.name
               .split(" ")
               .map(p => p[0])
@@ -155,10 +158,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               targetRole === "STUDENT"
                 ? "CS-2023-0842"
                 : targetRole === "FACULTY"
-                ? "FAC-CS-104"
-                : targetRole === "HOD"
-                ? "HOD-CSE-001"
-                : "ADM-SYS-001",
+                  ? "FAC-CS-104"
+                  : targetRole === "HOD"
+                    ? "HOD-CSE-001"
+                    : "ADM-SYS-001",
             department: "Computer Science & Engineering",
             designation: ROLE_CONFIG[targetRole]?.description ?? "",
           };
@@ -184,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
       localStorage.setItem(TOKEN_KEY, `demo_${newUser.role}`);
-    } catch {}
+    } catch { }
   };
 
   const loginWithDemo = async (targetRole: PragatiRole) => {
@@ -195,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(res.token);
         const syncedUser: PragatiUser = {
           ...res.user,
+          role: (res.user.role === "TNP_COORDINATOR" ? "ADMIN" : res.user.role) as PragatiRole,
           avatar: res.user.name
             .split(" ")
             .map(p => p[0])
@@ -205,10 +209,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             targetRole === "STUDENT"
               ? "CS-2023-0842"
               : targetRole === "FACULTY"
-              ? "FAC-CS-104"
-              : targetRole === "HOD"
-              ? "HOD-CSE-001"
-              : "ADM-SYS-001",
+                ? "FAC-CS-104"
+                : targetRole === "HOD"
+                  ? "HOD-CSE-001"
+                  : "ADM-SYS-001",
           department: "Computer Science & Engineering",
           designation: ROLE_CONFIG[targetRole]?.description ?? "",
         };
@@ -235,6 +239,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const switchRole = (newRole: PragatiRole) => {
     loginWithDemo(newRole);
+  };
+
+  const updateMustChangePassword = (mustChange: boolean) => {
+    setUser(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, mustChangePassword: mustChange };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch { }
+      return updated;
+    });
   };
 
   const role: PragatiRole = user?.role ?? "STUDENT";
@@ -264,6 +279,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithDemo,
         logout,
         switchRole,
+        updateMustChangePassword,
       }}
     >
       {children}

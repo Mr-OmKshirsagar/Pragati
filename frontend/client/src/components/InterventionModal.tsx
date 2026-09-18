@@ -73,7 +73,7 @@ export default function InterventionModal({
         startDate,
       });
 
-      if (result.emailNotification?.sent) {
+      if ((result as any)?.emailNotification?.sent) {
         toast.success(
           `Intervention scheduled for ${ward.name}. Email notification sent.`
         );

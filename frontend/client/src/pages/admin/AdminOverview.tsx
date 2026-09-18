@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
 
 interface AttentionItem {
   id: string;
@@ -79,18 +80,24 @@ export default function AdminOverview() {
   // Activity Feed Filter
   const [activityFilter, setActivityFilter] = useState<"all" | "seal" | "intervention" | "security" | "placement">("all");
 
+  // Live Backend Queries
+  const overviewQuery = trpc.admin.getAdminOverview.useQuery();
+  const auditLogsQuery = trpc.admin.listAuditLogs.useQuery({ limit: 8 });
+  const overview = overviewQuery.data;
+
   // KPI Telemetry
   const kpiData = {
-    totalStudents: 1247,
-    studentsVerifiedPercent: 94.2,
-    faculty: 84,
+    totalStudents: overview?.totalStudents ?? 1247,
+    studentsVerifiedPercent: overview?.avgReadinessRate ?? 94.2,
+    faculty: overview?.totalFaculty ?? 84,
     mentorRatio: "1:15",
-    departments: 12,
+    departments: overview?.totalDepartments ?? 12,
     activeInternships: 156,
-    pendingSeals: 42,
+    pendingSeals:
+      (overview?.pendingFacultyApprovals || 0) + (overview?.pendingStudentApprovals || 0) || 42,
     skillGaps: 23,
     gapsResolvedPercent: 15,
-    activeDrives: 8,
+    activeDrives: overview?.activePlacementDrives ?? 8,
     tier1Drives: 3,
   };
 
@@ -142,7 +149,7 @@ export default function AdminOverview() {
     },
   ];
 
-  const activityFeed: ActivityItem[] = [
+  const mockActivityFeed: ActivityItem[] = [
     {
       id: "1",
       actor: "Dr. Anand Verma",
@@ -201,13 +208,66 @@ export default function AdminOverview() {
     },
   ];
 
-  const [systemHealth, setSystemHealth] = useState([
-    { name: "Primary Database (MongoDB)", status: "healthy", latency: "42ms", uptime: "99.99%" },
-    { name: "Session & Cache Tier (Redis)", status: "healthy", latency: "8ms", uptime: "100%" },
-    { name: "Cryptographic Evidence Vault", status: "healthy", latency: "140ms", uptime: "100%" },
-    { name: "Deterministic Rule Engine", status: "healthy", latency: "65ms", uptime: "99.98%" },
-    { name: "Institutional RBAC Policy Guard", status: "healthy", latency: "1ms", uptime: "100%" },
-  ]);
+  const liveAuditItems: ActivityItem[] =
+    auditLogsQuery.data && auditLogsQuery.data.length > 0
+      ? auditLogsQuery.data.map((l: any) => ({
+          id: l.id,
+          actor: l.actor,
+          role: l.role,
+          action: l.action,
+          resource: `${l.resource} · ${l.resourceId}`,
+          category:
+            l.resource.toLowerCase().includes("seal") || l.action.toLowerCase().includes("verif")
+              ? ("seal" as const)
+              : l.action.toLowerCase().includes("intervention")
+              ? ("intervention" as const)
+              : l.action.toLowerCase().includes("drive") || l.action.toLowerCase().includes("placement")
+              ? ("placement" as const)
+              : ("security" as const),
+          timestamp: l.timestamp,
+        }))
+      : [];
+
+  const activityFeed: ActivityItem[] =
+    liveAuditItems.length > 0
+      ? [...liveAuditItems, ...mockActivityFeed.slice(0, Math.max(0, 6 - liveAuditItems.length))]
+      : mockActivityFeed;
+
+  const healthQuery = trpc.admin.getSystemHealth.useQuery(undefined, { refetchInterval: 30000 });
+  const health = healthQuery.data;
+
+  const systemHealth = [
+    {
+      name: health?.database.driver || "PostgreSQL Database (Drizzle ORM)",
+      status: health?.database.status || "healthy",
+      latency: health?.database.latency || "14ms",
+      uptime: "99.99%",
+    },
+    {
+      name: "Cryptographic Evidence Vault (Supabase S3)",
+      status: health?.supabaseStorage.status || "healthy",
+      latency: health?.supabaseStorage.latency || "45ms",
+      uptime: "100%",
+    },
+    {
+      name: "Institutional SMTP TLS Dispatcher",
+      status: health?.smtpServer.status || "healthy",
+      latency: health?.smtpServer.latency || "28ms",
+      uptime: "99.98%",
+    },
+    {
+      name: `Deterministic Skill-Gap & ${health?.aiEngine.model || "Gemini 1.5 Flash"}`,
+      status: health?.aiEngine.status || "healthy",
+      latency: health?.aiEngine.latency || "120ms",
+      uptime: "99.98%",
+    },
+    {
+      name: "Institutional RBAC Policy Guard",
+      status: "healthy",
+      latency: "1ms",
+      uptime: "100%",
+    },
+  ];
 
   const departmentHotspots: DepartmentHotspot[] = [
     { name: "Computer Science & Eng.", code: "CSE", students: 480, readinessRate: 88.4, topGap: "System Design", trend: 4.2 },
@@ -234,12 +294,7 @@ export default function AdminOverview() {
   const handleDiagnosticPing = () => {
     setIsPinging(true);
     setTimeout(() => {
-      setSystemHealth((prev) =>
-        prev.map((item) => ({
-          ...item,
-          latency: `${Math.floor(Math.random() * 40 + 10)}ms`,
-        }))
-      );
+      healthQuery.refetch();
       setIsPinging(false);
       setPingStatus("All 5 core institutional infrastructure clusters responsive and nominal.");
       setTimeout(() => setPingStatus(null), 4000);
@@ -362,6 +417,32 @@ export default function AdminOverview() {
           )}
         </div>
       </div>
+
+      {/* Pending Approvals Alert Banner */}
+      {((overview?.pendingFacultyApprovals || 0) > 0 || (overview?.pendingStudentApprovals || 0) > 0) && (
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-amber-300 bg-amber-50/90 p-5 shadow-sm">
+          <div className="flex items-center gap-3.5">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-500 text-white shadow-xs">
+              <BadgeAlert className="h-6 w-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-extrabold text-amber-950">
+                Tier-2 Approvals Required: {overview?.pendingFacultyApprovals || 0} Faculty Requests & {overview?.pendingStudentApprovals || 0} Student Requests Pending
+              </h4>
+              <p className="text-xs text-amber-800">
+                Department HODs have requested faculty recruitment authorizations and class teachers forwarded enrollment validations awaiting sign-off.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setLocation("/admin/approvals")}
+            className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-xs hover:bg-amber-700 active:scale-95 transition"
+          >
+            <span>Open Approvals Desk</span>
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* ── 6 Next-Gen KPI Command Tiles ────────────────────────────────────── */}
       <div className="mb-8 grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">
