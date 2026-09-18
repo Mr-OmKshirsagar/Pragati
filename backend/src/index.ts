@@ -6,9 +6,18 @@ import { isDatabaseConfigured } from "./db";
 
 export const app = express();
 const PORT = parseInt(process.env.PORT || "3001", 10);
+const allowedOrigins = (process.env.FRONTEND_URL || "")
+  .split(",")
+  .map(origin => origin.trim())
+  .filter(Boolean);
 
 // Core Middlewares
-app.use(cors({ origin: true, credentials: true }));
+app.use(
+  cors({
+    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 

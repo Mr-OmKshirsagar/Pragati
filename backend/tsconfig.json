@@ -13,6 +13,6 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src/**/*", "drizzle/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "drizzle/**/*"],
+  "exclude": ["node_modules", "dist", "tests/**/*"]
 }

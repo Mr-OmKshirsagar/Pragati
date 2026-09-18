@@ -9,7 +9,7 @@ export const trpc = createTRPCReact<AppRouter>();
 export const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: `${import.meta.env.VITE_API_URL || ""}/api/trpc`,
       transformer: superjson,
       headers() {
         try {
