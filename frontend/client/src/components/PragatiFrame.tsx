@@ -2,6 +2,7 @@ import {
   Activity,
   Award,
   Bell,
+  BookOpen,
   BriefcaseBusiness,
   CircleHelp,
   Compass,
@@ -11,14 +12,17 @@ import {
   LayoutDashboard,
   Menu,
   Route,
+  Search,
   Target,
   TrendingUp,
+  UserCheck,
   UsersRound,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import UserNav from "./UserNav";
+import GlobalSearchModal from "./GlobalSearchModal";
 import { useAuth, type PragatiRole } from "@/contexts/AuthContext";
 import { getRoleSidebarTheme, type RoleSidebarTheme } from "@/lib/roleTheme";
 
@@ -47,6 +51,7 @@ const studentSections: NavSection[] = [
     items: [
       { label: "Overview", path: "/overview", icon: LayoutDashboard },
       { label: "My progress", path: "/progress", icon: TrendingUp },
+      { label: "My classes & attendance", path: "/academics", icon: BookOpen },
       { label: "Skills & assessments", path: "/skills", icon: Activity },
       { label: "Achievements", path: "/achievements", icon: Award },
       { label: "Internship evidence", path: "/internship", icon: BriefcaseBusiness },
@@ -61,6 +66,7 @@ const facultySections: NavSection[] = [
     title: "FACULTY DESK",
     items: [
       { label: "Assigned Wards", path: "/faculty", icon: UsersRound },
+      { label: "Academics & Attendance", path: "/academics", icon: BookOpen },
       { label: "Mentoring Logs", path: "/mentoring", icon: Route },
     ],
   },
@@ -77,12 +83,14 @@ const hodSections: NavSection[] = [
     title: "DEPARTMENT DESK",
     items: [
       { label: "Department Overview", path: "/overview", icon: LayoutDashboard },
+      { label: "Student Approvals", path: "/hod/approvals", icon: UserCheck },
       { label: "Faculty & Wards", path: "/faculty", icon: UsersRound },
     ],
   },
   {
     title: "ACADEMIC & PLACEMENT",
     items: [
+      { label: "Academics & Attendance", path: "/academics", icon: BookOpen },
       { label: "Skills Analytics", path: "/skills", icon: Activity },
       { label: "Opportunities", path: "/opportunities", icon: Target },
     ],
@@ -94,6 +102,7 @@ const adminSections: NavSection[] = [
     title: "ADMINISTRATION",
     items: [
       { label: "Overview", path: "/admin/overview", icon: LayoutDashboard },
+      { label: "Approvals Desk", path: "/admin/approvals", icon: UserCheck },
       { label: "Faculty & Wards", path: "/faculty", icon: UsersRound },
     ],
   },
@@ -297,6 +306,19 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
     "--page-surface": pageTheme.surface,
   } as React.CSSProperties;
 
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchModalOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const nav = (item: NavItem) => {
     if (item.path.includes("#")) {
       navigate(item.path.split("#")[0]);
@@ -365,26 +387,17 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
               </div>
               <div />
               <div className="grid grid-flow-col auto-cols-max items-center gap-2 justify-self-end sm:gap-3">
-                <div className="hidden">
-                  <span className="text-xs">Search your workspace</span>
-                  <span className="rounded border border-slate-200 px-1.5 py-0.5 font-mono text-[10px] text-slate-500">
+                <button
+                  type="button"
+                  onClick={() => setSearchModalOpen(true)}
+                  className="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition shadow-2xs"
+                >
+                  <Search className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="hidden sm:inline">Search platform...</span>
+                  <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 font-mono text-[9px] text-slate-500">
                     ⌘ K
                   </span>
-                </div>
-                <button
-                  aria-label="Help"
-                  className="hidden"
-                >
-                  <CircleHelp className="h-[18px] w-[18px]" />
                 </button>
-                <button
-                  aria-label="Notifications"
-                  className="hidden"
-                >
-                  <Bell className="h-[18px] w-[18px]" />
-                  <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 ring-2 ring-white" />
-                </button>
-                <div className="hidden" />
                 <UserNav />
               </div>
             </div>
@@ -400,6 +413,10 @@ export default function PragatiFrame({ children, title, activePath }: Props) {
             />
           )}
           {children}
+          <GlobalSearchModal
+            open={searchModalOpen}
+            onClose={() => setSearchModalOpen(false)}
+          />
         </div>
       </div>
     </div>

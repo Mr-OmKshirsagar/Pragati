@@ -45,6 +45,7 @@ import SuperAdminPortal from "./pages/SuperAdminPortal";
 import HodApprovals from "./pages/HodApprovals";
 import AdminApprovals from "./pages/AdminApprovals";
 import FirstLoginPasswordReset from "./pages/FirstLoginPasswordReset";
+import AcademicsWorkspace from "./pages/AcademicsWorkspace";
 import { Route, Switch } from "wouter";
 
 const Internship = () => <WorkspacePage kind="internship" />;
@@ -119,6 +120,9 @@ function Router() {
       </Route>
 
       {/* ── Shared: STUDENT + FACULTY + ADMIN ── */}
+      <Route path="/academics">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><AcademicsWorkspace /></ProtectedRoute>}
+      </Route>
       <Route path="/internship">
         {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Internship /></ProtectedRoute>}
       </Route>
