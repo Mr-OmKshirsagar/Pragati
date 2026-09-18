@@ -3,6 +3,7 @@ import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { eq } from "drizzle-orm";
 import * as schema from "../drizzle/schema";
+import { syncSupabaseAuthUsers } from "./sync-supabase-auth";
 
 async function seed() {
   console.log("==================================================");
@@ -82,6 +83,12 @@ async function seed() {
         role: "HOD" as const,
       },
       {
+        id: "10000000-0000-0000-0000-000000000003",
+        name: "Vikram Malhotra",
+        email: "tnp@northstar.edu",
+        role: "TNP_COORDINATOR" as const,
+      },
+      {
         id: "10000000-0000-0000-0000-000000000004",
         name: "Platform Administrator",
         email: "admin@northstar.edu",
@@ -125,6 +132,7 @@ async function seed() {
 
     const facultyUser = usersMap["FACULTY"];
     const studentUser = usersMap["STUDENT"];
+    const tnpUser = usersMap["TNP_COORDINATOR"];
     const adminUser = usersMap["ADMIN"];
 
     // ------------------------------------------------------------------------
@@ -404,6 +412,11 @@ async function seed() {
     } else {
       console.log(`   ℹ️ Drive exists: ${drive.companyName}`);
     }
+
+    // ------------------------------------------------------------------------
+    // 10. SYNCHRONIZE SUPABASE AUTHENTICATION USERS TAB (auth.users)
+    // ------------------------------------------------------------------------
+    await syncSupabaseAuthUsers();
 
     console.log("\n==================================================");
     console.log("          SEED DATA COMPLETED SUCCESSFULLY        ");

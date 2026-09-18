@@ -309,7 +309,7 @@ describe("Phase 09: Recruitment Drive Publishing & 1-Click Transparent Applicati
       expect(applicants.length).toBeGreaterThanOrEqual(1);
 
       const rahulApp = applicants.find(
-        (a) => a.studentId === studentCtx.user!.studentProfile!.id
+        (a: any) => a.studentId === studentCtx.user!.studentProfile!.id
       );
       expect(rahulApp).toBeDefined();
       expect(rahulApp?.studentName).toBe(studentCtx.user!.name);

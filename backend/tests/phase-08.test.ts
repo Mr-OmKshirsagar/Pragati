@@ -412,7 +412,7 @@ describe("Phase 08: AST Placement Rule Builder & Transparent Deterministic Eligi
       expect(roster.results.length).toBe(roster.totalEvaluated);
 
       const rahulResult = roster.results.find(
-        (r) => r.studentId === studentCtx.user!.studentProfile!.id
+        (r: any) => r.studentId === studentCtx.user!.studentProfile!.id
       );
       expect(rahulResult).toBeDefined();
       expect(rahulResult?.studentName).toBe(studentCtx.user!.name);

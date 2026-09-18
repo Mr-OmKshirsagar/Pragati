@@ -41,6 +41,11 @@ import {
   AdminNotifications,
   AdminSettings,
 } from "./pages/admin/AdminStubPages";
+import SuperAdminPortal from "./pages/SuperAdminPortal";
+import HodApprovals from "./pages/HodApprovals";
+import AdminApprovals from "./pages/AdminApprovals";
+import FirstLoginPasswordReset from "./pages/FirstLoginPasswordReset";
+import AcademicsWorkspace from "./pages/AcademicsWorkspace";
 import { Route, Switch } from "wouter";
 
 const Internship = () => <WorkspacePage kind="internship" />;
@@ -58,6 +63,9 @@ function RoleAwareDashboard() {
 function Router() {
   return (
     <Switch>
+      {/* ── Unlinked Platform Owner / Super Admin Portal ── */}
+      <Route path="/super-admin-pragati01" component={SuperAdminPortal} />
+
       {/* Public — always visible */}
       <Route path="/"        component={LandingPage} />
       <Route path="/landing" component={LandingPage} />
@@ -65,6 +73,7 @@ function Router() {
       <Route path="/register">{() => <AuthPage initialMode="register" />}</Route>
       <Route path="/auth">{() => <AuthPage initialMode="login" />}</Route>
       <Route path="/login-personas" component={Login} />
+      <Route path="/reset-initial-password" component={FirstLoginPasswordReset} />
 
       {/* ── Role-aware Overview / Dashboard ── */}
       <Route path="/overview">
@@ -75,6 +84,9 @@ function Router() {
       </Route>
       <Route path="/hod">
         {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><HodDashboard /></ProtectedRoute>}
+      </Route>
+      <Route path="/hod/approvals">
+        {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><HodApprovals /></ProtectedRoute>}
       </Route>
       <Route path="/progress">
         {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Progress /></ProtectedRoute>}
@@ -108,6 +120,9 @@ function Router() {
       </Route>
 
       {/* ── Shared: STUDENT + FACULTY + ADMIN ── */}
+      <Route path="/academics">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><AcademicsWorkspace /></ProtectedRoute>}
+      </Route>
       <Route path="/internship">
         {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Internship /></ProtectedRoute>}
       </Route>
@@ -128,6 +143,9 @@ function Router() {
       {/* ── ADMIN ROUTES ── */}
       <Route path="/admin/overview">
         {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminOverview /></ProtectedRoute>}
+      </Route>
+      <Route path="/admin/approvals">
+        {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminApprovals /></ProtectedRoute>}
       </Route>
       <Route path="/admin/users">
         {() => <ProtectedRoute allowedRoles={["ADMIN"]}><AdminUsers /></ProtectedRoute>}

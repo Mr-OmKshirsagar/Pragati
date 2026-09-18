@@ -1,377 +1,378 @@
 # PRAGATI — Smart Student Internship & Career Management Platform
 
-> **From Student Progress to Career Readiness**  
+> **From Student Progress to Verifiable Career Readiness**  
 > *Problem Statement ED-06: Smart Internship Management and Monitoring System*
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![React 19](https://img.shields.io/badge/React-19.0-61DAFB?logo=react)](https://react.dev/)
+[![tRPC v11](https://img.shields.io/badge/tRPC-v11-2596be?logo=trpc)](https://trpc.io/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%7C%20Auth%20%7C%20Storage-3ECF8E?logo=supabase)](https://supabase.com/)
+[![Drizzle ORM](https://img.shields.io/badge/Drizzle%20ORM-0.44-C5F74F?logo=drizzle)](https://orm.drizzle.team/)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?logo=tailwindcss)](https://tailwindcss.com/)
+[![Vitest](https://img.shields.io/badge/Tests-150%2F150%20Passing%20(15%20Suites)-green?logo=vitest)](https://vitest.dev/)
+[![Security](https://img.shields.io/badge/Security-RLS%20%2B%20Zero--IDOR%20%2B%20SHA--256-blueviolet)](https://supabase.com/docs/guides/database/postgres/row-level-security)
 
 ---
 
-## 📌 Overview
+## 📌 Executive Overview
 
-**PRAGATI** is an institution-centric platform designed to manage and monitor the complete student journey—from foundation skill development and continuous assessment, through faculty intervention and verified internships, to transparent placement eligibility.
+**PRAGATI** is an enterprise institutional platform engineered to monitor, mentor, and verify the complete student career lifecycle—from foundational curriculum academics and continuous skill assessments, through closed-loop faculty mentoring interventions and cryptographic internship verification, to deterministic corporate placement eligibility and verifiable Career Passports.
 
-Rather than treating career readiness as a chaotic final-year scramble across disparate spreadsheets, email threads, and paper forms, PRAGATI establishes a continuous, auditable, evidence-backed career lifecycle:
+Rather than treating career readiness as a frantic final-year scramble across fragmented spreadsheets, email threads, and paper forms, PRAGATI establishes a **continuous, auditable, and mathematically explainable career pipeline**:
 
 ```text
-Student Data 
-  → Academic Performance 
-  → Skill Assessments 
-  → Deterministic Skill-Gap Detection 
-  → Faculty Mentoring Intervention 
-  → Progress Measurement 
-  → Internship Evidence Collection 
-  → Cryptographic & Institutional Verification 
-  → Configurable Placement Criteria 
-  → Transparent Eligibility Evaluation 
-  → Recruitment Drives 
-  → Portable Career Passport
+Student Academic Ledger 
+  ──► Continuous Skill Assessments (DSA, Python, DBMS, OS)
+        ──► Deterministic Skill-Gap Trigger (RULE_GAP_01)
+              ──► Assistive AI Contextual Explanation (Google Gemini)
+                    ──► Faculty Closed-Loop Mentoring Intervention
+                          ──► Re-Assessment & Automated Gap Resolution
+                                ──► Internship Lifecycle & Milestones
+                                      ──► Dual-Layer SHA-256 Cryptographic Vault
+                                            ──► Institutional Mentor Sign-Off (INSTITUTION_VERIFIED)
+                                                  ──► Deterministic Placement Rule AST Engine
+                                                        ──► 1-Click Transparent Recruitment Application
+                                                              ──► Verifiable Portable Career Passport
 ```
 
 ---
 
 ## 🎯 Core Problem & Mission
 
-### Current Institutional Challenges
-* **Fragmented Data**: Academic marks trapped in legacy ERPs, certificates scattered in WhatsApp/Google Drive, internship records handled manually.
-* **Late Discovery**: Student skill deficiencies discovered during placement interviews—when it is too late to remediate.
-* **Informal Interventions**: Faculty mentorship conducted informally without tracking, accountability, or closure.
-* **Unverified Claims**: Resumes filled with self-reported credentials without cryptographic integrity or institutional review.
-* **Opaque Placements**: Placement cells calculate eligibility using manual spreadsheets, causing errors, distrust, and student frustration.
+### Institutional Pain Points Solved
+* **Siloed Academic Data**: Marks, backlogs, and assessments trapped in legacy ERPs or paper ledgers.
+* **Late Deficiencies**: Skill gaps identified during placement interviews when it is too late to remediate.
+* **Informal Mentoring**: Mentorship carried out as untracked chats without institutional accountability or closure.
+* **Unverified Resumes**: Student resumes filled with self-reported claims lacking cryptographic proof or faculty sign-off.
+* **Opaque Placements**: Placement cells manual-filtering candidate spreadsheets, breeding student distrust and errors.
 
-### PRAGATI's Principle
-PRAGATI is not merely a record-keeping system or a CRUD interface. It is an:
+### The PRAGATI Truthfulness Principle
+PRAGATI is not an arbitrary AI evaluator or a generic CRUD tool. It is an:
 $$\mathbf{Evidence + Monitoring + Intervention + Verification + Eligibility\ Platform}$$
 
----
-
-## 🌟 Key Differentiators
-
-| Feature | Description |
-| :--- | :--- |
-| **Evidence-First Records** | Credentials are never just checkboxes. Every claim carries an explicit verification state (`SELF_REPORTED`, `PENDING`, `INSTITUTION_VERIFIED`, `ISSUER_VERIFIED`, `REJECTED`) and cryptographic SHA-256 file-integrity tracking. |
-| **Explainable Intelligence** | Deterministic rule engines detect skill gaps and evaluate placement eligibility. AI is strictly assistive—used to summarize trends and draft recommendations. Humans decide; algorithms remain explainable. |
-| **Closed-Loop Mentoring** | Faculty intervention is accountable: `Flagged → Assigned → Mentoring Session → Measured Outcome → Resolved / Reopened`. |
-| **Transparent Eligibility** | Placement criteria are deterministic and transparent. Students can view exactly why they qualified or why they were disqualified (e.g., *“DSA score 62 is below required 70”*). |
-| **Portable Career Passport** | A unified, tamper-evident career record detailing academic progression, certified skills, verified internships, and placement achievements. |
+* **AI Explains, Never Decides**: Google Gemini drafts natural-language diagnostics and remedial plans; deterministic algorithms evaluate rules, and authorized humans make all institutional decisions.
+* **Integrity vs. Authenticity**: Cryptographic SHA-256 hashing guarantees **file integrity** (bit-level tamper prevention). Institutional faculty sign-off validates **authenticity**.
 
 ---
 
-## 👥 User Roles & RBAC Matrix
+## 🌟 Key Platform Innovations
 
-PRAGATI enforces strict, server-side Role-Based Access Control (RBAC) across 5 core personas:
+| Innovation | Technical Implementation | Impact |
+| :--- | :--- | :--- |
+| **Deterministic Career Readiness Scorecard** | $\text{Score} = (A \times 0.30) + (S \times 0.30) + (I \times 0.20) + (E \times 0.20)$ | 100% explainable student gauge displaying the exact formula. Zero opaque AI scoring. |
+| **Deterministic Skill-Gap Rule Engine** | `RULE_GAP_01`: Evaluates consecutive score drops + active backlogs ($S_t < S_{t-1} < S_{t-2} \land \text{Backlogs} > 0$) | Catches declining competencies early in Year 2/3 instead of final-year placement season. |
+| **Assistive AI Diagnostic Layer** | Google Gemini API integration with versioned prompt templates and zero-crash deterministic fallback | Contextualizes root causes for faculty mentors without platform failure risks if external APIs stall. |
+| **Closed-Loop Faculty Mentoring** | State machine: `SCHEDULED` $\rightarrow$ `IN_REVIEW` $\rightarrow$ `COMPLETED` / `RESOLVED` | Automated resolution hook flips skill gaps to `RESOLVED` when re-assessment score $\ge 75\%$. |
+| **Dual-Layer SHA-256 Evidence Vault** | Client-side Web Crypto API + Server-side Node.js `crypto` with Supabase Storage tenant isolation | 10MB limit, strict MIME filtering (PDF, PNG, JPEG), and instant tamper warnings on single-byte mutations. |
+| **Deterministic AST Placement Engine** | Pure functional recursive AST tree evaluator with boolean `AND`/`OR` nesting | Real-time candidate evaluation comparing actual vs. required values with itemized `[PASS]` and `[FAIL]` tags. |
+| **Portable Career Passport** | Official Northstar Institute transcript with certified ledger, verified skills, and 64-char SHA-256 hash | Replaces unverified paper resumes with a tamper-evident dossier formatted for web and `@media print` PDF export. |
+| **Department Analytics Hub** | Cohort skill heatmap matrix (S3–S6 vs Core Skills), intervention velocity, and placement histograms | Gives Department Heads (HODs) macro-level visibility into academic and employability health. |
 
+---
+
+## 👥 5-Role Institutional RBAC Matrix
+
+PRAGATI enforces strict, server-side Role-Based Access Control (RBAC) via tRPC middleware and Supabase Row Level Security (RLS) across 26 PostgreSQL tables:
+
+```text
+                  ┌─────────────────────────────────────────┐
+                  │            INSTITUTION ADMIN            │
+                  │   Users, Depts, Master Taxonomy, Audit  │
+                  └────────────────────┬────────────────────┘
+                                       │
+            ┌──────────────────────────┼──────────────────────────┐
+            │                          │                          │
+            ▼                          ▼                          ▼
+┌───────────────────────┐  ┌───────────────────────┐  ┌───────────────────────┐
+│          HOD          │  │    T&P COORDINATOR    │  │    FACULTY / MENTOR   │
+│ Cohort Skill Heatmaps │  │ Drives, AST Rules &   │  │ Ward Roster, Gaps,    │
+│ Intervention Velocity │  │ Candidate Pipelines   │  │ Verification Desk     │
+└───────────────────────┘  └───────────────────────┘  └───────────┬───────────┘
+                                                                  │
+                                                                  ▼
+                                                      ┌───────────────────────┐
+                                                      │        STUDENT        │
+                                                      │ Portfolio, Evidence,  │
+                                                      │ Career Passport, Apps │
+                                                      └───────────────────────┘
 ```
-                  +-----------------------------------+
-                  |         INSTITUTION ADMIN         |
-                  |  Users, Depts, Skills, Audit Logs |
-                  +-----------------+-----------------+
-                                    |
-          +-------------------------+-------------------------+
-          |                         |                         |
-          v                         v                         v
-+-------------------+     +-------------------+     +-------------------+
-|        HOD        |     |  T&P COORDINATOR  |     | FACULTY / MENTOR  |
-| Dept Analytics &  |     | Drives, Rules &   |     | Interventions &   |
-| Skill Heatmaps    |     | Eligibility Engine|     | Evidence Review   |
-+-------------------+     +-------------------+     +---------+---------+
-                                                              |
-                                                              v
-                                                    +-------------------+
-                                                    |      STUDENT      |
-                                                    | Portfolio, Proof, |
-                                                    | Career Passport   |
-+---------------------------------------------------+-------------------+
-```
 
-### Role Permissions Summary
+### Role Permissions & Anti-IDOR Governance
 
 * **Student (`STUDENT`)**:
-  * *Allowed*: View own profile & academics, take assessments, submit achievements, upload internship evidence, view eligibility reasons, apply for published drives, export Career Passport.
-  * *Forbidden*: Cannot modify official academics, cannot self-approve internships, cannot view peers' private data (IDOR protected).
-* **Faculty / Mentor (`FACULTY`)**:
-  * *Allowed*: View assigned ward roster, inspect skill-gap alerts, create and log mentoring interventions, review internship evidence completeness, issue `INSTITUTION_VERIFIED` status.
-  * *Forbidden*: Cannot alter official academic marks, cannot access unassigned departmental cohorts without authorization.
+  * *Access*: Personal dashboard, semester GPA/CGPA ledger, take continuous assessments, submit milestone evidence, view transparent drive eligibility, 1-click apply, export Career Passport.
+  * *Anti-IDOR Guard*: Server derives student profile strictly from validated JWT session context (`ctx.user.studentProfile.id`). Spoofed client IDs are ignored.
+* **Faculty Mentor (`FACULTY`)**:
+  * *Access*: Assigned ward roster (`Teacher-Guardian` scope), view skill-gap alerts, create and log mentoring sessions, review internship evidence, approve with `INSTITUTION_VERIFIED`.
+  * *Forbidden*: Cannot modify academic marks, cannot self-assign unassigned cohorts.
 * **Department Head (`HOD`)**:
-  * *Allowed*: Department-wide analytics, skill progression heatmaps, faculty intervention velocity reports, audit trail inspection.
+  * *Access*: Department-wide analytics, semester-wise skill heatmaps (S3–S6), faculty intervention velocity, placement distribution histograms.
 * **Training & Placement Officer (`TNP_COORDINATOR`)**:
-  * *Allowed*: Create recruitment drives, build multi-variable eligibility rules (CGPA, backlogs, skills, verified internships), trigger deterministic eligibility runs, view candidate pipelines.
-  * *Forbidden*: Cannot tamper with source academic or assessment records.
+  * *Access*: Create and publish recruitment drives, build multi-variable AST rules (CGPA, backlogs, skills, verified internships), run candidate roster evaluations, manage applicant pipelines.
 * **System Administrator (`ADMIN`)**:
-  * *Allowed*: Manage institutions, user accounts, departments, skill taxonomies, system configurations, and security audit logs.
+  * *Access*: Manage institutions, user accounts, departments, master skill taxonomy, system health, and immutable audit logs.
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ System Architecture & Technology Stack
 
-PRAGATI is built as a **Modular Monolith** optimized for reliability, maintainability, low operational complexity, and strict data security.
+PRAGATI separates client presentation from backend domain engines into a clean decoupled workspace:
 
 ```text
-                              ┌─────────────────────────┐
-                              │     CLIENT INTERFACE    │
-                              │ React / Next.js SPA/PWA │
-                              └────────────┬────────────┘
-                                           │ HTTPS (REST / JSON)
-                                           ▼
-                              ┌─────────────────────────┐
-                              │      API GATEWAY        │
-                              │   FastAPI (Python 3.10) │
-                              └────────────┬────────────┘
-                                           │
-         ┌─────────────────────────────────┼─────────────────────────────────┐
-         ▼                                 ▼                                 ▼
-┌──────────────────┐             ┌──────────────────┐             ┌──────────────────┐
-│   Auth & RBAC    │             │  Domain Engines  │             │ Storage & Files  │
-│ JWT + Argon2id   │             │ Skill Gap Engine │             │ Upload Handler   │
-│ IDOR Protection  │             │ Placement Rules  │             │ SHA-256 Hashing  │
-└────────┬─────────┘             └────────┬─────────┘             └────────┬─────────┘
-         │                                 │                                 │
-         └─────────────────────────────────┼─────────────────────────────────┘
-                                           │
-                ┌──────────────────────────┴──────────────────────────┐
-                ▼                                                     ▼
-    ┌───────────────────────────┐                         ┌───────────────────────┐
-    │     MongoDB Atlas         │                         │     Redis Instance    │
-    │  (Primary Source of Truth)│                         │ (Cache & Rate Limiter)│
-    │ Structured collections &  │                         │ Dashboards, TTL-based │
-    │ Document Relationships    │                         │ cache, Token limits   │
-    └───────────┬───────────────┘                         └───────────────────────┘
-                │
-                ▼
-    ┌───────────────────────────┐                         ┌───────────────────────┐
-    │   Secure Object Store     │                         │   AI Advisory Layer   │
-    │ Evidence Documents & PDFs │                         │ Explainable Narratives│
-    │ (Strict MIME/Size checks) │                         │ (Human-in-the-Loop)   │
-    └───────────────────────────┘                         └───────────────────────┘
+d:\Project\Pragati\
+├── backend/                  # Express + tRPC v11 + Drizzle ORM + Supabase PostgreSQL
+│   ├── src/
+│   │   ├── _core/            # Supabase admin client, context, auth, storage, tRPC setup
+│   │   ├── db.ts             # PostgreSQL client connection via postgres.js & Drizzle ORM
+│   │   ├── routers/          # tRPC API routers (auth, student, faculty, dashboard, etc.)
+│   │   ├── rules/            # Deterministic engines (skillGapEngine, eligibilityEngine)
+│   │   └── services/         # Domain services (dashboard, internship, audit, ai, etc.)
+│   ├── drizzle/              # PostgreSQL schema (26 tables), migrations & RLS policies
+│   ├── scripts/              # Idempotent database seed fixtures (seed.ts)
+│   └── tests/                # 15 Vitest automated test suites (150 passing tests)
+├── frontend/                 # React 19 + Vite + Tailwind CSS v4 + Radix UI
+│   ├── client/src/
+│   │   ├── components/       # UI library, modals (Eligibility, TamperDemo, Intervention)
+│   │   ├── contexts/         # AuthContext with 1-click persona switching, ThemeContext
+│   │   └── pages/            # Home, CareerPassport, HodDashboard, Opportunities, etc.
+│   └── server/               # Client-side tRPC router shims for end-to-end type safety
+├── specs/                    # 13 Independent Phase-Wise Technical Specifications
+└── brain/                    # Architecture logs, strict engineering rules, progress tracking
 ```
 
-### Technology Stack
-* **Backend**: Python 3.10+, FastAPI (Modular Architecture, Pydantic schemas, Dependency Injection).
-* **Database**: MongoDB Atlas (PyMongo / Motor async driver, indexed document schemas).
-* **Cache & Rate Limiting**: Redis (Key-scoped caching, sliding window rate limits, graceful degradation).
-* **Frontend**: React / Next.js, Vanilla CSS / Component design system, Charting (for meaningful questions).
-* **Security**: Argon2id password hashing, JWT authentication, SHA-256 cryptographic document integrity.
-* **AI Integration**: Explanatory LLM layer with strict prompt versioning and fallback protection.
+### Core Technologies
+
+* **Backend Engine**: Node.js 20+, Express.js, tRPC v11 (end-to-end type-safe RPCs), Drizzle ORM.
+* **Database & Cloud Storage**: Supabase PostgreSQL (26 tables with foreign keys and RLS policies), Supabase Auth, Supabase Storage (`evidence-vault` bucket).
+* **Frontend Application**: React 19, Vite, TypeScript 5.7, Tailwind CSS v4, Radix UI primitives, Lucide React icons, Sonner notifications, Wouter routing.
+* **Deterministic Rule Engines**: Pure functional AST tree walkers evaluating boolean corporate criteria with zero opaque machine learning.
+* **Assistive AI**: Google Gemini API with system prompt versioning and zero-crash deterministic fallback.
+* **Automated Testing**: Vitest 3.0+ running 15 backend test suites (**150 tests, 100% passing**) and 5 frontend suites.
 
 ---
 
-## 🗄️ Database Collections (MongoDB Atlas)
+## 🗄️ Relational Database Schema (26 Tables)
 
-Application state is managed in MongoDB Atlas with structured schemas and explicit indexing:
+All tables are defined in [`backend/drizzle/schema.ts`](file:///d:/Project/Pragati/backend/drizzle/schema.ts) with strict foreign key constraints and Row Level Security:
+
+| Category | Tables | Primary Responsibilities |
+| :--- | :--- | :--- |
+| **Core Master Data** | `institutions`, `departments`, `users` | Multi-tenant college config, departments, 5-role user credentials |
+| **Student Profiles & Academics** | `student_profiles`, `academic_records`, `subjects`, `subject_results`, `backlogs` | Bio, semester SGPA/CGPA progression, course enrollments, active backlogs |
+| **Skills & Continuous Assessments** | `skills`, `assessments`, `assessment_submissions`, `skill_history` | Recognized skill taxonomy, continuous assessments, immutable score progressions |
+| **Evidence & Cryptographic Vault** | `achievements`, `evidence_documents`, `verifications` | Uploaded certificates, dual-layer SHA-256 hashes, faculty review trails |
+| **Skill Gaps & Closed-Loop Mentoring** | `skill_gaps`, `interventions` | `RULE_GAP_01` flags, faculty mentoring sessions, resolution status |
+| **Smart Internship Lifecycle** | `internships`, `internship_evidence`, `internship_checkins` | 4-milestone completeness tracking, bi-weekly check-ins, faculty verification |
+| **Placement Drives & AST Eligibility** | `recruitment_drives`, `placement_rules`, `eligibility_evaluations`, `applications` | Corporate recruitment drives, JSON rule AST trees, evaluations, 1-click apps |
+| **Audit & System Communication** | `notifications`, `audit_logs` | Real-time in-app alerts, immutable security & compliance ledger |
+
+---
+
+## 🎬 12-Scene Hackathon Hero Demo Flow
+
+The definitive 5–7 minute walkthrough follows student **Rahul Sharma (Year 3 CSE)** from skill gap to verified career placement:
 
 ```text
-institutions             -> College & university master config
-departments              -> Department structures & branches
-users                    -> Auth credentials, roles, email hashes
-student_profiles         -> Profile data, bio, roll number, assigned faculty
-academic_records         -> Semester GPAs, cumulative CGPA, active/cleared backlogs
-subjects                 -> Course definitions & department mappings
-skills                   -> Taxonomy of recognized technical/soft skills
-skill_history            -> Time-series progression of student proficiencies
-assessments              -> Quizzes, coding challenges, internal evaluations
-assessment_submissions   -> Student answers, scores, timestamps (immutable)
-achievements             -> Certifications, hackathons, extracurriculars
-evidence                 -> Uploaded documents, SHA-256 hashes, file locations
-skill_gaps               -> System-detected performance drops & flags
-interventions            -> Faculty mentoring actions, tasks, resolutions
-internships              -> Company, role, duration, stipend, lifecycle states
-verifications            -> Review history, verification badge, faculty audit
-recruitment_drives       -> Company placement listings & timelines
-placement_rules          -> Deterministic eligibility expression trees
-applications             -> Student job applications and statuses
-notifications            -> In-app alerts for gaps, actions, and drive openings
-audit_logs               -> Immutable security and compliance log stream
-```
-
----
-
-## 🛡️ Verification & Evidence Integrity Model
-
-```text
-Upload File (PDF/PNG) 
-  → Strict MIME/Size/Extension Check 
-  → Compute SHA-256 Hash 
-  → Store Isolated Document 
-  → Assign Verification State:
-      ├── 1. SELF_REPORTED        (Initial student upload)
-      ├── 2. PENDING              (Under faculty queue review)
-      ├── 3. INSTITUTION_VERIFIED (Faculty signed off on evidence)
-      ├── 4. ISSUER_VERIFIED      (Directly confirmed by issuer API)
-      └── 5. REJECTED             (Invalid / insufficient documentation)
-```
-
-> **The Cryptographic Integrity Rule**:
-> SHA-256 hashing proves **file integrity** (the file has not been altered since upload). It does **not** prove authenticity or truthfulness. Authenticity requires authorized human/institutional verification. PRAGATI never misleads stakeholders on this distinction.
-
----
-
-## ⚡ Non-Negotiable Engineering Rules
-
-PRAGATI follows strict engineering standards defined in [brain/STRICT.MD](file:///c:/Users/Lenovo/Desktop/Pragati/brain/STRICT.MD):
-
-1. **Database is the Source of Truth**: Frontend state is strictly presentation; backend services enforce business logic and permissions.
-2. **Never Fake Functionality**: No mocked stats, hardcoded eligibility counts, or fake success toasts. Mocks are restricted to documented seed fixtures.
-3. **Prevent IDOR & Privilege Escalation**: Never trust user-supplied IDs from client payloads. Authenticated identity $\ne$ authorized permission.
-4. **Deterministic Placement & Gaps**: Rule engines calculate eligibility and gaps deterministically with audit trails. AI *explains*, rules *decide*, humans *approve*.
-5. **AI Never Acts Unilaterally**: AI never grades students, rejects applications, or approves internships. If the AI service fails, fallback rules maintain core operations without degradation.
-6. **Graceful Cache Degradation**: If Redis is offline, the system degrades in speed by querying MongoDB directly—never crashing or returning stale/corrupt data.
-
----
-
-## 🎬 Hackathon Hero Demo Flow (5–7 Mins)
-
-The demo showcases one complete vertical slice following **Rahul Sharma (Year 3 CS Student)**:
-
-```text
-[Scene 1] Rahul logs in → Views student dashboard (CGPA 8.1, DSA 61, OS Backlog: 1)
-   │
-[Scene 2] Skill Gap Flag → Rule engine detects: 2 consecutive DSA drops (78→70→61) + OS Backlog
-   │
-[Scene 3] AI Explanation → Explains root cause & drafts recommended intervention
-   │
-[Scene 4] Faculty Login → Mentor views alert, creates structured "DSA Remediation" session
-   │
-[Scene 5] Improvement → Rahul re-assesses (61→78) → Gap automatically transitions to RESOLVED
-   │
-[Scene 6] Internship → Rahul submits 8-week TechCorp Software Engineering internship evidence
-   │
-[Scene 7] SHA-256 Tamper Demo → Original PDF hash validated; modified PDF flagged as TAMPERED
-   │
-[Scene 8] Faculty Verification → Mentor inspects documents and marks INSTITUTION_VERIFIED
-   │
-[Scene 9] T&P Coordinator → Creates "ABC Tech" drive: CGPA ≥ 7.5, Backlogs = 0, Verified Internship
-   │
-[Scene 10] Eligibility Engine → Runs deterministic evaluation: Rahul ELIGIBLE; peers rejected with reasons
-   │
-[Scene 11] Drive Application → Rahul views transparent eligibility and applies in one click
-   │
-[Scene 12] Career Passport → Complete verified profile generated ready for export
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ SCENE 01: Student Dashboard Overview                                                   │
+│ Rahul logs into /dashboard. Views 4-pillar readiness score (76%) & transparent formula. │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 02: Deterministic Skill-Gap Trigger                                              │
+│ RULE_GAP_01 flags OS decline (78 -> 70 -> 61) with active backlog in CS401.            │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 03: Assistive AI Explanation                                                     │
+│ Google Gemini explains root causes & recommends faculty mentoring. Human remains in control. │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 04: Faculty Mentoring Session Creation                                           │
+│ Dr. Anand Verma views ward roster (/faculty/wards) and schedules remedial mentoring.   │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 05: Progress Measurement & Gap Resolution                                        │
+│ Rahul re-assesses on /skills (61 -> 78). Score >= 75% auto-resolves gap to RESOLVED.   │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 06: Internship Lifecycle & Milestones                                            │
+│ Rahul submits TechCorp completion certificate. Evidence completeness updates to 100%. │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 07: Cryptographic SHA-256 Tamper Demo                                            │
+│ Valid PDF matches recorded hash. Altering 1 byte triggers instant [TAMPER DETECTED] alert. │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 08: Faculty Institutional Verification                                           │
+│ Dr. Verma inspects certificate and signs off: status becomes INSTITUTION_VERIFIED.     │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 09: T&P Placement Rule Builder                                                   │
+│ Prof. Sunita Rao inspects ABC Tech drive AST: CGPA >= 7.5, Backlogs = 0, DSA >= 70.     │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 10: Deterministic Candidate Eligibility Run                                      │
+│ Roster evaluated: Rahul is ELIGIBLE (all 5 PASS). Peer Priya is DISQUALIFIED (DSA 62 < 70). │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 11: 1-Click Transparent Application                                              │
+│ Rahul inspects green checkmarks on /opportunities and applies. Duplicate call rejected.│
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SCENE 12: Verifiable Portable Career Passport                                          │
+│ Rahul exports Career Passport on /career-passport with NIT Seal and 64-char SHA-256 hash.│
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🧠 Documentation Index (`brain/`)
-
-All system architecture, design rules, and contracts are documented in the [brain](file:///c:/Users/Lenovo/Desktop/Pragati/brain) directory:
-
-| Specification Document | Focus Area |
-| :--- | :--- |
-| [00_PROJECT_CONTEXT.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/00_PROJECT_CONTEXT.md) | Problem Statement ED-06, core philosophy, non-goals, truthfulness principle |
-| [01_PRODUCT_VISION.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/01_PRODUCT_VISION.md) | 4-Year student career journey, 18 modules, core differentiators |
-| [02_SYSTEM_DESIGN.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/02_SYSTEM_DESIGN.md) | Modular monolith architecture, service layers, request lifecycle |
-| [03_DATABASE_DESIGN.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/03_DATABASE_DESIGN.md) | MongoDB Atlas schema specifications, indexes, document structures |
-| [04_API_CONTRACT.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/04_API_CONTRACT.md) | `/api/v1` REST contract, response envelope, error schemas, pagination |
-| [05_SECURITY.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/05_SECURITY.md) | Threat modeling, IDOR prevention, file security, secrets governance |
-| [06_AUTH_RBAC.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/06_AUTH_RBAC.md) | 5 system roles, detailed permission matrices, token handling |
-| [07_CACHING.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/07_CACHING.md) | Redis caching strategy, key namespacing, invalidation hooks, fallback |
-| [08_RATE_LIMITING.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/08_RATE_LIMITING.md) | Endpoint rate limiting thresholds (Auth, AI, Uploads, Public) |
-| [09_AI_RULES.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/09_AI_RULES.md) | AI boundaries, prompt templates, output validation, human oversight |
-| [10_VERIFICATION.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/10_VERIFICATION.md) | 5 verification states, SHA-256 integrity rules, tamper testing |
-| [11_FRONTEND_RULES.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/11_FRONTEND_RULES.md) | Institutional design guidelines, role dashboards, accessibility |
-| [12_BACKEND_RULES.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/12_BACKEND_RULES.md) | Route-service-repo separation, Pydantic schemas, idempotency |
-| [13_TESTING.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/13_TESTING.md) | Unit, API, RBAC, IDOR, tamper, cache, and regression test suites |
-| [14_DEVOPS_DEPLOYMENT.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/14_DEVOPS_DEPLOYMENT.md) | Environment configuration, health endpoints, CI/CD, backup & rollback |
-| [15_DEMO_FLOW.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/15_DEMO_FLOW.md) | Step-by-step 12-scene hackathon script for judges |
-| [16_SCOPE_CONTROL.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/16_SCOPE_CONTROL.md) | Tier 1 (Must Build) vs. Tier 2/3/Future features to prevent scope creep |
-| [17_PROGRESS.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/17_PROGRESS.md) | 15-Phase implementation checklist tracking development progress |
-| [STRICT.MD](file:///c:/Users/Lenovo/Desktop/Pragati/brain/STRICT.MD) | 25 Non-negotiable engineering mandates for coding agents and contributors |
-
----
-
-## 🚀 Getting Started
+## 🚀 Quickstart & Local Setup
 
 ### 1. Prerequisites
-* **Python 3.10+** (with `pip` and `virtualenv`)
-* **Node.js 18+** (with `npm`)
-* **MongoDB Atlas** connection string (or local MongoDB 6.0+)
-* **Redis 6.2+** instance (local or Redis Cloud)
+* **Node.js**: v20.x or higher
+* **npm**: v10.x or higher
+* **Supabase Project**: Active Supabase project with PostgreSQL database and Storage bucket
 
-### 2. Environment Configuration
-Create a `.env` file in the backend root based on the template:
-```env
-# Server Configuration
-PORT=8000
-ENVIRONMENT=development
-CORS_ORIGINS=http://localhost:3000
+### 2. Clone & Install Dependencies
 
-# Database & Cache
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/pragati?retryWrites=true&w=majority
-REDIS_URL=redis://localhost:6379/0
-
-# Security & Tokens
-JWT_SECRET=replace_with_a_secure_random_64_char_hex_secret
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# Storage
-UPLOAD_STORAGE_PATH=./uploads
-MAX_UPLOAD_SIZE_MB=10
-
-# AI Provider (Optional / Assistive)
-AI_API_KEY=your_llm_api_key_here
-AI_MODEL_NAME=gemini-1.5-flash
-```
-
-### 3. Backend Setup
 ```bash
-# Create virtual environment
-python -m venv venv
+# Clone the repository
+git clone https://github.com/Mr-OmKshirsagar/Pragati.git
+cd Pragati
 
-# Activate virtual environment
-# Windows:
-.\venv\Scripts\activate
-# Linux/macOS:
-# source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run database seed (creates demo users, hero student, skills, and drives)
-python -m app.scripts.seed
-
-# Start backend dev server
-uvicorn app.main:app --reload --port 8000
-```
-Backend will be available at `http://localhost:8000` with interactive API docs at `http://localhost:8000/docs`.
-
-### 4. Frontend Setup
-```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
+# Install backend dependencies
+cd backend
 npm install
 
-# Start frontend dev server
-npm run dev
+# Install frontend dependencies
+cd ../frontend
+npm install
 ```
-Frontend will be available at `http://localhost:3000`.
 
----
+### 3. Environment Configuration
 
-## 🧪 Testing & Verification
+Create a `.env` file in the `backend/` directory based on `.env.example`:
 
-Execute the test suites to ensure both functionality and security boundaries hold:
+```env
+PORT=5000
+NODE_ENV=development
+
+# Supabase PostgreSQL Connection
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@[YOUR-PROJECT-REF].supabase.co:5432/postgres
+
+# Supabase Project Credentials
+SUPABASE_URL=https://[YOUR-PROJECT-REF].supabase.co
+SUPABASE_SERVICE_ROLE_KEY=[YOUR-SUPABASE-SERVICE-ROLE-KEY]
+SUPABASE_ANON_KEY=[YOUR-SUPABASE-ANON-KEY]
+SUPABASE_STORAGE_BUCKET=evidence-vault
+
+# Authentication & Security
+JWT_SECRET=pragati_super_secret_jwt_key_2026_institutional_grade
+
+# Google Gemini API (Assistive AI Diagnostics)
+GEMINI_API_KEY=[YOUR-GEMINI-API-KEY]
+```
+
+### 4. Database Schema Push & Seed Fixtures
 
 ```bash
-# Run backend test suite
-pytest tests/ -v
+cd backend
 
-# Run security and RBAC authorization tests
-pytest tests/test_security_rbac.py -v
+# Push schema directly to Supabase PostgreSQL
+npm run db:push
 
-# Run deterministic eligibility engine tests
-pytest tests/test_eligibility_engine.py -v
-
-# Run SHA-256 tamper verification tests
-pytest tests/test_evidence_hashing.py -v
+# Populate institutional master data and hero student journey
+npx tsx scripts/seed.ts
 ```
 
-### Definition of Done
-A module or feature is marked complete in [brain/17_PROGRESS.md](file:///c:/Users/Lenovo/Desktop/Pragati/brain/17_PROGRESS.md) only when:
-$$\mathbf{Implemented + Integrated + Tested + Security\ Reviewed + Documented + Verified}$$
+### 5. Start Development Servers
+
+Open two terminal windows:
+
+```bash
+# Terminal 1: Backend Server (Express + tRPC)
+cd backend
+npm run dev
+
+# Terminal 2: Frontend Server (Vite + React 19)
+cd frontend
+npm run dev
+```
+
+* **Frontend UI**: [http://localhost:5173](http://localhost:5173)
+* **Backend API / Health**: [http://localhost:5000/health](http://localhost:5000/health)
 
 ---
 
-## ⚖️ License
-This project is developed for educational and hackathon demonstration purposes under Problem Statement ED-06.
-All rights reserved © 2026 PRAGATI Team.
+## 🔑 Demo Personas (1-Click Fast Switcher)
+
+The application includes an interactive floating **Persona Switcher** in the bottom-right corner for fast evaluation:
+
+| Role | Name | Email | Password | Primary Demo Screen |
+| :--- | :--- | :--- | :--- | :--- |
+| **STUDENT** | Rahul Sharma | `student@northstar.edu` | `Password123!` | `/dashboard`, `/career-passport`, `/opportunities` |
+| **FACULTY** | Dr. Anand Verma | `faculty@northstar.edu` | `Password123!` | `/faculty/wards`, `/internship` |
+| **HOD** | Dr. Rajesh Kulkarni | `hod@northstar.edu` | `Password123!` | `/hod` (Cohort Heatmaps & Velocity) |
+| **T&P OFFICER** | Prof. Sunita Rao | `tnp@northstar.edu` | `Password123!` | `/tnp`, `/admin/placement` |
+| **ADMIN** | Principal Sharma | `admin@northstar.edu` | `Password123!` | `/admin/overview`, `/admin/users` |
+
+---
+
+## 🧪 Automated Testing & Security Verification
+
+PRAGATI includes an extensive automated test suite with **15 backend suites (150 passing tests)** and **5 frontend suites**:
+
+```bash
+# Run all backend Vitest suites
+cd backend
+npm test
+
+# Run frontend test suite
+cd ../frontend
+npm test
+
+# Run strict TypeScript type checks across both workspaces
+cd ../backend && npm run check
+cd ../frontend && npm run check
+```
+
+### Test Coverage Breakdown
+
+```
+Test Files  15 passed (15)
+     Tests  150 passed (150)
+  Duration  25.93s
+
+✓ tests/phase-00.test.ts          - Foundation architecture & health endpoint (4 tests)
+✓ tests/phase-01.test.ts          - Schema definition, 26 tables & RLS policies (6 tests)
+✓ tests/auth_rbac.test.ts         - 5-Role RBAC, zero-IDOR, tenant boundaries (10 tests)
+✓ tests/phase-03.test.ts          - Student profile, academics, continuous assessments (6 tests)
+✓ tests/phase-04.test.ts          - RULE_GAP_01 deterministic engine & Gemini fallback (12 tests)
+✓ tests/phase-05.test.ts          - Faculty ward roster & closed-loop interventions (7 tests)
+✓ tests/phase-06.test.ts          - Evidence vault, dual-layer SHA-256, tamper demo (11 tests)
+✓ tests/phase-07.test.ts          - Smart internship lifecycle & faculty verification (19 tests)
+✓ tests/phase-08.test.ts          - AST placement rule builder & eligibility engine (17 tests)
+✓ tests/phase-09.test.ts          - Recruitment drives, 1-click apps, candidate pipeline (13 tests)
+✓ tests/phase-10.test.ts          - Readiness formula, Career Passport, HOD heatmaps (8 tests)
+✓ tests/phase-11.test.ts          - Security hardening, immutable audit logs, SQL injection (9 tests)
+✓ tests/evidence_hashing.test.ts  - SHA-256 avalanche effect & file policy enforcement (8 tests)
+✓ tests/eligibility_engine.test.ts- AST boolean evaluation pass/fail diagnostics (8 tests)
+✓ tests/phase-12.test.ts          - Full 12-scene contiguous hero demo validation (12 tests)
+```
+
+---
+
+## 🔒 Supabase Security Advisor Hardening
+
+If the Supabase Security Advisor displays warnings regarding `SECURITY DEFINER` functions (e.g. `public.rls_auto_enable()`):
+
+```sql
+-- 1. Revoke public/anonymous execution privileges
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM authenticated;
+
+-- 2. Restrict execution strictly to administrative roles
+GRANT EXECUTE ON FUNCTION public.rls_auto_enable() TO postgres;
+GRANT EXECUTE ON FUNCTION public.rls_auto_enable() TO service_role;
+
+-- 3. Lock down search_path to eliminate search_path mutable warnings
+ALTER FUNCTION public.rls_auto_enable() SET search_path = public, pg_temp;
+```
+
+*This SQL query secures the trigger function while preserving 100% of the project's automatic table protection.*
+
+---
+
+## ⚖️ License & Acknowledgments
+
+Developed under **Problem Statement ED-06: Smart Internship Management and Monitoring System**.  
+All rights reserved © 2026 PRAGATI Platform Team.

@@ -9,7 +9,9 @@
     "build": "tsc && node scripts/write-dist-package.cjs",
     "start": "node dist/src/index.js",
     "check": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --fileParallelism false",
+    "sync:auth": "tsx scripts/sync-supabase-auth.ts",
+    "seed": "tsx scripts/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push"

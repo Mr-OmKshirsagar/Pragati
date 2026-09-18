@@ -4,8 +4,9 @@ import TamperDemoModal from "@/components/TamperDemoModal";
 import { Award, CalendarDays, CheckCircle2, FileCheck2, Plus, ShieldCheck, Sparkles, UploadCloud, XCircle, Zap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
-const records = [
+const fallbackRecords = [
   { title: "Hackathon Finalist", issuer: "ABC Organization", date: "08 Sep 2026", category: "Competition", state: "Institution Verified", tone: "green", hasEvidence: true, hash: "3b9c7a4e8d2f105b6c3e7a9f1d4c2b8e0a6d5f4c3b2a1e9d8c7b6a5f4e3d2c1b" },
   { title: "Python for Data Structures", issuer: "Code Academy", date: "22 Jul 2026", category: "Certification", state: "Issuer Verified", tone: "blue", hasEvidence: true, hash: "8f4a1c2d3e5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f" },
   { title: "Student Tech Lead", issuer: "Northstar Institute", date: "12 May 2026", category: "Leadership", state: "Pending", tone: "amber", hasEvidence: false },
@@ -17,6 +18,41 @@ export default function Achievements() {
   const [showUpload, setShowUpload] = useState(false);
   const [showTamperDemo, setShowTamperDemo] = useState(false);
   const [selectedForUpload, setSelectedForUpload] = useState<any | null>(null);
+
+  const evidenceQuery = trpc.evidence.getMyEvidence.useQuery();
+
+  const liveRecords = (evidenceQuery.data || []).map((doc) => ({
+    title: (doc.filename || "Evidence Document").replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+    issuer: "Cryptographic Evidence Vault",
+    date: doc.uploadedAt
+      ? new Date(doc.uploadedAt).toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : "18 Sep 2026",
+    category: doc.mimeType?.includes("pdf") ? "Document" : "Certification",
+    state:
+      doc.verificationStatus === "INSTITUTION_VERIFIED"
+        ? "Institution Verified"
+        : doc.verificationStatus === "ISSUER_VERIFIED"
+        ? "Issuer Verified"
+        : "Pending",
+    tone:
+      doc.verificationStatus === "INSTITUTION_VERIFIED"
+        ? "green"
+        : doc.verificationStatus === "ISSUER_VERIFIED"
+        ? "blue"
+        : "amber",
+    hasEvidence: true,
+    hash: doc.sha256Hash,
+  }));
+
+  const allRecords = liveRecords.length > 0 ? [...liveRecords, ...fallbackRecords] : fallbackRecords;
+  const totalCount = allRecords.length;
+  const instVerifiedCount = allRecords.filter((r) => r.state === "Institution Verified").length;
+  const issuerVerifiedCount = allRecords.filter((r) => r.state === "Issuer Verified").length;
+  const pendingCount = allRecords.filter((r) => r.state === "Pending").length;
 
   return (
     <PragatiFrame title="Achievements" activePath="/achievements">
@@ -64,7 +100,12 @@ export default function Achievements() {
             </div>
           </div>
           <div className="mb-5 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-            {[["Total records", "12"], ["Institution verified", "09"], ["Issuer verified", "04"], ["Pending review", "01"]].map(([label, value]) => (
+            {[
+              ["Total records", String(totalCount).padStart(2, "0")],
+              ["Institution verified", String(instVerifiedCount).padStart(2, "0")],
+              ["Issuer verified", String(issuerVerifiedCount).padStart(2, "0")],
+              ["Pending review", String(pendingCount).padStart(2, "0")],
+            ].map(([label, value]) => (
               <div key={label} className="premium-card p-4">
                 <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#8490a5]">{label}</div>
                 <div className="kpi-value mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#1b2946]">{value}</div>
@@ -77,12 +118,12 @@ export default function Achievements() {
               <h2 className="text-lg font-bold tracking-tight text-[#1c2a47]">Your records</h2>
             </div>
             <div className="grid grid-flow-col auto-cols-max items-center gap-2 text-[11px] font-medium text-[#8995aa]">
-              <Award className="h-4 w-4 text-[#5268cb]" /> 4 categories
+              <Award className="h-4 w-4 text-[#5268cb]" /> {allRecords.length} records in vault
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {records.map((record, index) => (
-              <article key={record.title} className={`premium-card motion-enter motion-delay-${index + 1} p-5 transition hover:-translate-y-0.5 hover:border-[#cbd5ef]`}>
+            {allRecords.map((record, index) => (
+              <article key={`${record.title}-${index}`} className={`premium-card motion-enter motion-delay-${index + 1} p-5 transition hover:-translate-y-0.5 hover:border-[#cbd5ef]`}>
                 <div className="grid grid-cols-[auto_1fr] items-start gap-3">
                   <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf0ff] text-[#5268cb]">
                     <Award className="h-5 w-5" />

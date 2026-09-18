@@ -1,4 +1,7 @@
-import "dotenv/config";
+import { config as loadEnv } from "dotenv";
+import path from "path";
+loadEnv();
+loadEnv({ path: path.resolve(process.cwd(), "../backend/.env"), override: true });
 process.env.NODE_ENV = process.env.NODE_ENV || "development";
 import express from "express";
 import { createServer } from "http";

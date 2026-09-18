@@ -1,5 +1,6 @@
 import EvidenceUploadModal from "@/components/EvidenceUploadModal";
 import InternshipCheckinModal from "@/components/InternshipCheckinModal";
+import RegisterInternshipModal from "@/components/RegisterInternshipModal";
 import PragatiFrame from "@/components/PragatiFrame";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
@@ -202,6 +203,7 @@ function StudentInternshipPage() {
   const internshipQuery = trpc.internship.getMyInternship.useQuery();
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   const data = internshipQuery.data;
 
@@ -315,6 +317,13 @@ function StudentInternshipPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setShowRegisterModal(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 shadow-2xs"
+              >
+                <Plus className="h-3.5 w-3.5 text-primary" />
+                <span>Register Internship</span>
+              </button>
               <button
                 onClick={() => setShowCheckinModal(true)}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-2.5 text-xs font-bold text-primary transition hover:bg-primary/10"
@@ -567,6 +576,16 @@ function StudentInternshipPage() {
             internshipQuery.refetch();
           }}
           defaultTitle={`${internship.company} Milestone`}
+        />
+      )}
+
+      {showRegisterModal && (
+        <RegisterInternshipModal
+          open={showRegisterModal}
+          onClose={() => setShowRegisterModal(false)}
+          onSuccess={() => {
+            internshipQuery.refetch();
+          }}
         />
       )}
     </div>

@@ -1,5 +1,6 @@
 import PragatiFrame from "@/components/PragatiFrame";
 import InterventionModal from "@/components/InterventionModal";
+import RoleSpecificUserModal from "@/components/RoleSpecificUserModal";
 import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
@@ -17,6 +18,7 @@ import {
   Sparkles,
   TrendingDown,
   TrendingUp,
+  UserPlus,
   Users,
   UsersRound,
   X,
@@ -35,6 +37,7 @@ export default function FacultyWards() {
     useState<any | null>(null);
   const [selectedWardForScorecard, setSelectedWardForScorecard] =
     useState<any | null>(null);
+  const [showEnrollModal, setShowEnrollModal] = useState(false);
 
   const wards = wardsQuery.data ?? [];
 
@@ -80,6 +83,13 @@ export default function FacultyWards() {
                   <Users className="h-4 w-4 text-emerald-600" />
                   {wards.length} Mentees Assigned
                 </span>
+                <button
+                  onClick={() => setShowEnrollModal(true)}
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:from-emerald-700 hover:to-teal-800 active:scale-95 transition"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Enroll New Student</span>
+                </button>
               </div>
             </div>
           </div>
@@ -306,6 +316,12 @@ export default function FacultyWards() {
           }}
         />
       )}
+      <RoleSpecificUserModal
+        open={showEnrollModal}
+        onOpenChange={setShowEnrollModal}
+        mode="STUDENT_ENROLLMENT"
+        onSuccess={() => wardsQuery.refetch()}
+      />
     </PragatiFrame>
   );
 }

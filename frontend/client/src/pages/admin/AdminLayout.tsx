@@ -16,6 +16,7 @@ import {
   Server,
   Settings,
   Target,
+  UserCheck,
   Users,
   Users2,
   X,
@@ -43,6 +44,7 @@ const adminNavigation: NavSection[] = [
     title: "ADMINISTRATION",
     items: [
       { label: "Overview", icon: BarChart3, route: "/admin/overview" },
+      { label: "Approvals & Roles", icon: UserCheck, route: "/admin/approvals" },
       { label: "Users", icon: Users, route: "/admin/users" },
       { label: "Students", icon: GraduationCap, route: "/admin/students" },
       { label: "Faculty & HOD", icon: Activity, route: "/admin/faculty" },

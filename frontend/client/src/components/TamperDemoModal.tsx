@@ -53,6 +53,8 @@ export default function TamperDemoModal({ onClose }: TamperDemoModalProps) {
     init();
   }, []);
 
+  const tamperMutation = trpc.evidence.simulateTamper.useMutation();
+
   const handleToggleTamper = async () => {
     setIsComputing(true);
     const willTamper = !isTampered;
@@ -61,6 +63,16 @@ export default function TamperDemoModal({ onClose }: TamperDemoModalProps) {
     const textToHash = willTamper
       ? TAMPERED_DOCUMENT_CONTENT
       : ORIGINAL_DOCUMENT_CONTENT;
+
+    try {
+      // Call backend simulation endpoint
+      await tamperMutation.mutateAsync({
+        originalText: ORIGINAL_DOCUMENT_CONTENT,
+        tamperedText: textToHash,
+      });
+    } catch {
+      // client fallback continues safely
+    }
 
     const hash = await computeStringSHA256(textToHash);
     setCurrentHash(hash);

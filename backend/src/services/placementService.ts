@@ -13,8 +13,8 @@ export interface Opportunity {
   deadline: string;
   deadlineLabel: string;
   eligibilitySummary: string;
-  eligibilityStatus: "Eligible" | "Not Eligible" | "Pending";
-  applicationStatus: string;
+  eligibilityStatus: "Eligible" | "Not Eligible" | "Not eligible" | "Pending";
+  applicationStatus: "Not applied" | "Applied" | "In review" | "Interviewing" | "Offered" | "Rejected";
   closingSoon: boolean;
   description: string;
   skills: string[];
@@ -90,11 +90,11 @@ export async function getOpportunityById(id: string): Promise<Opportunity | null
  */
 export async function createPlacement(input: CreatePlacementInput): Promise<Opportunity> {
   const id = `${input.company.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
-  
+
   const now = new Date();
   const deadline = new Date(input.deadline);
   const daysUntilDeadline = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  
+
   const newPlacement: Opportunity = {
     id,
     company: input.company,
@@ -102,7 +102,7 @@ export async function createPlacement(input: CreatePlacementInput): Promise<Oppo
     type: input.type,
     location: input.location,
     deadline: input.deadline,
-    deadlineLabel: daysUntilDeadline > 0 
+    deadlineLabel: daysUntilDeadline > 0
       ? `Closes in ${daysUntilDeadline} day${daysUntilDeadline !== 1 ? "s" : ""}`
       : "Deadline passed",
     eligibilitySummary: `${input.type} opportunity at ${input.company}`,
@@ -144,7 +144,7 @@ export async function updatePlacement(input: UpdatePlacementInput): Promise<Oppo
     type: input.type,
     location: input.location,
     deadline: input.deadline,
-    deadlineLabel: daysUntilDeadline > 0 
+    deadlineLabel: daysUntilDeadline > 0
       ? `Closes in ${daysUntilDeadline} day${daysUntilDeadline !== 1 ? "s" : ""}`
       : "Deadline passed",
     description: input.description,

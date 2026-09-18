@@ -27,6 +27,19 @@ const requireUser = t.middleware(async opts => {
 
 export const protectedProcedure = t.procedure.use(requireUser);
 
+export const superAdminProcedure = protectedProcedure.use(
+  t.middleware(async opts => {
+    if (!opts.ctx.user?.openId.startsWith("superadmin:")) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Access restricted: Platform Owner privileges required.",
+      });
+    }
+
+    return opts.next({ ctx: opts.ctx });
+  })
+);
+
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;

@@ -1,6 +1,12 @@
+import { config as loadEnv } from "dotenv";
+import path from "path";
+
+loadEnv();
+loadEnv({ path: path.resolve(process.cwd(), "../backend/.env"), override: true });
+
 export const ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
+  appId: process.env.VITE_APP_ID || "pragati",
+  cookieSecret: process.env.JWT_SECRET || process.env.SUPER_ADMIN_MASTER_KEY || "development-only-session-secret",
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
