@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import PersonaSwitcher from "./components/PersonaSwitcher";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Achievements from "./pages/Achievements";
@@ -210,6 +211,7 @@ export default function App() {
           <TooltipProvider>
             <Toaster />
             <Router />
+            <PersonaSwitcher />
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>

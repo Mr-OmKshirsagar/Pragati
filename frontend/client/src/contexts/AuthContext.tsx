@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: (res.user.role === "TNP_COORDINATOR" ? "ADMIN" : res.user.role) as PragatiRole,
             avatar: res.user.name
               .split(" ")
-              .map(p => p[0])
+              .map((p: string) => p[0])
               .slice(0, 2)
               .join("")
               .toUpperCase(),
@@ -201,7 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: (res.user.role === "TNP_COORDINATOR" ? "ADMIN" : res.user.role) as PragatiRole,
           avatar: res.user.name
             .split(" ")
-            .map(p => p[0])
+            .map((p: string) => p[0])
             .slice(0, 2)
             .join("")
             .toUpperCase(),
