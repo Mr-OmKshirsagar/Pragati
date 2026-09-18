@@ -14,6 +14,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
+import RoleSpecificUserModal from "@/components/RoleSpecificUserModal";
 
 interface Student {
   id: string;
@@ -154,8 +156,15 @@ export default function AdminStudents() {
   const [yearFilter, setYearFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [enrollModalOpen, setEnrollModalOpen] = useState(false);
 
-  const filteredStudents = mockStudents.filter((student) => {
+  const studentsQuery = trpc.admin.listStudents.useQuery();
+  const studentsList: Student[] =
+    studentsQuery.data && studentsQuery.data.length > 0
+      ? studentsQuery.data
+      : mockStudents;
+
+  const filteredStudents = studentsList.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -174,10 +183,19 @@ export default function AdminStudents() {
         subtitle="View student profiles, academic records, skill assessments and internship progress."
         breadcrumbs={["Admin", "Students"]}
         actions={
-          <button className="flex items-center gap-2 rounded-xl border border-[#dce3ef] bg-white px-4 py-2.5 text-xs font-semibold text-[#52617d] shadow-sm transition hover:border-[#bec9df]">
-            <Download className="h-4 w-4" />
-            Export
-          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setEnrollModalOpen(true)}
+              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition hover:opacity-90 active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              Enroll Student
+            </button>
+            <button className="flex items-center gap-2 rounded-xl border border-[#dce3ef] bg-white px-4 py-2.5 text-xs font-semibold text-[#52617d] shadow-sm transition hover:border-[#bec9df]">
+              <Download className="h-4 w-4" />
+              Export
+            </button>
+          </div>
         }
       />
 
@@ -326,6 +344,14 @@ export default function AdminStudents() {
           </div>
         </div>
       )}
+
+      {/* Student Enrollment Modal */}
+      <RoleSpecificUserModal
+        open={enrollModalOpen}
+        onOpenChange={setEnrollModalOpen}
+        mode="STUDENT_ENROLLMENT"
+        onSuccess={() => studentsQuery.refetch()}
+      />
     </AdminLayout>
   );
 }

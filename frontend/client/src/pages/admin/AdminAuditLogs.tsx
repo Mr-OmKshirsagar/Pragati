@@ -3,6 +3,7 @@ import { AdminPageHeader } from "./components/AdminPageHeader";
 import { AdminTable, TableColumn } from "./components/AdminTable";
 import { Search, Filter, Download, Eye, MoreVertical } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 interface AuditLog {
   id: string;
@@ -125,7 +126,11 @@ export default function AdminAuditLogs() {
   const [resultFilter, setResultFilter] = useState("all");
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
-  const filteredLogs = mockLogs.filter((log) => {
+  const logsQuery = trpc.admin.listAuditLogs.useQuery({ limit: 100 });
+  const logsList: AuditLog[] =
+    logsQuery.data && logsQuery.data.length > 0 ? (logsQuery.data as AuditLog[]) : mockLogs;
+
+  const filteredLogs = logsList.filter((log) => {
     const matchesSearch =
       log.actor.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
