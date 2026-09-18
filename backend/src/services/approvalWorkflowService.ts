@@ -10,6 +10,7 @@ import {
   users,
 } from "../../drizzle/schema";
 import { getDb } from "../db";
+import { sendInstitutionalEmail } from "./emailService";
 
 // ============================================================================
 // 1. STUDENT ENROLLMENT WORKFLOW (Class Teacher -> HOD)
@@ -32,7 +33,7 @@ export interface StudentEnrollmentPayload {
 
 export async function submitStudentEnrollment(params: {
   institutionId: string;
-  departmentId: string;
+  departmentId?: string;
   classId: string;
   submittedBy: string;
   studentData: StudentEnrollmentPayload;
@@ -40,11 +41,28 @@ export async function submitStudentEnrollment(params: {
   const db = await getDb();
   if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable." });
 
+  let targetDeptId = params.departmentId;
+  if (!targetDeptId) {
+    const [firstDept] = await db
+      .select({ id: departments.id })
+      .from(departments)
+      .where(eq(departments.institutionId, params.institutionId))
+      .limit(1);
+    targetDeptId = firstDept?.id;
+  }
+
+  if (!targetDeptId) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "No department found to assign student enrollment.",
+    });
+  }
+
   const [request] = await db
     .insert(studentEnrollmentRequests)
     .values({
       institutionId: params.institutionId,
-      departmentId: params.departmentId,
+      departmentId: targetDeptId,
       classId: params.classId,
       submittedBy: params.submittedBy,
       studentData: params.studentData as any,
@@ -57,10 +75,19 @@ export async function submitStudentEnrollment(params: {
 
 export async function getPendingStudentRequests(params: {
   institutionId: string;
-  departmentId: string;
+  departmentId?: string;
 }) {
   const db = await getDb();
   if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable." });
+
+  const whereConditions = [
+    eq(studentEnrollmentRequests.institutionId, params.institutionId),
+    eq(studentEnrollmentRequests.status, "PENDING"),
+  ];
+
+  if (params.departmentId) {
+    whereConditions.push(eq(studentEnrollmentRequests.departmentId, params.departmentId));
+  }
 
   return db
     .select({
@@ -77,13 +104,7 @@ export async function getPendingStudentRequests(params: {
     })
     .from(studentEnrollmentRequests)
     .leftJoin(users, eq(studentEnrollmentRequests.submittedBy, users.id))
-    .where(
-      and(
-        eq(studentEnrollmentRequests.institutionId, params.institutionId),
-        eq(studentEnrollmentRequests.departmentId, params.departmentId),
-        eq(studentEnrollmentRequests.status, "PENDING")
-      )
-    )
+    .where(and(...whereConditions))
     .orderBy(desc(studentEnrollmentRequests.createdAt));
 }
 
@@ -182,6 +203,24 @@ export async function processStudentEnrollments(params: {
           reviewNotes: params.reviewNotes || null,
         })
         .where(eq(studentEnrollmentRequests.id, req.id));
+
+      // Dispatch welcome credentials email (intercepts demo accounts to DEMO_NOTIFICATION_EMAIL)
+      try {
+        await sendInstitutionalEmail({
+          toEmail: data.collegeEmail,
+          subject: "Welcome to PRAGATI - Your Institutional Credentials",
+          template: "ACCOUNT_WELCOME",
+          data: {
+            name: data.name,
+            role: "STUDENT",
+            tempPassword: "password123",
+            identifier: data.enrollmentNumber,
+            loginUrl: process.env.VITE_APP_URL || "http://localhost:3000/login",
+          },
+        });
+      } catch (mailErr) {
+        console.warn("[EmailService] Failed to dispatch student credentials email:", mailErr);
+      }
     } else {
       await db
         .update(studentEnrollmentRequests)
@@ -339,6 +378,26 @@ export async function processFacultyRequests(params: {
           reviewNotes: params.reviewNotes || null,
         })
         .where(eq(facultyOnboardingRequests.id, req.id));
+
+      if (req.requestType === "CREATE" && req.facultyData) {
+        const facData = req.facultyData as FacultyOnboardingPayload;
+        try {
+          await sendInstitutionalEmail({
+            toEmail: facData.email,
+            subject: "Welcome to PRAGATI - Your Faculty Credentials",
+            template: "ACCOUNT_WELCOME",
+            data: {
+              name: facData.name,
+              role: "FACULTY",
+              tempPassword: "password123",
+              identifier: facData.facultyId || "Assigned on Portal",
+              loginUrl: process.env.VITE_APP_URL || "http://localhost:3000/login",
+            },
+          });
+        } catch (mailErr) {
+          console.warn("[EmailService] Failed to dispatch faculty credentials email:", mailErr);
+        }
+      }
     } else {
       await db
         .update(facultyOnboardingRequests)

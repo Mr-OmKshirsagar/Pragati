@@ -25,7 +25,7 @@ export const facultyRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const record = await interventionService.createIntervention({
+      return interventionService.createIntervention({
         assignedBy: ctx.user.id,
         studentId: input.studentId,
         skillGapId: input.skillGapId,
@@ -34,10 +34,6 @@ export const facultyRouter = router({
         startDate: input.startDate,
         endDate: input.endDate,
       });
-      return {
-        ...record,
-        emailNotification: { sent: true, recipient: "student" },
-      };
     }),
 
   // 3. Log intervention outcome text and update status to COMPLETED or CANCELLED
@@ -87,7 +83,23 @@ export const facultyRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const deptId = input.departmentId || ctx.user.departmentId;
+      let deptId = input.departmentId || ctx.user.departmentId;
+      if (!deptId) {
+        const db = await (await import("../db")).getDb();
+        if (db) {
+          const [firstDept] = await db
+            .select({ id: (await import("../../drizzle/schema")).departments.id })
+            .from((await import("../../drizzle/schema")).departments)
+            .where(
+              (await import("drizzle-orm")).eq(
+                (await import("../../drizzle/schema")).departments.institutionId,
+                ctx.user.institutionId
+              )
+            )
+            .limit(1);
+          deptId = firstDept?.id;
+        }
+      }
       if (!deptId) {
         throw new TRPCError({
           code: "BAD_REQUEST",

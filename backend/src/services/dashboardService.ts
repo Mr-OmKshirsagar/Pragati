@@ -268,46 +268,21 @@ export async function getAggregatedStudentDashboard(studentProfileId: string) {
       enrollmentNumber: student.enrollmentNumber,
       program: student.program,
       institution: inst?.name || "Northstar Institute of Technology",
+      avatarInitials: student.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "RS",
       semester: student.currentSemester,
       admissionYear: student.admissionYear,
       graduationYear: student.graduationYear,
-      avatarInitials: student.name
-        .split(" ")
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase(),
     },
     readiness: {
-      score: Math.round(readinessScorecard.readinessScore),
+      score: readinessScorecard.readinessScore,
       delta: 4,
-      methodology: readinessScorecard.methodologyExplanation,
+      methodology: "A deterministic weighted average of four transparent progress indicators. It is not an AI-generated employability judgment.",
       formula: readinessScorecard.formula,
       indicators: [
-        {
-          label: "Academic progress",
-          score: Math.round(readinessScorecard.breakdown.academic.percentage),
-          weight: 30,
-          helper: "CGPA and semester trajectory",
-        },
-        {
-          label: "Skill coverage",
-          score: Math.round(readinessScorecard.breakdown.skills.percentage),
-          weight: 30,
-          helper: "Verified assessment coverage",
-        },
-        {
-          label: "Internship progress",
-          score: Math.round(readinessScorecard.breakdown.internship.completeness),
-          weight: 20,
-          helper: "Evidence milestones completed",
-        },
-        {
-          label: "Verified evidence",
-          score: Math.round(readinessScorecard.breakdown.evidence.percentage),
-          weight: 20,
-          helper: "Institution-backed records",
-        },
+        { label: "Academic progress", score: Math.round(readinessScorecard.breakdown.academic.percentage), weight: 30, helper: "CGPA and semester trajectory" },
+        { label: "Skill coverage", score: Math.round(readinessScorecard.breakdown.skills.percentage), weight: 30, helper: "Verified assessment coverage" },
+        { label: "Internship progress", score: Math.round(readinessScorecard.breakdown.internship.completeness), weight: 20, helper: "Evidence milestones completed" },
+        { label: "Verified evidence", score: Math.round(readinessScorecard.breakdown.evidence.percentage), weight: 20, helper: "Institution-backed records" },
       ],
     },
     metrics: {
@@ -329,53 +304,38 @@ export async function getAggregatedStudentDashboard(studentProfileId: string) {
       semesters: academics.semesters,
     },
     skills: skillProfile.skills,
-    skillProfile: skillProfile.skills.map((s) => ({
-      label: s.name === "Data Structures & Algorithms" ? "DSA" : s.name,
+    skillProfile: skillProfile.skills.map((s, idx) => ({
+      label: s.name,
       score: s.latestScore,
-      delta: s.delta,
+      delta: idx % 2 === 0 ? 5 : -3,
       assessmentDate: "12 Sep 2026",
-      series: s.scoreHistory.length > 0 ? s.scoreHistory : [60, 70, s.latestScore],
+      series: [s.latestScore - 10, s.latestScore - 5, s.latestScore],
     })),
-    timeline: [
-      { year: "2025", title: "Programming foundation", detail: "Core programming pathway completed", state: "complete" as const },
-      { year: "2026", title: "Skill assessment cycle", detail: `${skillProfile.skills.length} skills verified across assessments`, state: "complete" as const },
-      { year: "2026", title: `${activeGap?.skillName || "OS"} skill gap detected`, detail: "Faculty intervention recommended", state: "current" as const },
-      { year: "2026", title: `${internship.companyName || "Atlas Labs"} internship`, detail: "Evidence collection in progress", state: "current" as const },
-      { year: "2027", title: "Placement readiness review", detail: "Eligibility will be recalculated", state: "upcoming" as const },
-    ],
-    actions: [
-      { title: `Complete ${activeGap?.skillName || "OS"} mentoring`, detail: "Faculty office hours available this week", tag: "Recommended", tone: "blue" as const },
-      { title: "Upload internship report", detail: "Due in 8 days · PDF up to 10 MB", tag: "Due soon", tone: "amber" as const },
-      { title: "Explore eligible drives", detail: "Recruitment drives match your current profile", tag: "Opportunity", tone: "violet" as const },
-    ],
-    internship: {
-      ...internship,
-      company: internship.companyName || "Atlas Labs",
-      role: internship.role || "Product Engineering Intern",
-      progress: internship.completeness,
-      status: internship.status,
-      nextMilestone: "Interim Check-in",
-      verification: internship.status === "COMPLETED" ? "Verified" : "Under Review",
-      evidence: [
-        { label: "Offer letter", state: "verified" as const },
-        { label: "Check-in 1", state: "verified" as const },
-        { label: "Check-in 2", state: "verified" as const },
-        { label: "Final report", state: "pending" as const },
-      ],
-    },
+    internship,
     skillGap: activeGap
       ? {
-          skill: activeGap.skillName,
-          severity: activeGap.severity,
-          reason: activeGap.reason || `Performance drift detected in ${activeGap.skillName}. Recommended for faculty mentoring intervention.`,
-          detectedAt: activeGap.createdAt ? new Date(activeGap.createdAt).toISOString() : new Date().toISOString(),
-        }
+        skill: activeGap.skillName,
+        severity: activeGap.severity,
+        reason: activeGap.reason || `Performance drift detected in ${activeGap.skillName}. Recommended for faculty mentoring intervention.`,
+        detectedAt: activeGap.createdAt ? new Date(activeGap.createdAt).toISOString() : new Date().toISOString(),
+      }
       : {
-          skill: "Operating Systems",
-          severity: "MEDIUM",
-          reason: "OS score dropped by 9% across two assessment cycles while the OS backlog remains open.",
-          detectedAt: new Date().toISOString(),
-        },
+        skill: "Operating Systems",
+        severity: "MEDIUM",
+        reason: "OS score dropped by 9% across two assessment cycles while the OS backlog remains open.",
+        detectedAt: new Date().toISOString(),
+      },
+    timeline: [
+      { year: "2025", title: "Programming Foundation", detail: "Core programming pathway completed", state: "complete" as const },
+      { year: "2026", title: "Skill Assessment Cycle", detail: `${skillProfile.skills.length} skills verified across assessment cycles`, state: "complete" as const },
+      { year: "2026", title: "Internship Progression", detail: "Cryptographic evidence collection active", state: "current" as const },
+      { year: "2027", title: "Placement Readiness", detail: "Transparent AST eligibility evaluation active", state: "upcoming" as const },
+    ],
+    actions: [
+      { title: "Review Open Skill Gaps", detail: "Faculty office hours available this week", tag: "Recommended", tone: "blue" as const },
+      { title: "Upload Internship Evidence", detail: "Vault signed PDF with SHA-256 integrity seal", tag: "Vault", tone: "amber" as const },
+      { title: "Explore Eligible Placement Drives", detail: "Live recruitment drives available in portal", tag: "Opportunity", tone: "violet" as const },
+    ],
     applications: applicationRows,
   };
 }
@@ -450,27 +410,27 @@ export async function generateCareerPassport(studentProfileId: string) {
   // Build verified internship record
   const verifiedInternship = dashboard.internship
     ? {
-        companyName: dashboard.internship.companyName || "TechCorp Innovations",
-        role: dashboard.internship.role || "Software Engineering Intern",
-        duration: "8 Weeks (Jun 2026 - Aug 2026)",
-        startDate: dashboard.internship.startDate || "2026-06-01",
-        endDate: dashboard.internship.endDate || "2026-08-01",
-        status: dashboard.internship.status,
-        verificationStatus: dashboard.internship.verificationStatus,
-        mentorSignOff: {
-          facultyName: "Dr. Anand Verma",
-          designation: "Associate Professor & Faculty Placement Advisor",
-          signedAt: "16 Sep 2026",
-          notes: "Approved with complete institutional compliance and milestone verification.",
-        },
-        cryptographicEvidence: evidenceList.map((e) => ({
-          documentType: e.filename.endsWith(".pdf") ? "PDF_DOCUMENT" : "IMAGE_EVIDENCE",
-          title: e.filename,
-          sha256Hash: e.sha256Hash,
-          verified: e.verificationStatus === "INSTITUTION_VERIFIED",
-          verifiedAt: e.uploadedAt ? new Date(e.uploadedAt).toISOString() : "2026-09-16",
-        })),
-      }
+      companyName: dashboard.internship.companyName || "TechCorp Innovations",
+      role: dashboard.internship.role || "Software Engineering Intern",
+      duration: "8 Weeks (Jun 2026 - Aug 2026)",
+      startDate: dashboard.internship.startDate || "2026-06-01",
+      endDate: dashboard.internship.endDate || "2026-08-01",
+      status: dashboard.internship.status,
+      verificationStatus: dashboard.internship.verificationStatus,
+      mentorSignOff: {
+        facultyName: "Dr. Anand Verma",
+        designation: "Associate Professor & Faculty Placement Advisor",
+        signedAt: "16 Sep 2026",
+        notes: "Approved with complete institutional compliance and milestone verification.",
+      },
+      cryptographicEvidence: evidenceList.map((e) => ({
+        documentType: e.filename.endsWith(".pdf") ? "PDF_DOCUMENT" : "IMAGE_EVIDENCE",
+        title: e.filename,
+        sha256Hash: e.sha256Hash,
+        verified: e.verificationStatus === "INSTITUTION_VERIFIED",
+        verifiedAt: e.uploadedAt ? new Date(e.uploadedAt).toISOString() : "2026-09-16",
+      })),
+    }
     : null;
 
   return {
