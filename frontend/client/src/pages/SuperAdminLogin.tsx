@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ShieldCheck, Lock, Mail, KeyRound, ArrowRight, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 interface SuperAdminLoginProps {
   onAuthenticated: (token: string) => void;
@@ -13,6 +14,11 @@ export default function SuperAdminLogin({ onAuthenticated }: SuperAdminLoginProp
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otpSentNotice, setOtpSentNotice] = useState(false);
+  const [challengeId, setChallengeId] = useState<string | null>(null);
+  const [maskedEmail, setMaskedEmail] = useState<string | null>(null);
+  const credentialsMutation = trpc.auth.superAdminLogin.useMutation();
+  const verifyMutation = trpc.auth.verifySuperAdmin2FA.useMutation();
+  const resendMutation = trpc.auth.resendSuperAdmin2FA.useMutation();
 
   // Step 1: Verify Password and Request 2FA OTP
   const handleVerifyCredentials = async (e: React.FormEvent) => {
@@ -25,9 +31,9 @@ export default function SuperAdminLogin({ onAuthenticated }: SuperAdminLoginProp
         throw new Error("Please enter both email and password.");
       }
 
-      // Simulate network verification & OTP dispatch to registered super admin Gmail
-      await new Promise(r => setTimeout(r, 600));
-
+      const result = await credentialsMutation.mutateAsync({ email, password });
+      setChallengeId(result.challengeId);
+      setMaskedEmail(result.maskedEmail);
       setStep("2FA_OTP");
       setOtpSentNotice(true);
     } catch (err: any) {
@@ -70,11 +76,15 @@ export default function SuperAdminLogin({ onAuthenticated }: SuperAdminLoginProp
         throw new Error("Please enter the complete 6-digit OTP sent to your registered Gmail.");
       }
 
-      // Simulate cryptographic OTP validation
-      await new Promise(r => setTimeout(r, 700));
+      if (!challengeId) {
+        throw new Error("Your verification challenge is missing. Please start again.");
+      }
 
-      // Issue high-privilege Super Admin token
-      const token = "demo_SUPER_ADMIN";
+      const result = await verifyMutation.mutateAsync({
+        challengeId,
+        otp: fullOtp,
+      });
+      const token = result.sessionToken;
       localStorage.setItem("pragati_token", token);
       localStorage.setItem("pragati_role", "SUPER_ADMIN");
       sessionStorage.setItem("pragati_token", token);
@@ -82,6 +92,23 @@ export default function SuperAdminLogin({ onAuthenticated }: SuperAdminLoginProp
       onAuthenticated(token);
     } catch (err: any) {
       setError(err.message || "Failed to verify 2FA OTP.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!challengeId) return;
+    setError(null);
+    setIsLoading(true);
+    try {
+      const result = await resendMutation.mutateAsync({ challengeId });
+      setChallengeId(result.challengeId);
+      setMaskedEmail(result.maskedEmail);
+      setOtp(["", "", "", "", "", ""]);
+      setOtpSentNotice(true);
+    } catch (err: any) {
+      setError(err.message || "Unable to resend the verification code.");
     } finally {
       setIsLoading(false);
     }
@@ -178,7 +205,7 @@ export default function SuperAdminLogin({ onAuthenticated }: SuperAdminLoginProp
               {otpSentNotice && (
                 <div className="flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-300">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-                  <span>2FA OTP code dispatched to your registered Super Admin Gmail inbox.</span>
+                  <span>2FA code dispatched to {maskedEmail || "your registered email"}.</span>
                 </div>
               )}
 
@@ -215,6 +242,15 @@ export default function SuperAdminLogin({ onAuthenticated }: SuperAdminLoginProp
                       Verify OTP & Enter Console <ArrowRight className="h-4 w-4" />
                     </>
                   )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isLoading}
+                  className="text-xs text-slate-400 hover:text-slate-200 transition text-center py-1 cursor-pointer disabled:opacity-50"
+                >
+                  Resend verification code
                 </button>
 
                 <button
