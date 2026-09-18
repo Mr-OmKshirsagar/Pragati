@@ -21,6 +21,8 @@ import { isSupabaseConfigured } from "../_core/supabase";
 import { adminProcedure, requireRole, router } from "../_core/trpc";
 import * as approvalWorkflowService from "../services/approvalWorkflowService";
 
+const adminOverviewCache = new Map<string, { data: any; expiresAt: number }>();
+
 export const adminRouter = router({
   // 1. List pending faculty onboarding & deletion requests for College Admin
   getPendingFacultyRequests: adminProcedure.query(async ({ ctx }) => {
@@ -236,6 +238,12 @@ export const adminRouter = router({
 
   // 8. Institutional Macro Overview for Admin Dashboard
   getAdminOverview: adminProcedure.query(async ({ ctx }) => {
+    const cacheKey = ctx.user.institutionId || "default";
+    const cached = adminOverviewCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data;
+    }
+
     const db = await getDb();
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable." });
 
@@ -261,7 +269,7 @@ export const adminRouter = router({
       db.select().from(skillGaps).where(eq(skillGaps.status, "OPEN")),
     ]);
 
-    return {
+    const result = {
       totalStudents: studentList.length > 0 ? studentList.length : 1840,
       totalFaculty: facultyList.length > 0 ? facultyList.length : 128,
       totalDepartments: deptList.length > 0 ? deptList.length : 8,
@@ -273,6 +281,13 @@ export const adminRouter = router({
       activeInternships: internshipList.length > 0 ? internshipList.length : 156,
       openSkillGaps: skillGapList.length > 0 ? skillGapList.length : 23,
     };
+
+    adminOverviewCache.set(cacheKey, {
+      data: result,
+      expiresAt: Date.now() + 20_000,
+    });
+
+    return result;
   }),
 
   // 9. Institutional & Infrastructure System Health

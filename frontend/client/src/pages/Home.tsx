@@ -34,8 +34,14 @@ import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 
 export default function Home() {
-  const dashboardQuery = trpc.student.dashboard.useQuery();
-  const opportunitiesQuery = trpc.student.opportunities.useQuery();
+  const dashboardQuery = trpc.student.dashboard.useQuery(undefined, {
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const opportunitiesQuery = trpc.student.opportunities.useQuery(undefined, {
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
 
   return (
     <PragatiFrame title="Overview" activePath="/student/overview">

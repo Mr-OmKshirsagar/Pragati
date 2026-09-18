@@ -149,10 +149,38 @@ export function calculateReadinessScore(inputs: ReadinessInputs): CareerReadines
   };
 }
 
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
+}
+const studentDashboardCache = new Map<string, CacheEntry<any>>();
+const departmentAnalyticsCache = new Map<string, CacheEntry<any>>();
+
+export function invalidateStudentDashboardCache(studentProfileId?: string) {
+  if (studentProfileId) {
+    studentDashboardCache.delete(studentProfileId);
+  } else {
+    studentDashboardCache.clear();
+  }
+}
+
+export function invalidateDepartmentAnalyticsCache(departmentId?: string) {
+  if (departmentId) {
+    departmentAnalyticsCache.delete(departmentId);
+  } else {
+    departmentAnalyticsCache.clear();
+  }
+}
+
 /**
  * Aggregates complete student dashboard data with live metrics from Supabase PostgreSQL
  */
 export async function getAggregatedStudentDashboard(studentProfileId: string) {
+  const cached = studentDashboardCache.get(studentProfileId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
   const db = await getDb();
   if (!db) throw new Error("Database offline");
 
@@ -180,34 +208,71 @@ export async function getAggregatedStudentDashboard(studentProfileId: string) {
     throw new Error(`Student profile '${studentProfileId}' not found.`);
   }
 
-  // 2. Fetch institution name
-  const [inst] = await db
-    .select({ name: institutions.name })
-    .from(institutions)
-    .where(eq(institutions.id, student.institutionId))
-    .limit(1);
-
-  // 3. Fetch academic records
-  const academics = await academicService.getStudentAcademics(studentProfileId);
-
-  // 4. Fetch skills profile
-  const skillProfile = await skillService.getStudentSkillProfile(studentProfileId);
-
-  // 5. Fetch internship details
-  const internship = await internshipService.getStudentActiveInternship(studentProfileId);
-
-  // 6. Fetch evidence claims
-  const evidenceRows = await db
-    .select()
-    .from(evidenceDocuments)
-    .where(eq(evidenceDocuments.studentId, studentProfileId));
+  // 2-9. Fetch all related records concurrently in a single parallel batch
+  const [
+    [inst],
+    academics,
+    skillProfile,
+    internship,
+    evidenceRows,
+    [activeGap],
+    applicationRows,
+  ] = await Promise.all([
+    db
+      .select({ name: institutions.name })
+      .from(institutions)
+      .where(eq(institutions.id, student.institutionId))
+      .limit(1),
+    academicService.getStudentAcademics(studentProfileId),
+    skillService.getStudentSkillProfile(studentProfileId),
+    internshipService.getStudentActiveInternship(studentProfileId),
+    db
+      .select()
+      .from(evidenceDocuments)
+      .where(eq(evidenceDocuments.studentId, studentProfileId)),
+    db
+      .select({
+        id: skillGaps.id,
+        skillName: skills.name,
+        severity: skillGaps.severity,
+        reason: skillGaps.reason,
+        createdAt: skillGaps.createdAt,
+        status: skillGaps.status,
+      })
+      .from(skillGaps)
+      .innerJoin(skills, eq(skillGaps.skillId, skills.id))
+      .where(
+        and(
+          eq(skillGaps.studentId, studentProfileId),
+          eq(skillGaps.status, "OPEN")
+        )
+      )
+      .limit(1),
+    db
+      .select({
+        id: applications.id,
+        status: applications.status,
+        appliedAt: applications.appliedAt,
+        companyName: recruitmentDrives.companyName,
+        jobTitle: recruitmentDrives.jobTitle,
+        ctcOrStipend: recruitmentDrives.ctcOrStipend,
+      })
+      .from(applications)
+      .innerJoin(
+        recruitmentDrives,
+        eq(applications.recruitmentDriveId, recruitmentDrives.id)
+      )
+      .where(eq(applications.studentId, studentProfileId))
+      .orderBy(desc(applications.appliedAt))
+      .limit(5),
+  ]);
 
   const totalEvidence = evidenceRows.length;
   const verifiedEvidence = evidenceRows.filter(
     (e) => e.verificationStatus === "INSTITUTION_VERIFIED"
   ).length;
 
-  // 7. Calculate Deterministic Career Readiness Scorecard
+  // Calculate Deterministic Career Readiness Scorecard
   const coreSkillList = skillProfile.skills.map((s) => ({
     name: s.name,
     score: s.latestScore,
@@ -221,46 +286,7 @@ export async function getAggregatedStudentDashboard(studentProfileId: string) {
     verifiedEvidenceClaims: totalEvidence > 0 ? verifiedEvidence : 9,
   });
 
-  // 8. Fetch active skill gaps
-  const [activeGap] = await db
-    .select({
-      id: skillGaps.id,
-      skillName: skills.name,
-      severity: skillGaps.severity,
-      reason: skillGaps.reason,
-      createdAt: skillGaps.createdAt,
-      status: skillGaps.status,
-    })
-    .from(skillGaps)
-    .innerJoin(skills, eq(skillGaps.skillId, skills.id))
-    .where(
-      and(
-        eq(skillGaps.studentId, studentProfileId),
-        eq(skillGaps.status, "OPEN")
-      )
-    )
-    .limit(1);
-
-  // 9. Fetch recent applications
-  const applicationRows = await db
-    .select({
-      id: applications.id,
-      status: applications.status,
-      appliedAt: applications.appliedAt,
-      companyName: recruitmentDrives.companyName,
-      jobTitle: recruitmentDrives.jobTitle,
-      ctcOrStipend: recruitmentDrives.ctcOrStipend,
-    })
-    .from(applications)
-    .innerJoin(
-      recruitmentDrives,
-      eq(applications.recruitmentDriveId, recruitmentDrives.id)
-    )
-    .where(eq(applications.studentId, studentProfileId))
-    .orderBy(desc(applications.appliedAt))
-    .limit(5);
-
-  return {
+  const result = {
     student: {
       id: student.id,
       name: student.name,
@@ -338,6 +364,13 @@ export async function getAggregatedStudentDashboard(studentProfileId: string) {
     ],
     applications: applicationRows,
   };
+
+  studentDashboardCache.set(studentProfileId, {
+    data: result,
+    expiresAt: Date.now() + 20_000,
+  });
+
+  return result;
 }
 
 /**
@@ -379,7 +412,7 @@ export async function generateCareerPassport(studentProfileId: string) {
         ? ("ZERO_ACTIVE_BACKLOGS" as const)
         : ("ACTIVE_BACKLOGS_PRESENT" as const),
     verifiedStatus: "INSTITUTION_VERIFIED" as const,
-    semesters: dashboard.academics.semesters.map((s) => ({
+    semesters: dashboard.academics.semesters.map((s: any) => ({
       semester: s.semester,
       semesterLabel: `Semester ${s.semester}`,
       academicYear: s.academicYear,
@@ -391,7 +424,7 @@ export async function generateCareerPassport(studentProfileId: string) {
   };
 
   // Build verified skills
-  const verifiedSkills = dashboard.skills.map((s) => {
+  const verifiedSkills = dashboard.skills.map((s: any) => {
     let proficiency: "EXPERT" | "PROFICIENT" | "DEVELOPING" = "DEVELOPING";
     if (s.latestScore >= 80) proficiency = "EXPERT";
     else if (s.latestScore >= 70) proficiency = "PROFICIENT";
@@ -460,6 +493,12 @@ export async function generateCareerPassport(studentProfileId: string) {
  * Aggregates Department Analytics for HODs and Administrators
  */
 export async function getDepartmentAnalytics(departmentId: string) {
+  const cacheKey = departmentId || "default";
+  const cached = departmentAnalyticsCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
   const db = await getDb();
   if (!db) throw new Error("Database offline");
 
@@ -481,31 +520,30 @@ export async function getDepartmentAnalytics(departmentId: string) {
   const deptName = dept ? dept.name : "Department of Computer Science & Engineering";
   const deptCode = dept ? dept.code : "CSE";
 
-  // 2. Count students in department
-  const studentRows = await db
-    .select({ id: studentProfiles.id })
-    .from(studentProfiles)
-    .where(eq(studentProfiles.departmentId, deptId));
+  // 2-6. Query department metrics, faculty, CGPA, and interventions in parallel
+  const [studentRows, facultyRows, avgCgpaResult, allGaps, allInterventions] = await Promise.all([
+    db
+      .select({ id: studentProfiles.id })
+      .from(studentProfiles)
+      .where(eq(studentProfiles.departmentId, deptId)),
+    db
+      .select({ id: users.id })
+      .from(users)
+      .where(
+        and(
+          eq(users.departmentId, deptId),
+          eq(users.role, "FACULTY")
+        )
+      ),
+    db
+      .select({ avg: sql<string>`avg(${academicRecords.cgpa})` })
+      .from(academicRecords),
+    db.select().from(skillGaps),
+    db.select().from(interventions),
+  ]);
 
   const totalStudents = Math.max(studentRows.length, 120);
-
-  // 3. Count faculty in department
-  const facultyRows = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(
-      and(
-        eq(users.departmentId, deptId),
-        eq(users.role, "FACULTY")
-      )
-    );
-
   const facultyCount = Math.max(facultyRows.length, 14);
-
-  // 4. Compute Department Average CGPA
-  const avgCgpaResult = await db
-    .select({ avg: sql<string>`avg(${academicRecords.cgpa})` })
-    .from(academicRecords);
 
   const averageCgpa = avgCgpaResult[0]?.avg
     ? Math.round(parseFloat(avgCgpaResult[0].avg) * 100) / 100
@@ -566,9 +604,6 @@ export async function getDepartmentAnalytics(departmentId: string) {
   ];
 
   // 6. Query Intervention Velocity
-  const allGaps = await db.select().from(skillGaps);
-  const allInterventions = await db.select().from(interventions);
-
   const flaggedGaps = allGaps.length > 0 ? allGaps.length : 18;
   const completedInterventions = allInterventions.filter((i) => i.status === "COMPLETED").length;
   const resolved = completedInterventions > 0 ? completedInterventions : 14;
@@ -579,7 +614,7 @@ export async function getDepartmentAnalytics(departmentId: string) {
   const tier2Count = Math.round(totalStudents * 0.46);
   const remedialCount = totalStudents - tier1Count - tier2Count;
 
-  return {
+  const result = {
     department: {
       id: deptId,
       name: deptName,
@@ -622,4 +657,11 @@ export async function getDepartmentAnalytics(departmentId: string) {
       },
     },
   };
+
+  departmentAnalyticsCache.set(cacheKey, {
+    data: result,
+    expiresAt: Date.now() + 20_000,
+  });
+
+  return result;
 }

@@ -81,8 +81,17 @@ export default function AdminOverview() {
   const [activityFilter, setActivityFilter] = useState<"all" | "seal" | "intervention" | "security" | "placement">("all");
 
   // Live Backend Queries
-  const overviewQuery = trpc.admin.getAdminOverview.useQuery();
-  const auditLogsQuery = trpc.admin.listAuditLogs.useQuery({ limit: 8 });
+  const overviewQuery = trpc.admin.getAdminOverview.useQuery(undefined, {
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const auditLogsQuery = trpc.admin.listAuditLogs.useQuery(
+    { limit: 8 },
+    {
+      staleTime: 60_000,
+      refetchOnWindowFocus: false,
+    }
+  );
   const overview = overviewQuery.data;
 
   // KPI Telemetry

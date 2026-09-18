@@ -12,10 +12,11 @@ export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       _client = postgres(process.env.DATABASE_URL, {
-        max: 10,
-        idle_timeout: 20,
-        connect_timeout: 10,
+        max: 15,
+        idle_timeout: 300,
+        connect_timeout: 15,
         ssl: "require",
+        prepare: false, // Required for Supabase transaction pooler (port 5432/6543)
       });
       _db = drizzle(_client, { schema });
     } catch (error) {

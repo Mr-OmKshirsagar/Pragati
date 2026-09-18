@@ -182,8 +182,14 @@ export default function HodDashboard() {
   const [, navigate] = useLocation();
   const { role } = useAuth();
   const theme = getRoleSidebarTheme(role);
-  const summaryQuery = trpc.hod.getDepartmentSummary.useQuery();
-  const pendingRequestsQuery = trpc.hod.getPendingStudentRequests.useQuery();
+  const summaryQuery = trpc.hod.getDepartmentSummary.useQuery(undefined, {
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const pendingRequestsQuery = trpc.hod.getPendingStudentRequests.useQuery(undefined, {
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
   const analyticsQuery = (trpc as any).dashboard?.getHodAnalytics?.useQuery(undefined, {
     refetchOnWindowFocus: false,
   });

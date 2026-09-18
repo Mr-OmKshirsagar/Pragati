@@ -33,40 +33,38 @@ export async function getStudentAcademics(studentId: string): Promise<StudentAca
   const db = await getDb();
   if (!db) throw new Error("Database not connected");
 
-  // 1. Fetch semester academic records ordered by semester ascending
-  const records = await db
-    .select()
-    .from(academicRecords)
-    .where(eq(academicRecords.studentId, studentId))
-    .orderBy(asc(academicRecords.semester));
-
-  // 2. Fetch subject results with subject details
-  const results = await db
-    .select({
-      id: subjectResults.id,
-      semester: subjectResults.semester,
-      marks: subjectResults.marks,
-      grade: subjectResults.grade,
-      status: subjectResults.status,
-      subjectCode: subjects.code,
-      subjectName: subjects.name,
-    })
-    .from(subjectResults)
-    .innerJoin(subjects, eq(subjectResults.subjectId, subjects.id))
-    .where(eq(subjectResults.studentId, studentId));
-
-  // 3. Fetch backlogs with subject details
-  const backlogRows = await db
-    .select({
-      id: backlogs.id,
-      semester: backlogs.semester,
-      status: backlogs.status,
-      subjectCode: subjects.code,
-      subjectName: subjects.name,
-    })
-    .from(backlogs)
-    .innerJoin(subjects, eq(backlogs.subjectId, subjects.id))
-    .where(eq(backlogs.studentId, studentId));
+  // 1. Fetch semester academic records, subject results, and backlogs in parallel
+  const [records, results, backlogRows] = await Promise.all([
+    db
+      .select()
+      .from(academicRecords)
+      .where(eq(academicRecords.studentId, studentId))
+      .orderBy(asc(academicRecords.semester)),
+    db
+      .select({
+        id: subjectResults.id,
+        semester: subjectResults.semester,
+        marks: subjectResults.marks,
+        grade: subjectResults.grade,
+        status: subjectResults.status,
+        subjectCode: subjects.code,
+        subjectName: subjects.name,
+      })
+      .from(subjectResults)
+      .innerJoin(subjects, eq(subjectResults.subjectId, subjects.id))
+      .where(eq(subjectResults.studentId, studentId)),
+    db
+      .select({
+        id: backlogs.id,
+        semester: backlogs.semester,
+        status: backlogs.status,
+        subjectCode: subjects.code,
+        subjectName: subjects.name,
+      })
+      .from(backlogs)
+      .innerJoin(subjects, eq(backlogs.subjectId, subjects.id))
+      .where(eq(backlogs.studentId, studentId)),
+  ]);
 
   const activeBacklogsCount = backlogRows.filter((b) => b.status === "ACTIVE").length;
 

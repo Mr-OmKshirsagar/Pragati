@@ -76,35 +76,35 @@ export async function getStudentActiveInternship(studentProfileId: string) {
       .returning();
   }
 
-  // 2. Query all linked evidence documents
-  const evidenceRecords = await db
-    .select({
-      id: internshipEvidence.id,
-      internshipId: internshipEvidence.internshipId,
-      evidenceType: internshipEvidence.evidenceType,
-      status: internshipEvidence.status,
-      createdAt: internshipEvidence.createdAt,
-      documentId: evidenceDocuments.id,
-      filename: evidenceDocuments.filename,
-      storagePath: evidenceDocuments.storagePath,
-      mimeType: evidenceDocuments.mimeType,
-      fileSize: evidenceDocuments.fileSize,
-      sha256Hash: evidenceDocuments.sha256Hash,
-      verificationStatus: evidenceDocuments.verificationStatus,
-    })
-    .from(internshipEvidence)
-    .innerJoin(
-      evidenceDocuments,
-      eq(internshipEvidence.evidenceDocumentId, evidenceDocuments.id)
-    )
-    .where(eq(internshipEvidence.internshipId, activeInternship.id));
-
-  // 3. Query all progress check-ins
-  const checkins = await db
-    .select()
-    .from(internshipCheckins)
-    .where(eq(internshipCheckins.internshipId, activeInternship.id))
-    .orderBy(desc(internshipCheckins.createdAt));
+  // 2. Query all linked evidence documents and progress check-ins in parallel
+  const [evidenceRecords, checkins] = await Promise.all([
+    db
+      .select({
+        id: internshipEvidence.id,
+        internshipId: internshipEvidence.internshipId,
+        evidenceType: internshipEvidence.evidenceType,
+        status: internshipEvidence.status,
+        createdAt: internshipEvidence.createdAt,
+        documentId: evidenceDocuments.id,
+        filename: evidenceDocuments.filename,
+        storagePath: evidenceDocuments.storagePath,
+        mimeType: evidenceDocuments.mimeType,
+        fileSize: evidenceDocuments.fileSize,
+        sha256Hash: evidenceDocuments.sha256Hash,
+        verificationStatus: evidenceDocuments.verificationStatus,
+      })
+      .from(internshipEvidence)
+      .innerJoin(
+        evidenceDocuments,
+        eq(internshipEvidence.evidenceDocumentId, evidenceDocuments.id)
+      )
+      .where(eq(internshipEvidence.internshipId, activeInternship.id)),
+    db
+      .select()
+      .from(internshipCheckins)
+      .where(eq(internshipCheckins.internshipId, activeInternship.id))
+      .orderBy(desc(internshipCheckins.createdAt)),
+  ]);
 
   // 4. Determine milestone coverage
   const hasOfferLetter = evidenceRecords.some(

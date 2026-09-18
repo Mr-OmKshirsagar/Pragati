@@ -1,5 +1,8 @@
 import { TRPCError } from "@trpc/server";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
+import { auditLogs, departments, skillGaps, skills, users } from "../../drizzle/schema";
+import { getDb } from "../db";
 import { hodProcedure, requireRole, router } from "../_core/trpc";
 import * as approvalWorkflowService from "../services/approvalWorkflowService";
 import * as dashboardService from "../services/dashboardService";
@@ -230,8 +233,47 @@ export const hodRouter = router({
   // 8. Department Macro Summary & Analytics for HOD Dashboard
   getDepartmentSummary: hodProcedure.query(async ({ ctx }) => {
     try {
-      const db = await (await import("../db")).getDb();
-      const analytics = await dashboardService.getDepartmentAnalytics(ctx.user.departmentId || "");
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable." });
+      }
+
+      // Execute all 4 queries concurrently
+      const [analytics, gapRows, facultyRows, recentAudit] = await Promise.all([
+        dashboardService.getDepartmentAnalytics(ctx.user.departmentId || ""),
+        db
+          .select({
+            id: skillGaps.id,
+            skillName: skills.name,
+            severity: skillGaps.severity,
+            status: skillGaps.status,
+          })
+          .from(skillGaps)
+          .innerJoin(skills, eq(skillGaps.skillId, skills.id))
+          .where(eq(skillGaps.status, "OPEN"))
+          .limit(10),
+        db
+          .select({
+            id: users.id,
+            name: users.name,
+            role: users.role,
+          })
+          .from(users)
+          .where(
+            and(
+              eq(users.institutionId, ctx.user.institutionId),
+              eq(users.role, "FACULTY")
+            )
+          )
+          .limit(8),
+        db
+          .select()
+          .from(auditLogs)
+          .where(eq(auditLogs.institutionId, ctx.user.institutionId))
+          .orderBy(desc(auditLogs.createdAt))
+          .limit(4),
+      ]);
+
       const readinessScore = Math.round(
         (analytics.placementReadinessDistribution.totalEligible / Math.max(analytics.department.totalStudents, 1)) * 100
       ) || 79.4;
@@ -240,89 +282,47 @@ export const hodRouter = router({
       let realMentors: any[] = [];
       let realActivities: any[] = [];
 
-      if (db) {
-        const schema = await import("../../drizzle/schema");
-        const { eq, desc, and } = await import("drizzle-orm");
-
-        // Real skill gaps grouped
-        const gapRows = await db
-          .select({
-            id: schema.skillGaps.id,
-            skillName: schema.skills.name,
-            severity: schema.skillGaps.severity,
-            status: schema.skillGaps.status,
-          })
-          .from(schema.skillGaps)
-          .innerJoin(schema.skills, eq(schema.skillGaps.skillId, schema.skills.id))
-          .where(eq(schema.skillGaps.status, "OPEN"))
-          .limit(10);
-
-        if (gapRows.length > 0) {
-          const countsBySkill: Record<string, { count: number; severity: string }> = {};
-          for (const g of gapRows) {
-            if (!countsBySkill[g.skillName]) {
-              countsBySkill[g.skillName] = { count: 0, severity: g.severity || "HIGH" };
-            }
-            countsBySkill[g.skillName].count += 1;
+      if (gapRows.length > 0) {
+        const countsBySkill: Record<string, { count: number; severity: string }> = {};
+        for (const g of gapRows) {
+          if (!countsBySkill[g.skillName]) {
+            countsBySkill[g.skillName] = { count: 0, severity: g.severity || "HIGH" };
           }
-          realHotspots = Object.entries(countsBySkill).map(([name, val], i) => ({
-            skill: name,
-            code: `CS30${i + 1}`,
-            flaggedStudents: val.count,
-            avgScore: val.severity === "HIGH" ? 61 : 68,
-            benchmark: 75,
-            severity: val.severity as "HIGH" | "MEDIUM" | "LOW",
-            mentor: "Dr. Anand Verma",
-            status: "Remedial Workshop Active",
-          }));
+          countsBySkill[g.skillName].count += 1;
         }
+        realHotspots = Object.entries(countsBySkill).map(([name, val], i) => ({
+          skill: name,
+          code: `CS30${i + 1}`,
+          flaggedStudents: val.count,
+          avgScore: val.severity === "HIGH" ? 61 : 68,
+          benchmark: 75,
+          severity: val.severity as "HIGH" | "MEDIUM" | "LOW",
+          mentor: "Dr. Anand Verma",
+          status: "Remedial Workshop Active",
+        }));
+      }
 
-        // Real faculty mentors
-        const facultyRows = await db
-          .select({
-            id: schema.users.id,
-            name: schema.users.name,
-            role: schema.users.role,
-          })
-          .from(schema.users)
-          .where(
-            and(
-              eq(schema.users.institutionId, ctx.user.institutionId),
-              eq(schema.users.role, "FACULTY")
-            )
-          )
-          .limit(8);
+      if (facultyRows.length > 0) {
+        realMentors = facultyRows.map((f, idx) => ({
+          id: f.id,
+          name: f.name,
+          role: "Associate Professor",
+          wardsCount: 18 + (idx % 3) * 4,
+          flaggedCount: (idx % 3) + 1,
+          activeInterventions: 2 + (idx % 2),
+          complianceRate: 92 + (idx % 8),
+        }));
+      }
 
-        if (facultyRows.length > 0) {
-          realMentors = facultyRows.map((f, idx) => ({
-            id: f.id,
-            name: f.name,
-            role: "Associate Professor",
-            wardsCount: 18 + (idx % 3) * 4,
-            flaggedCount: (idx % 3) + 1,
-            activeInterventions: 2 + (idx % 2),
-            complianceRate: 92 + (idx % 8),
-          }));
-        }
-
-        // Real activities from audit logs
-        const recentAudit = await db
-          .select()
-          .from(schema.auditLogs)
-          .where(eq(schema.auditLogs.institutionId, ctx.user.institutionId))
-          .orderBy(desc(schema.auditLogs.createdAt))
-          .limit(4);
-
-        if (recentAudit.length > 0) {
-          realActivities = recentAudit.map((log) => ({
-            id: log.id,
-            title: log.action.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase()),
-            detail: `${log.resourceType}: ${(log.metadata as any)?.summary || log.resourceId || "Processed"}`,
-            time: log.createdAt ? new Date(log.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently",
-            badge: "Audit",
-            tone: "violet" as const,
-          }));
-        }
+      if (recentAudit.length > 0) {
+        realActivities = recentAudit.map((log) => ({
+          id: log.id,
+          title: log.action.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase()),
+          detail: `${log.resourceType}: ${(log.metadata as any)?.summary || log.resourceId || "Processed"}`,
+          time: log.createdAt ? new Date(log.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently",
+          badge: "Audit",
+          tone: "violet" as const,
+        }));
       }
 
       return {

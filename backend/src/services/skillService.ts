@@ -25,19 +25,19 @@ export async function getStudentSkillProfile(studentId: string): Promise<SkillPr
   const db = await getDb();
   if (!db) throw new Error("Database not connected");
 
-  // 1. Fetch all active skills
-  const allSkills = await db
-    .select()
-    .from(skills)
-    .where(eq(skills.isActive, true))
-    .orderBy(asc(skills.name));
-
-  // 2. Fetch all skill history for this student ordered by assessmentDate ascending
-  const historyRecords = await db
-    .select()
-    .from(skillHistory)
-    .where(eq(skillHistory.studentId, studentId))
-    .orderBy(asc(skillHistory.assessmentDate));
+  // 1. Fetch active skills and student skill history in parallel
+  const [allSkills, historyRecords] = await Promise.all([
+    db
+      .select()
+      .from(skills)
+      .where(eq(skills.isActive, true))
+      .orderBy(asc(skills.name)),
+    db
+      .select()
+      .from(skillHistory)
+      .where(eq(skillHistory.studentId, studentId))
+      .orderBy(asc(skillHistory.assessmentDate)),
+  ]);
 
   // 3. Group history by skillId
   const historyBySkill = new Map<string, typeof historyRecords>();
