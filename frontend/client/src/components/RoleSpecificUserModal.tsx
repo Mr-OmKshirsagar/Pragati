@@ -59,6 +59,15 @@ export default function RoleSpecificUserModal({
   const [sectionDivision, setSectionDivision] = useState("Div A");
   const [classId, setClassId] = useState("CSE-SEM6-A");
 
+  // Department Selection State
+  const departmentsQuery = trpc.admin.listDepartments.useQuery();
+  const departments = departmentsQuery.data || [
+    { id: "dept-cse-001", name: "Computer Science & Engineering", code: "CSE" },
+    { id: "dept-it-002", name: "Information Technology", code: "IT" },
+    { id: "dept-ece-003", name: "Electronics & Communication", code: "ECE" },
+  ];
+  const [selectedDeptId, setSelectedDeptId] = useState(departmentId || "dept-cse-001");
+
   // Faculty Form State
   const [facultyName, setFacultyName] = useState("");
   const [facultyEmail, setFacultyEmail] = useState("");
@@ -70,11 +79,12 @@ export default function RoleSpecificUserModal({
 
   // Reassignment Form State
   const [newRole, setNewRole] = useState<"FACULTY" | "HOD" | "TNP_COORDINATOR">("HOD");
-  const [reassignDeptId, setReassignDeptId] = useState(departmentId || "");
+  const [reassignDeptId, setReassignDeptId] = useState(departmentId || "dept-cse-001");
 
   const [submitting, setSubmitting] = useState(false);
 
-  // Mutations
+  // Queries & Mutations
+  const utils = trpc.useUtils();
   const submitStudentMutation = trpc.faculty.submitStudentEnrollment.useMutation();
   const requestFacultyMutation = trpc.hod.requestFaculty.useMutation();
   const reassignRoleMutation = trpc.admin.reassignFacultyDesignation.useMutation();
@@ -83,11 +93,13 @@ export default function RoleSpecificUserModal({
     e.preventDefault();
     setSubmitting(true);
 
+    const activeDeptId = selectedDeptId || departmentId || departments[0]?.id || "dept-cse-001";
+
     try {
       if (mode === "STUDENT_ENROLLMENT") {
         await submitStudentMutation.mutateAsync({
           classId,
-          departmentId,
+          departmentId: activeDeptId,
           studentData: {
             name: studentName,
             collegeEmail,
@@ -102,10 +114,13 @@ export default function RoleSpecificUserModal({
           },
         });
         toast.success(`Student enrollment request for ${studentName} submitted for HOD approval!`);
+        utils.hod.getPendingStudentRequests.invalidate();
+        utils.faculty.getWards.invalidate();
+        utils.admin.listStudents.invalidate();
       } else if (mode === "FACULTY_ONBOARDING") {
         await requestFacultyMutation.mutateAsync({
           requestType: "CREATE",
-          departmentId,
+          departmentId: activeDeptId,
           facultyData: {
             name: facultyName,
             email: facultyEmail,
@@ -117,13 +132,16 @@ export default function RoleSpecificUserModal({
           },
         });
         toast.success(`Faculty onboarding request for ${facultyName} submitted for Admin approval!`);
+        utils.admin.getPendingFacultyRequests.invalidate();
+        utils.admin.listFaculty.invalidate();
       } else if (mode === "ROLE_REASSIGNMENT" && targetUser) {
         await reassignRoleMutation.mutateAsync({
           facultyUserId: targetUser.id,
           newRole,
-          departmentId: reassignDeptId || undefined,
+          departmentId: reassignDeptId || activeDeptId,
         });
         toast.success(`Role reassigned: ${targetUser.name} is now ${newRole}!`);
+        utils.admin.listFaculty.invalidate();
       }
 
       onOpenChange(false);
@@ -268,7 +286,21 @@ export default function RoleSpecificUserModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1 sm:col-span-1">
+                  <Label className="text-xs font-semibold">Academic Department *</Label>
+                  <select
+                    className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    value={selectedDeptId}
+                    onChange={(e) => setSelectedDeptId(e.target.value)}
+                  >
+                    {departments.map((dept: any) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.name} ({dept.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Section / Division</Label>
                   <Input
@@ -345,6 +377,21 @@ export default function RoleSpecificUserModal({
                     className="h-9 text-xs"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Department Assignment *</Label>
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  value={selectedDeptId}
+                  onChange={(e) => setSelectedDeptId(e.target.value)}
+                >
+                  {departments.map((dept: any) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name} ({dept.code})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

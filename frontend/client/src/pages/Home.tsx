@@ -1,4 +1,5 @@
 import PragatiFrame from "@/components/PragatiFrame";
+import SkillGapAlert from "@/components/SkillGapAlert";
 import { trpc } from "@/lib/trpc";
 import type { Opportunity, StudentDashboard } from "@shared/pragati";
 import {
@@ -46,8 +47,8 @@ export default function Home() {
             <DashboardError onRetry={() => dashboardQuery.refetch()} />
           ) : (
             <StudentFullDashboard
-              data={dashboardQuery.data}
-              opportunities={opportunitiesQuery.data?.opportunities ?? []}
+              data={dashboardQuery.data as any}
+              opportunities={(opportunitiesQuery.data?.opportunities as any) ?? []}
               opportunitiesLoading={opportunitiesQuery.isLoading}
             />
           )}
@@ -66,7 +67,7 @@ function StudentFullDashboard({
   opportunities,
   opportunitiesLoading,
 }: {
-  data: any;
+  data: StudentDashboard;
   opportunities: Opportunity[];
   opportunitiesLoading: boolean;
 }) {
@@ -85,7 +86,7 @@ function StudentFullDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 items-start">
         {/* Left Column: Skill Gap Alert + Competencies Profile + Career Timeline */}
         <div className="space-y-6">
-          <TargetedSkillGapAlert data={data} />
+          <SkillGapAlert />
           <CompetencyProfileSection data={data} />
           <CareerTimelineSection data={data} />
         </div>
@@ -541,11 +542,10 @@ function CompetencyProfileSection({ data }: { data: StudentDashboard }) {
                     {skill.score}%
                   </span>
                   <span
-                    className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10.5px] font-bold ${
-                      isGap
+                    className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10.5px] font-bold ${isGap
                         ? "bg-amber-50 text-amber-800 border border-amber-200"
                         : "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    }`}
+                      }`}
                   >
                     {isGap ? (
                       <TrendingDown className="h-3 w-3 text-amber-600" />
@@ -559,9 +559,8 @@ function CompetencyProfileSection({ data }: { data: StudentDashboard }) {
 
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    isGap ? "bg-amber-500" : "bg-primary"
-                  }`}
+                  className={`h-full rounded-full transition-all duration-500 ${isGap ? "bg-amber-500" : "bg-primary"
+                    }`}
                   style={{ width: `${skill.score}%` }}
                 />
               </div>
@@ -609,13 +608,12 @@ function CareerTimelineSection({ data }: { data: StudentDashboard }) {
             <div key={`${event.year}-${event.title}`} className="flex items-start gap-4">
               <div className="flex flex-col items-center">
                 <div
-                  className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${
-                    isComplete
+                  className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${isComplete
                       ? "bg-emerald-600 text-white shadow-2xs"
                       : isCurrent
-                      ? "bg-cyan-600 text-white ring-4 ring-cyan-100 animate-pulse"
-                      : "bg-slate-100 text-slate-400 border border-slate-200"
-                  }`}
+                        ? "bg-cyan-600 text-white ring-4 ring-cyan-100 animate-pulse"
+                        : "bg-slate-100 text-slate-400 border border-slate-200"
+                    }`}
                 >
                   {isComplete ? <Check className="h-3.5 w-3.5" /> : idx + 1}
                 </div>
@@ -676,13 +674,12 @@ function NextBestActionsSection({ data }: { data: StudentDashboard }) {
               <div className="flex items-center gap-2">
                 <span className="font-bold text-slate-900">{action.title}</span>
                 <span
-                  className={`rounded px-1.5 py-0.2 text-[9.5px] font-bold uppercase ${
-                    action.tone === "amber"
+                  className={`rounded px-1.5 py-0.2 text-[9.5px] font-bold uppercase ${action.tone === "amber"
                       ? "bg-amber-50 text-amber-700 border border-amber-200"
                       : action.tone === "blue"
-                      ? "bg-blue-50 text-blue-700 border border-blue-200"
-                      : "bg-purple-50 text-purple-700 border border-purple-200"
-                  }`}
+                        ? "bg-blue-50 text-blue-700 border border-blue-200"
+                        : "bg-purple-50 text-purple-700 border border-purple-200"
+                    }`}
                 >
                   {action.tag}
                 </span>
@@ -759,24 +756,22 @@ function CorporateAttachmentCard({ data }: { data: StudentDashboard }) {
             >
               <div className="flex items-center gap-2">
                 <div
-                  className={`h-2 w-2 rounded-full ${
-                    isVerified
+                  className={`h-2 w-2 rounded-full ${isVerified
                       ? "bg-emerald-500"
                       : isPending
-                      ? "bg-amber-500 animate-pulse"
-                      : "bg-slate-300"
-                  }`}
+                        ? "bg-amber-500 animate-pulse"
+                        : "bg-slate-300"
+                    }`}
                 />
                 <span className="font-medium text-slate-700">{ev.label}</span>
               </div>
               <span
-                className={`text-[10.5px] font-semibold ${
-                  isVerified
+                className={`text-[10.5px] font-semibold ${isVerified
                     ? "text-emerald-700"
                     : isPending
-                    ? "text-amber-700"
-                    : "text-slate-400"
-                }`}
+                      ? "text-amber-700"
+                      : "text-slate-400"
+                  }`}
               >
                 {isVerified ? "Verified ✓" : isPending ? "Review Pending" : "Not Started"}
               </span>
@@ -839,11 +834,10 @@ function PlacementGatewaySection({
 
                 <div className="flex items-center gap-2">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                      isEligible
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isEligible
                         ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                         : "bg-amber-50 text-amber-700 border border-amber-200"
-                    }`}
+                      }`}
                   >
                     {isEligible ? "Eligible" : "Pending"}
                   </span>
@@ -914,11 +908,10 @@ function OpportunityCriteriaModal({
                 </span>
               </div>
               <span
-                className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                  crit.pass
+                className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${crit.pass
                     ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                     : "bg-amber-50 text-amber-700 border border-amber-200"
-                }`}
+                  }`}
               >
                 {crit.pass ? "Met" : "Not Met"}
               </span>

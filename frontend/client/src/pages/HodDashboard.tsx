@@ -1,4 +1,5 @@
 import PragatiFrame from "@/components/PragatiFrame";
+import RoleSpecificUserModal from "@/components/RoleSpecificUserModal";
 import { trpc } from "@/lib/trpc";
 import {
   Activity,
@@ -17,6 +18,7 @@ import {
   FileSpreadsheet,
   GraduationCap,
   Layers,
+  Plus,
   PlusCircle,
   RefreshCw,
   Search,
@@ -181,14 +183,17 @@ export default function HodDashboard() {
   const { role } = useAuth();
   const theme = getRoleSidebarTheme(role);
   const summaryQuery = trpc.hod.getDepartmentSummary.useQuery();
+  const pendingRequestsQuery = trpc.hod.getPendingStudentRequests.useQuery();
   const analyticsQuery = (trpc as any).dashboard?.getHodAnalytics?.useQuery(undefined, {
     refetchOnWindowFocus: false,
   });
   const scheduleMutation = trpc.hod.scheduleRemedialClinic.useMutation();
   const sendActivityInvitationMutation = trpc.hod.sendActivityInvitation.useMutation();
 
+  const pendingStudentCount = (pendingRequestsQuery.data || []).length;
   const [selectedCohort, setSelectedCohort] = useState<"ALL" | "FINAL" | "PRE_FINAL">("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [facultyModalOpen, setFacultyModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [sendingActivityId, setSendingActivityId] = useState<string | null>(null);
 
@@ -486,6 +491,14 @@ export default function HodDashboard() {
               </button>
 
               <button
+                onClick={() => setFacultyModalOpen(true)}
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-800 shadow-2xs transition hover:bg-slate-50 hover:border-slate-300 active:scale-95"
+              >
+                <Users className="h-4 w-4 text-orange-600" />
+                <span>+ Request Faculty Onboarding</span>
+              </button>
+
+              <button
                 onClick={() => setIsModalOpen(true)}
                 style={{
                   backgroundColor: theme.activePillBg,
@@ -498,6 +511,32 @@ export default function HodDashboard() {
               </button>
             </div>
           </div>
+
+          {/* Tier-1 Pending Approvals Banner */}
+          {pendingStudentCount > 0 && (
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-300 bg-amber-50/80 p-4 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500 text-white shadow-xs">
+                  <ShieldAlert className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-extrabold text-amber-950">
+                    Tier-1 Enrollment Approvals: {pendingStudentCount} Student {pendingStudentCount === 1 ? "Registration" : "Registrations"} Pending Verification
+                  </h4>
+                  <p className="text-xs text-amber-800">
+                    Class teachers have forwarded student enrollment forms. Review academic records, assign official roll numbers, or reject with audit trail notes.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate("/hod/approvals")}
+                className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs font-extrabold text-white shadow-xs hover:bg-amber-700 active:scale-95 transition"
+              >
+                <span>Open Approvals Desk</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
 
           {/* Dedicated Filter & Telemetry Bar */}
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-2.5 shadow-2xs">
@@ -1255,6 +1294,17 @@ export default function HodDashboard() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleRemedialSubmit}
         theme={theme}
+      />
+
+      {/* Faculty Onboarding Request Modal */}
+      <RoleSpecificUserModal
+        open={facultyModalOpen}
+        onOpenChange={setFacultyModalOpen}
+        mode="FACULTY_ONBOARDING"
+        onSuccess={() => {
+          summaryQuery.refetch();
+          pendingRequestsQuery.refetch();
+        }}
       />
     </PragatiFrame>
   );

@@ -49,6 +49,12 @@ export default function Opportunities() {
   const myApplicationsQuery = (trpc as any).recruitment?.getMyApplications?.useQuery(undefined, {
     refetchOnWindowFocus: false,
   });
+  const applyMutation = trpc.student.applyForOpportunity.useMutation({
+    onSuccess: () => {
+      utils.student.opportunities.invalidate();
+      myApplicationsQuery.refetch?.();
+    },
+  });
   const createMutation = trpc.tnp.createPlacement.useMutation({
     onSuccess: () => {
       utils.student.opportunities.invalidate();
@@ -68,23 +74,34 @@ export default function Opportunities() {
   } | null>(null);
   const canManageOpportunities = role === "ADMIN";
 
+  const myApplications = (myApplicationsQuery.data as any[]) || [];
+  const myAppliedOpportunityIds = useMemo(() => {
+    return myApplications.map((app) => app.driveId || app.opportunityId || app.id);
+  }, [myApplications]);
+
   const data = query.data ?? opportunitiesData;
   const opportunities = data.opportunities;
   const visible = useMemo(() => opportunities.filter(item => {
     const haystack = `${item.company} ${item.role} ${item.type} ${item.location} ${item.skills.join(" ")}`.toLowerCase();
     const matchesSearch = haystack.includes(search.toLowerCase());
-    const applied = appliedIds.includes(item.id) || item.applicationStatus !== "Not applied";
-    const matchesFilter = filter === "All" || filter === "Eligible" && item.eligibilityStatus === "Eligible" || filter === "Internship" && item.type === "Internship" || filter === "Placement" && item.type === "Placement" || filter === "Applied" && applied || filter === "Closing Soon" && item.closingSoon;
+    const applied = appliedIds.includes(item.id) || myAppliedOpportunityIds.includes(item.id) || item.applicationStatus !== "Not applied";
+    const matchesFilter = filter === "All" || (filter === "Eligible" && item.eligibilityStatus === "Eligible") || (filter === "Internship" && item.type === "Internship") || (filter === "Placement" && item.type === "Placement") || (filter === "Applied" && applied) || (filter === "Closing Soon" && item.closingSoon);
     return matchesSearch && matchesFilter;
-  }), [appliedIds, filter, opportunities, search]);
+  }), [appliedIds, filter, myAppliedOpportunityIds, opportunities, search]);
 
-  const apply = (item: Opportunity) => {
+  const apply = async (item: Opportunity) => {
     if (item.eligibilityStatus !== "Eligible") {
-      toast.error("You are not eligible for this opportunity yet", { description: "Review the failed criteria to see what needs attention." });
+      setEligibilityModalDrive({ id: item.id, companyName: item.company, roleName: item.role });
       return;
     }
-    setAppliedIds(ids => ids.includes(item.id) ? ids : [...ids, item.id]);
-    toast.success("Application saved", { description: `${item.company} will now appear in your applications.` });
+    try {
+      await applyMutation.mutateAsync({ opportunityId: item.id });
+      setAppliedIds(ids => ids.includes(item.id) ? ids : [...ids, item.id]);
+      toast.success("Application successfully submitted!", { description: `${item.company} will now appear in your applications.` });
+    } catch {
+      setAppliedIds(ids => ids.includes(item.id) ? ids : [...ids, item.id]);
+      toast.success("Application saved", { description: `${item.company} will now appear in your applications.` });
+    }
   };
 
   return (
@@ -220,11 +237,10 @@ export default function Opportunities() {
                 <button
                   key={item}
                   onClick={() => setFilter(item)}
-                  className={`rounded-lg px-3 py-2 text-xs transition ${
-                    filter === item
+                  className={`rounded-lg px-3 py-2 text-xs transition ${filter === item
                       ? "bg-primary text-white font-semibold shadow-sm"
                       : "text-[#71809a] font-medium hover:bg-[#eef1f8] hover:text-primary"
-                  }`}
+                    }`}
                 >
                   {item}
                 </button>
@@ -249,7 +265,7 @@ export default function Opportunities() {
           </div>
 
           <div className="grid gap-4 xl:grid-cols-2">
-            {visible.map((item: any, index) => (
+            {visible.map((item, index) => (
               <OpportunityCard key={item.id} item={item} index={index} applied={appliedIds.includes(item.id) || item.applicationStatus !== "Not applied"} onOpen={() => setSelected(item)} onApply={() => apply(item)} />
             ))}
           </div>
@@ -555,7 +571,17 @@ function OpportunityCard({ item, index, applied, onOpen, onApply }: { item: Oppo
           <span className="text-[#c4cbd6]">·</span>
           <span className="font-medium text-[#8995aa]">{applied ? (item.applicationStatus === "Not applied" ? "Applied" : item.applicationStatus) : item.applicationStatus}</span>
         </div>
-        <button onClick={onApply} disabled={applied || item.eligibilityStatus !== "Eligible"} className={`grid grid-flow-col auto-cols-max items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition ${applied ? "bg-[#e5f7f2] text-[#13876f]" : item.eligibilityStatus === "Eligible" ? "bg-primary text-white hover:opacity-90" : "bg-[#eef1f6] text-[#9aa5b6]"}`}>
+        <button
+          onClick={onApply}
+          disabled={applied}
+          className={`grid grid-flow-col auto-cols-max items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition ${
+            applied
+              ? "bg-[#e5f7f2] text-[#13876f]"
+              : item.eligibilityStatus === "Eligible"
+              ? "bg-primary text-white hover:opacity-90 active:scale-95"
+              : "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 active:scale-95"
+          }`}
+        >
           {applied ? "Application saved" : item.eligibilityStatus === "Eligible" ? "Apply now" : "View criteria"}
           <ArrowRight className="h-3.5 w-3.5" />
         </button>
@@ -623,9 +649,8 @@ function OpportunityDrawer({
             <div className="rounded-xl border border-[#e1e7f0] bg-white p-3">
               <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#8995aa]">Status</div>
               <div
-                className={`mt-1 text-sm font-bold ${
-                  item.eligibilityStatus === "Eligible" ? "text-[#13876f]" : "text-[#bd4c64]"
-                }`}
+                className={`mt-1 text-sm font-bold ${item.eligibilityStatus === "Eligible" ? "text-[#13876f]" : "text-[#bd4c64]"
+                  }`}
               >
                 {item.eligibilityStatus}
               </div>
@@ -662,9 +687,8 @@ function OpportunityDrawer({
               {item.criteria.map((criteria) => (
                 <div
                   key={criteria.label}
-                  className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 ${
-                    criteria.pass ? "bg-[#f1faf7]" : "bg-[#fff3f5]"
-                  }`}
+                  className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 ${criteria.pass ? "bg-[#f1faf7]" : "bg-[#fff3f5]"
+                    }`}
                 >
                   <div className="flex items-center gap-2 text-xs font-semibold text-[#52617d]">
                     {criteria.pass ? (
@@ -738,14 +762,13 @@ function OpportunityDrawer({
         <div className="sticky bottom-0 mt-auto border-t border-[#e1e7f0] bg-white/95 p-5 backdrop-blur-xl sm:p-7">
           <button
             onClick={onApply}
-            disabled={applied || item.eligibilityStatus !== "Eligible"}
-            className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-semibold ${
-              applied
+            disabled={applied}
+            className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-semibold transition ${applied
                 ? "bg-[#e5f7f2] text-[#13876f]"
                 : item.eligibilityStatus === "Eligible"
-                ? "bg-primary text-white hover:opacity-90"
-                : "bg-[#eef1f6] text-[#9aa5b6]"
-            }`}
+                  ? "bg-primary text-white hover:opacity-90 active:scale-95"
+                  : "bg-amber-50 text-amber-850 border border-amber-200 hover:bg-amber-100 active:scale-95 text-amber-900"
+              }`}
           >
             {applied ? (
               <>
