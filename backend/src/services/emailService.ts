@@ -36,12 +36,17 @@ interface SmtpConfig {
 function getSmtpConfig(): SmtpConfig | null {
   const host = process.env.SMTP_HOST;
   const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  let pass = process.env.SMTP_PASS;
   const from = process.env.SMTP_FROM || process.env.EMAIL_FROM || user;
   const port = Number(process.env.SMTP_PORT || "587");
 
   if (!host || !user || !pass || !from || Number.isNaN(port)) {
     return null;
+  }
+
+  pass = pass.replace(/^["']|["']$/g, "").trim();
+  if (host.includes("gmail.com")) {
+    pass = pass.replace(/\s+/g, "");
   }
 
   return {
@@ -314,13 +319,15 @@ export async function sendInstitutionalEmail(
     await smtp.sendCommand("AUTH LOGIN", 334);
     await smtp.sendCommand(encodeBase64(config.user), 334);
     await smtp.sendCommand(encodeBase64(config.pass), 235);
-    await smtp.sendCommand(`MAIL FROM:<${config.from}>`, 250);
+    const envelopeSender = config.host.includes("gmail.com") ? config.user : config.from;
+    await smtp.sendCommand(`MAIL FROM:<${envelopeSender}>`, 250);
     await smtp.sendCommand(`RCPT TO:<${targetRecipient}>`, [250, 251]);
     await smtp.sendCommand("DATA", 354);
 
     const boundary = `----=_Part_${Date.now()}`;
     const message = [
-      `From: PRAGATI Platform <${config.from}>`,
+      `From: PRAGATI Platform <${envelopeSender}>`,
+      `Reply-To: ${config.from}`,
       `To: ${targetRecipient}`,
       `Subject: ${finalSubject}`,
       `Date: ${new Date().toUTCString()}`,
