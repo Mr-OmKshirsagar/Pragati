@@ -38,7 +38,7 @@ export default function Home() {
   const opportunitiesQuery = trpc.student.opportunities.useQuery();
 
   return (
-    <PragatiFrame title="Overview" activePath="/overview">
+    <PragatiFrame title="Overview" activePath="/student/overview">
       <main className="min-h-[calc(100vh-70px)] bg-[#F8FAFC] px-4 py-6 sm:px-8 xl:px-10 pb-24 text-[#1C2128]">
         <div className="mx-auto max-w-[1280px] space-y-6">
           {dashboardQuery.isLoading ? (
@@ -147,7 +147,7 @@ function CapabilityHeroBanner({ data }: { data: StudentDashboard }) {
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           <button
-            onClick={() => navigate("/skills")}
+            onClick={() => navigate("/student/skills")}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-950/20 hover:from-[#EA580C] hover:to-[#C2410C] active:scale-95 transition-all"
           >
             <FileText className="h-4 w-4" />
@@ -155,7 +155,7 @@ function CapabilityHeroBanner({ data }: { data: StudentDashboard }) {
           </button>
 
           <button
-            onClick={() => navigate("/career-passport")}
+            onClick={() => navigate("/student/career-passport")}
             className="inline-flex items-center gap-2 rounded-xl border border-[#dfe5ef] bg-white px-4 py-2.5 text-xs font-bold text-[#334155] shadow-xs hover:bg-slate-50 active:scale-95 transition-all"
           >
             <BookOpen className="h-4 w-4 text-primary" />
@@ -217,7 +217,7 @@ function CareerReadinessScorecardSection({ data }: { data: any }) {
           </div>
 
           <button
-            onClick={() => window.location.assign("/career-passport")}
+            onClick={() => window.location.assign("/student/career-passport")}
             className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-slate-800 active:scale-95 transition shadow-xs"
           >
             <BookOpen className="h-3.5 w-3.5 text-cyan-300" />
@@ -346,7 +346,7 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
       delta: "+0.18 vs last semester",
       icon: GraduationCap,
       color: "bg-blue-50 text-blue-700",
-      link: "/progress",
+      link: "/student/progress",
       actionText: "View transcript",
     },
     {
@@ -355,7 +355,7 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
       delta: "+2 this semester",
       icon: Target,
       color: "bg-emerald-50 text-emerald-700",
-      link: "/skills",
+      link: "/student/skills",
       actionText: "Skill framework",
     },
     {
@@ -364,7 +364,7 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
       delta: "09 verified across 4 categories",
       icon: Award,
       color: "bg-purple-50 text-purple-700",
-      link: "/achievements",
+      link: "/student/achievements",
       actionText: "Verified ledger",
     },
     {
@@ -373,7 +373,7 @@ function StudentMetricsRow({ data }: { data: StudentDashboard }) {
       delta: "Atlas Labs · 68% completed",
       icon: Briefcase,
       color: "bg-amber-50 text-amber-700",
-      link: "/internship",
+      link: "/student/internship",
       actionText: "Evidence status",
     },
   ];
@@ -484,7 +484,7 @@ function TargetedSkillGapAlert({ data }: { data: StudentDashboard }) {
         </span>
 
         <button
-          onClick={() => navigate("/mentoring")}
+          onClick={() => navigate("/student/mentoring")}
           className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all"
         >
           <span>Schedule Mentoring Session</span>
@@ -512,7 +512,7 @@ function CompetencyProfileSection({ data }: { data: StudentDashboard }) {
         </div>
 
         <button
-          onClick={() => navigate("/skills")}
+          onClick={() => navigate("/student/skills")}
           className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
         >
           Full Skill Matrix
@@ -570,7 +570,7 @@ function CompetencyProfileSection({ data }: { data: StudentDashboard }) {
                   History: {skill.series.join(" → ")}%
                 </span>
                 <button
-                  onClick={() => navigate("/skills")}
+                  onClick={() => navigate("/student/skills")}
                   className="font-semibold text-primary hover:text-blue-700 flex items-center gap-1"
                 >
                   <span>Assessment history</span>
@@ -689,9 +689,9 @@ function NextBestActionsSection({ data }: { data: StudentDashboard }) {
 
             <button
               onClick={() => {
-                if (action.title.includes("OS mentoring")) navigate("/mentoring");
-                else if (action.title.includes("internship")) navigate("/internship");
-                else navigate("/opportunities");
+                if (action.title.includes("OS mentoring")) navigate("/student/mentoring");
+                else if (action.title.includes("internship")) navigate("/student/internship");
+                else navigate("/student/opportunities");
               }}
               className="shrink-0 text-slate-400 hover:text-primary pt-1"
             >
@@ -722,7 +722,7 @@ function CorporateAttachmentCard({ data }: { data: StudentDashboard }) {
           </p>
         </div>
         <button
-          onClick={() => navigate("/internship")}
+          onClick={() => navigate("/student/internship")}
           className="text-xs font-semibold text-primary hover:text-blue-700"
         >
           Manage
@@ -807,7 +807,7 @@ function PlacementGatewaySection({
           <p className="text-[11px] text-slate-500">Corporate recruitment drives</p>
         </div>
         <button
-          onClick={() => navigate("/opportunities")}
+          onClick={() => navigate("/student/opportunities")}
           className="text-xs font-semibold text-primary hover:text-blue-700"
         >
           View All ({opportunities.length})
@@ -927,7 +927,7 @@ function OpportunityCriteriaModal({
             Close
           </button>
           <button
-            onClick={() => navigate("/opportunities")}
+            onClick={() => navigate("/student/opportunities")}
             className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 shadow-xs transition-colors"
           >
             Go to Drive Application

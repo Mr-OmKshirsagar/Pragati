@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth, type UserRole } from "@/contexts/AuthContext";
+import { useAuth, type UserRole, ROLE_CONFIG } from "@/contexts/AuthContext";
 import { getRoleSidebarTheme } from "@/lib/roleTheme";
 import { useLocation } from "wouter";
 import {
@@ -75,7 +75,7 @@ export default function Login() {
   const handleSelectRole = async (role: UserRole) => {
     setSelectedRole(role);
     await loginWithDemo(role);
-    setLocation("/dashboard");
+    setLocation(ROLE_CONFIG[role].defaultPath);
   };
 
   return (

@@ -49,14 +49,14 @@ const studentSections: NavSection[] = [
   {
     title: "LEARNER WORKSPACE",
     items: [
-      { label: "Overview", path: "/overview", icon: LayoutDashboard },
-      { label: "My progress", path: "/progress", icon: TrendingUp },
-      { label: "My classes & attendance", path: "/academics", icon: BookOpen },
-      { label: "Skills & assessments", path: "/skills", icon: Activity },
-      { label: "Achievements", path: "/achievements", icon: Award },
-      { label: "Internship evidence", path: "/internship", icon: BriefcaseBusiness },
-      { label: "Opportunities", path: "/opportunities", icon: Target },
-      { label: "Career Passport", path: "/career-passport", icon: Route },
+      { label: "Overview", path: "/student/overview", icon: LayoutDashboard },
+      { label: "My progress", path: "/student/progress", icon: TrendingUp },
+      { label: "My classes & attendance", path: "/student/academics", icon: BookOpen },
+      { label: "Skills & assessments", path: "/student/skills", icon: Activity },
+      { label: "Achievements", path: "/student/achievements", icon: Award },
+      { label: "Internship evidence", path: "/student/internship", icon: BriefcaseBusiness },
+      { label: "Opportunities", path: "/student/opportunities", icon: Target },
+      { label: "Career Passport", path: "/student/career-passport", icon: Route },
     ],
   },
 ];
@@ -65,15 +65,16 @@ const facultySections: NavSection[] = [
   {
     title: "FACULTY DESK",
     items: [
-      { label: "Assigned Wards", path: "/faculty", icon: UsersRound },
-      { label: "Academics & Attendance", path: "/academics", icon: BookOpen },
-      { label: "Mentoring Logs", path: "/mentoring", icon: Route },
+      { label: "Assigned Wards", path: "/faculty/wards", icon: UsersRound },
+      { label: "Academics & Attendance", path: "/faculty/academics", icon: BookOpen },
+      { label: "Mentoring Logs", path: "/faculty/mentoring", icon: Route },
     ],
   },
   {
     title: "ACADEMIC REVIEW",
     items: [
-      { label: "Internship Approvals", path: "/internship", icon: BriefcaseBusiness },
+      { label: "Internship Approvals", path: "/faculty/internships", icon: BriefcaseBusiness },
+      { label: "Skills Diagnostics", path: "/faculty/skills", icon: Activity },
     ],
   },
 ];
@@ -82,17 +83,17 @@ const hodSections: NavSection[] = [
   {
     title: "DEPARTMENT DESK",
     items: [
-      { label: "Department Overview", path: "/overview", icon: LayoutDashboard },
+      { label: "Department Overview", path: "/hod/overview", icon: LayoutDashboard },
       { label: "Student Approvals", path: "/hod/approvals", icon: UserCheck },
-      { label: "Faculty & Wards", path: "/faculty", icon: UsersRound },
+      { label: "Faculty & Wards", path: "/hod/faculty", icon: UsersRound },
     ],
   },
   {
     title: "ACADEMIC & PLACEMENT",
     items: [
-      { label: "Academics & Attendance", path: "/academics", icon: BookOpen },
-      { label: "Skills Analytics", path: "/skills", icon: Activity },
-      { label: "Opportunities", path: "/opportunities", icon: Target },
+      { label: "Academics & Attendance", path: "/hod/academics", icon: BookOpen },
+      { label: "Skills Analytics", path: "/hod/skills", icon: Activity },
+      { label: "Opportunities", path: "/hod/opportunities", icon: Target },
     ],
   },
 ];
@@ -103,7 +104,7 @@ const adminSections: NavSection[] = [
     items: [
       { label: "Overview", path: "/admin/overview", icon: LayoutDashboard },
       { label: "Approvals Desk", path: "/admin/approvals", icon: UserCheck },
-      { label: "Faculty & Wards", path: "/faculty", icon: UsersRound },
+      { label: "Faculty & Wards", path: "/admin/faculty", icon: UsersRound },
     ],
   },
   {
@@ -117,7 +118,7 @@ const adminSections: NavSection[] = [
   {
     title: "ACADEMICS & GOVERNANCE",
     items: [
-      { label: "Skills Analytics", path: "/skills", icon: Activity },
+      { label: "Skills Analytics", path: "/admin/skills", icon: Activity },
       { label: "System Health", path: "/admin/system-health", icon: Activity },
     ],
   },
@@ -477,10 +478,18 @@ function NavGroup({
           const Icon = item.icon;
           const active =
             activePath === item.path ||
-            (item.path === "/overview" &&
-              (activePath === "/dashboard" || activePath === "/hod")) ||
-            (item.path === "/skills" &&
-              (activePath === "/skills" || activePath.startsWith("/assessments")));
+            (item.path !== "/student/overview" &&
+              item.path !== "/faculty/wards" &&
+              item.path !== "/hod/overview" &&
+              item.path !== "/admin/overview" &&
+              activePath.startsWith(`${item.path}/`)) ||
+            (item.path.endsWith("/overview") &&
+              (activePath === "/overview" ||
+                activePath === "/dashboard" ||
+                activePath.endsWith("/overview") ||
+                activePath.endsWith("/dashboard"))) ||
+            (item.path.endsWith("/skills") &&
+              (activePath.includes("/skills") || activePath.includes("/assessments")));
 
           return (
             <Link

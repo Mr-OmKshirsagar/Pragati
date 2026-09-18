@@ -47,18 +47,30 @@ import HodApprovals from "./pages/HodApprovals";
 import AdminApprovals from "./pages/AdminApprovals";
 import FirstLoginPasswordReset from "./pages/FirstLoginPasswordReset";
 import AcademicsWorkspace from "./pages/AcademicsWorkspace";
-import { Route, Switch } from "wouter";
+import { useEffect } from "react";
+import { Route, Switch, useLocation } from "wouter";
+import type { PragatiRole } from "@/contexts/AuthContext";
 
 const Internship = () => <WorkspacePage kind="internship" />;
 const Passport   = () => <CareerPassport />;
 const Mentoring  = () => <WorkspacePage kind="mentoring" />;
 
-function RoleAwareDashboard() {
+function RoleRedirect({
+  routes,
+  fallback = "/student/overview",
+}: {
+  routes: Partial<Record<PragatiRole, string>>;
+  fallback?: string;
+}) {
   const { role } = useAuth();
-  if (role === "ADMIN") return <AdminOverview />;
-  if (role === "HOD") return <HodDashboard />;
-  if (role === "FACULTY") return <FacultyWards />;
-  return <Home />;
+  const [, navigate] = useLocation();
+  const destination = routes[role] || fallback;
+
+  useEffect(() => {
+    navigate(destination, { replace: true });
+  }, [destination, navigate]);
+
+  return null;
 }
 
 function Router() {
@@ -76,69 +88,206 @@ function Router() {
       <Route path="/login-personas" component={Login} />
       <Route path="/reset-initial-password" component={FirstLoginPasswordReset} />
 
-      {/* ── Role-aware Overview / Dashboard ── */}
-      <Route path="/overview">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><RoleAwareDashboard /></ProtectedRoute>}
+      {/* ══════════════════════════════════════════════════════════════════════
+          1. STUDENT WORKSPACE ROUTES (/student/*)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <Route path="/student/overview">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Home /></ProtectedRoute>}
       </Route>
-      <Route path="/dashboard">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><RoleAwareDashboard /></ProtectedRoute>}
+      <Route path="/student/progress">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Progress /></ProtectedRoute>}
       </Route>
-      <Route path="/hod">
+      <Route path="/student/academics">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><AcademicsWorkspace /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/skills">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Skills /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/assessments">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Assessment /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/assessments/:id">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><AssessmentOverview /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/assessments/:id/attempt/:attemptId">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><AssessmentAttempt /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/assessments/:id/review/:attemptId">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><AssessmentReview /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/assessments/:id/result/:attemptId">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><AssessmentResult /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/achievements">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Achievements /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/career-passport">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Passport /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/internship">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Internship /></ProtectedRoute>}
+      </Route>
+      <Route path="/student/opportunities">
+        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Opportunities /></ProtectedRoute>}
+      </Route>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          2. FACULTY WORKSPACE ROUTES (/faculty/*)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <Route path="/faculty/overview">
+        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><FacultyWards /></ProtectedRoute>}
+      </Route>
+      <Route path="/faculty/wards">
+        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><FacultyWards /></ProtectedRoute>}
+      </Route>
+      <Route path="/faculty/academics">
+        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><AcademicsWorkspace /></ProtectedRoute>}
+      </Route>
+      <Route path="/faculty/mentoring">
+        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><Mentoring /></ProtectedRoute>}
+      </Route>
+      <Route path="/faculty/internships">
+        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><Internship /></ProtectedRoute>}
+      </Route>
+      <Route path="/faculty/skills">
+        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><Skills /></ProtectedRoute>}
+      </Route>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          3. HOD WORKSPACE ROUTES (/hod/*)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <Route path="/hod/overview">
         {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><HodDashboard /></ProtectedRoute>}
       </Route>
       <Route path="/hod/approvals">
         {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><HodApprovals /></ProtectedRoute>}
       </Route>
+      <Route path="/hod/faculty">
+        {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><FacultyWards /></ProtectedRoute>}
+      </Route>
+      <Route path="/hod/academics">
+        {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><AcademicsWorkspace /></ProtectedRoute>}
+      </Route>
+      <Route path="/hod/skills">
+        {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><Skills /></ProtectedRoute>}
+      </Route>
+      <Route path="/hod/opportunities">
+        {() => <ProtectedRoute allowedRoles={["HOD", "ADMIN"]}><Opportunities /></ProtectedRoute>}
+      </Route>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          4. LEGACY ROOT SHIMS (Redirect to Role-Scoped URLs)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <Route path="/overview">
+        {() => (
+          <RoleRedirect
+            routes={{
+              STUDENT: "/student/overview",
+              FACULTY: "/faculty/wards",
+              HOD: "/hod/overview",
+              ADMIN: "/admin/overview",
+            }}
+          />
+        )}
+      </Route>
+      <Route path="/dashboard">
+        {() => (
+          <RoleRedirect
+            routes={{
+              STUDENT: "/student/overview",
+              FACULTY: "/faculty/wards",
+              HOD: "/hod/overview",
+              ADMIN: "/admin/overview",
+            }}
+          />
+        )}
+      </Route>
+      <Route path="/hod">
+        {() => <RoleRedirect routes={{ HOD: "/hod/overview", ADMIN: "/hod/overview" }} fallback="/hod/overview" />}
+      </Route>
+      <Route path="/faculty">
+        {() => <RoleRedirect routes={{ FACULTY: "/faculty/wards", HOD: "/hod/faculty", ADMIN: "/admin/faculty" }} fallback="/faculty/wards" />}
+      </Route>
       <Route path="/progress">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Progress /></ProtectedRoute>}
+        {() => <RoleRedirect routes={{ STUDENT: "/student/progress" }} fallback="/student/progress" />}
+      </Route>
+      <Route path="/academics">
+        {() => (
+          <RoleRedirect
+            routes={{
+              STUDENT: "/student/academics",
+              FACULTY: "/faculty/academics",
+              HOD: "/hod/academics",
+              ADMIN: "/admin/academics",
+            }}
+          />
+        )}
       </Route>
       <Route path="/skills">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "HOD", "ADMIN"]}><Skills /></ProtectedRoute>}
+        {() => (
+          <RoleRedirect
+            routes={{
+              STUDENT: "/student/skills",
+              FACULTY: "/faculty/skills",
+              HOD: "/hod/skills",
+              ADMIN: "/admin/skills",
+            }}
+          />
+        )}
       </Route>
       <Route path="/assessments">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><Assessment /></ProtectedRoute>}
+        {() => <RoleRedirect routes={{ STUDENT: "/student/assessments" }} fallback="/student/assessments" />}
       </Route>
       <Route path="/assessments/:id">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><AssessmentOverview /></ProtectedRoute>}
+        {(params) => <RoleRedirect routes={{ STUDENT: `/student/assessments/${params.id}` }} fallback={`/student/assessments/${params.id}`} />}
       </Route>
       <Route path="/assessments/:id/attempt/:attemptId">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><AssessmentAttempt /></ProtectedRoute>}
+        {(params) => <RoleRedirect routes={{ STUDENT: `/student/assessments/${params.id}/attempt/${params.attemptId}` }} fallback={`/student/assessments/${params.id}/attempt/${params.attemptId}`} />}
       </Route>
       <Route path="/assessments/:id/review/:attemptId">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><AssessmentReview /></ProtectedRoute>}
+        {(params) => <RoleRedirect routes={{ STUDENT: `/student/assessments/${params.id}/review/${params.attemptId}` }} fallback={`/student/assessments/${params.id}/review/${params.attemptId}`} />}
       </Route>
       <Route path="/assessments/:id/result/:attemptId">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><AssessmentResult /></ProtectedRoute>}
+        {(params) => <RoleRedirect routes={{ STUDENT: `/student/assessments/${params.id}/result/${params.attemptId}` }} fallback={`/student/assessments/${params.id}/result/${params.attemptId}`} />}
       </Route>
       <Route path="/achievements">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Achievements /></ProtectedRoute>}
+        {() => <RoleRedirect routes={{ STUDENT: "/student/achievements" }} fallback="/student/achievements" />}
       </Route>
       <Route path="/career-passport">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}><Passport /></ProtectedRoute>}
-      </Route>
-      <Route path="/mentoring">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Mentoring /></ProtectedRoute>}
-      </Route>
-
-      {/* ── Shared: STUDENT + FACULTY + ADMIN ── */}
-      <Route path="/academics">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "HOD", "ADMIN"]}><AcademicsWorkspace /></ProtectedRoute>}
+        {() => <RoleRedirect routes={{ STUDENT: "/student/career-passport" }} fallback="/student/career-passport" />}
       </Route>
       <Route path="/internship">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Internship /></ProtectedRoute>}
+        {() => (
+          <RoleRedirect
+            routes={{
+              STUDENT: "/student/internship",
+              FACULTY: "/faculty/internships",
+              ADMIN: "/admin/internships",
+            }}
+          />
+        )}
       </Route>
-
-      {/* ── STUDENT + HOD + ADMIN ── */}
       <Route path="/opportunities">
-        {() => <ProtectedRoute allowedRoles={["STUDENT", "HOD", "ADMIN"]}><Opportunities /></ProtectedRoute>}
+        {() => (
+          <RoleRedirect
+            routes={{
+              STUDENT: "/student/opportunities",
+              HOD: "/hod/opportunities",
+              ADMIN: "/admin/placement",
+            }}
+          />
+        )}
       </Route>
-
-      {/* ── FACULTY + HOD + ADMIN ── */}
-      <Route path="/faculty">
-        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><FacultyWards /></ProtectedRoute>}
-      </Route>
-      <Route path="/faculty/wards">
-        {() => <ProtectedRoute allowedRoles={["FACULTY", "HOD", "ADMIN"]}><FacultyWards /></ProtectedRoute>}
+      <Route path="/mentoring">
+        {() => (
+          <RoleRedirect
+            routes={{
+              STUDENT: "/student/mentoring",
+              FACULTY: "/faculty/mentoring",
+              ADMIN: "/admin/overview",
+            }}
+          />
+        )}
       </Route>
 
       {/* ── ADMIN ROUTES ── */}

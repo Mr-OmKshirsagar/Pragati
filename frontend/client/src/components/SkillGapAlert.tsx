@@ -166,7 +166,7 @@ export default function SkillGapAlert() {
           Detected automatically by the deterministic PRAGATI Skill Engine.
         </span>
         <button
-          onClick={() => navigate("/progress")}
+          onClick={() => navigate("/student/progress")}
           className="flex items-center gap-1.5 rounded-xl bg-[#9a6318] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#784c10]"
         >
           View Progress &amp; Interventions <ArrowRight className="h-3.5 w-3.5" />

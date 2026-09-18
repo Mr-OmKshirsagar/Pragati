@@ -185,12 +185,12 @@ export default function AssessmentAttemptPage() {
   }, []);
 
   const handleConfirmExit = useCallback(() => {
-    navigate("/assessments");
+    navigate("/student/assessments");
   }, [navigate]);
 
   const handleSubmitAssessment = useCallback(() => {
     state.setPhase("REVIEW");
-    navigate(`/assessments/${assessmentId}/result/${attemptId}`);
+    navigate(`/student/assessments/${assessmentId}/result/${attemptId}`);
   }, [state, assessmentId, attemptId, navigate]);
 
   if (isLoading) {

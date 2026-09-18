@@ -457,7 +457,7 @@ export default function HodDashboard() {
   };
 
   return (
-    <PragatiFrame title="Department Overview" activePath="/overview">
+    <PragatiFrame title="Department Overview" activePath="/hod/overview">
       <main className="dashboard-grid min-h-[calc(100vh-70px)] px-4 pb-14 pt-7 sm:px-7 xl:px-10">
         <div className="mx-auto max-w-[1340px]">
           {/* Executive Header Section */}
@@ -724,7 +724,7 @@ export default function HodDashboard() {
                   <h2 className="text-lg font-extrabold text-[#17243e]">Drive Eligibility Pipeline</h2>
                 </div>
                 <button
-                  onClick={() => navigate("/opportunities")}
+                  onClick={() => navigate("/hod/opportunities")}
                   className="flex items-center gap-1 text-xs font-bold hover:underline"
                   style={{ color: theme.activePillBg }}
                 >
@@ -862,7 +862,7 @@ export default function HodDashboard() {
                         </td>
                         <td className="py-3.5 pr-2 text-right">
                           <button
-                            onClick={() => navigate("/faculty")}
+                            onClick={() => navigate("/hod/faculty")}
                             className="inline-flex items-center gap-1 text-xs font-bold hover:underline"
                             style={{ color: theme.activePillBg }}
                           >
@@ -1165,7 +1165,7 @@ export default function HodDashboard() {
                   <h2 className="text-lg font-extrabold text-[#17243e]">Faculty Mentorship Workload</h2>
                 </div>
                 <button
-                  onClick={() => navigate("/faculty")}
+                  onClick={() => navigate("/hod/faculty")}
                   className="flex items-center gap-1 text-xs font-bold hover:underline"
                   style={{ color: theme.activePillBg }}
                 >

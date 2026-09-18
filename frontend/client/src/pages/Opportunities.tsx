@@ -602,6 +602,7 @@ function OpportunityDrawer({
   onApply: () => void;
 }) {
   const [, navigate] = useLocation();
+  const { role } = useAuth();
 
   return (
     <div className="fixed inset-0 z-50">
@@ -737,7 +738,10 @@ function OpportunityDrawer({
                         </strong>
                       </span>
                       <button
-                        onClick={() => navigate("/skills")}
+                        onClick={() => {
+                          const rolePrefix = role === "HOD" ? "/hod" : role === "FACULTY" ? "/faculty" : "/student";
+                          navigate(`${rolePrefix}/skills`);
+                        }}
                         className="rounded-lg bg-primary px-2 py-1.5 text-[10px] font-bold text-white transition hover:opacity-90"
                       >
                         Open Skills

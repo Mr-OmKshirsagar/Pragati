@@ -5,34 +5,38 @@ import { ShieldCheck, Lock, Users, Building2, LogIn } from "lucide-react";
 // ─── Role → allowed paths map ─────────────────────────────────────────────────
 export const ROLE_ROUTES: Record<PragatiRole, string[]> = {
   STUDENT: [
-    "/overview", "/dashboard", "/progress", "/skills",
-    "/achievements", "/internship", "/opportunities",
-    "/career-passport", "/mentoring",
+    "/student/overview", "/student/progress", "/student/academics", "/student/skills",
+    "/student/assessments", "/student/achievements", "/student/internship",
+    "/student/opportunities", "/student/career-passport",
+    // legacy aliases for backward-compatibility
+    "/overview", "/dashboard", "/progress", "/skills", "/achievements", "/internship", "/opportunities", "/career-passport", "/academics",
   ],
   FACULTY: [
-    "/faculty", "/faculty/wards", "/internship", "/mentoring", "/skills",
+    "/faculty/overview", "/faculty/wards", "/faculty/academics", "/faculty/mentoring", "/faculty/internships", "/faculty/skills",
+    // legacy aliases for backward-compatibility
+    "/faculty", "/internship", "/mentoring", "/academics", "/skills",
   ],
   HOD: [
-    "/overview", "/dashboard", "/hod", "/faculty", "/faculty/wards",
-    "/skills", "/opportunities",
+    "/hod/overview", "/hod/approvals", "/hod/faculty", "/hod/academics", "/hod/skills", "/hod/opportunities",
+    // legacy aliases for backward-compatibility
+    "/hod", "/overview", "/dashboard", "/skills", "/opportunities", "/academics", "/faculty",
   ],
   ADMIN: [
-    "/overview", "/dashboard", "/hod", "/progress", "/skills",
-    "/achievements", "/internship", "/opportunities",
-    "/career-passport", "/mentoring", "/faculty", "/faculty/wards",
-    "/admin/overview", "/admin/users", "/admin/students", "/admin/faculty",
+    "/admin/overview", "/admin/approvals", "/admin/users", "/admin/students", "/admin/faculty",
     "/admin/departments", "/admin/academics", "/admin/skills", "/admin/assessments",
     "/admin/verification", "/admin/internships", "/admin/placement", "/admin/recruitment",
     "/admin/notifications", "/admin/audit-logs", "/admin/security", "/admin/system-health",
     "/admin/settings",
+    // legacy aliases for backward-compatibility
+    "/overview", "/dashboard", "/hod", "/progress", "/skills", "/achievements", "/internship", "/opportunities", "/career-passport", "/mentoring", "/faculty",
   ],
 };
 
 // ─── Default landing page per role ────────────────────────────────────────────
 export const ROLE_DEFAULT_PATH: Record<PragatiRole, string> = {
-  STUDENT:  "/overview",
-  FACULTY:  "/faculty",
-  HOD:      "/overview",
+  STUDENT:  "/student/overview",
+  FACULTY:  "/faculty/wards",
+  HOD:      "/hod/overview",
   ADMIN:    "/admin/overview",
 };
 
@@ -95,7 +99,7 @@ export function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) 
                 type="button"
                 onClick={async () => {
                   await switchRole("FACULTY");
-                  navigate("/faculty");
+                  navigate("/faculty/wards");
                 }}
                 className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#13876f] px-4 py-3 text-xs font-bold text-white hover:bg-[#0f6c58] transition shadow-sm"
               >
@@ -109,7 +113,7 @@ export function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) 
                 type="button"
                 onClick={async () => {
                   await switchRole("HOD");
-                  navigate("/hod");
+                  navigate("/hod/overview");
                 }}
                 className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#7358c9] px-4 py-3 text-xs font-bold text-white hover:bg-[#5e44ab] transition shadow-sm"
               >

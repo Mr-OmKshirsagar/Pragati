@@ -85,7 +85,7 @@ export default function AssessmentOverviewPage() {
       setShowCountdown(true);
       // Countdown will trigger navigation
       setTimeout(() => {
-        navigate(`/assessments/${assessmentId}/attempt/${attempt.attemptId}`);
+        navigate(`/student/assessments/${assessmentId}/attempt/${attempt.attemptId}`);
       }, 4500);
     } catch (err: any) {
       console.error("Failed to start assessment:", err);
@@ -121,7 +121,7 @@ export default function AssessmentOverviewPage() {
       <div className="min-h-screen dashboard-grid p-4">
         <div className="max-w-2xl mx-auto mt-12">
           <button
-            onClick={() => navigate("/assessments")}
+            onClick={() => navigate("/student/assessments")}
             className="mb-6 flex items-center gap-2 font-medium text-sm hover:opacity-80 transition"
             style={{ color: 'var(--primary)' }}
           >
@@ -136,7 +136,7 @@ export default function AssessmentOverviewPage() {
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <p className="font-bold text-red-900 text-lg">{error || "Assessment not found"}</p>
             <Button
-              onClick={() => navigate("/assessments")}
+              onClick={() => navigate("/student/assessments")}
               className="mt-6 bg-red-600 hover:bg-red-700"
             >
               Return to Assessments
@@ -165,7 +165,7 @@ export default function AssessmentOverviewPage() {
   const diffConfig = getDifficultyConfig(assessment.difficulty);
 
   return (
-    <PragatiFrame title="Assessment Overview" activePath="/assessments">
+    <PragatiFrame title="Assessment Overview" activePath="/student/assessments">
       <div className="min-h-screen dashboard-grid">
         {/* ── Hero Header ─────────────────────────────────────────────── */}
         <motion.div
@@ -186,7 +186,7 @@ export default function AssessmentOverviewPage() {
 
           <div className="relative z-10 max-w-4xl mx-auto">
             <button
-              onClick={() => navigate("/assessments")}
+              onClick={() => navigate("/student/assessments")}
               className="mb-5 flex items-center gap-2 text-white/70 hover:text-white font-medium text-sm transition"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -402,7 +402,7 @@ export default function AssessmentOverviewPage() {
                 </motion.button>
 
                 <button
-                  onClick={() => navigate("/assessments")}
+                  onClick={() => navigate("/student/assessments")}
                   className="mt-3 w-full rounded-xl border-2 border-slate-200 px-4 py-2.5 text-xs font-semibold text-[#6c7890] hover:bg-slate-50 hover:border-slate-300 transition-all"
                 >
                   Cancel

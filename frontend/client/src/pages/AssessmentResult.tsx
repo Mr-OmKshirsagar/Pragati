@@ -99,7 +99,7 @@ export default function AssessmentResultPage() {
       <div className="min-h-screen dashboard-grid p-4">
         <div className="max-w-2xl mx-auto mt-12">
           <button
-            onClick={() => navigate("/assessments")}
+            onClick={() => navigate("/student/assessments")}
             className="mb-6 flex items-center gap-2 font-medium text-sm transition hover:opacity-80"
             style={{ color: 'var(--primary)' }}
           >
@@ -116,7 +116,7 @@ export default function AssessmentResultPage() {
             <p className="font-bold text-red-900 text-lg">{error || "Result not found"}</p>
             <p className="text-sm text-red-700 mt-2">Please try again or return to the assessments page.</p>
             <Button
-              onClick={() => navigate("/assessments")}
+              onClick={() => navigate("/student/assessments")}
               className="mt-6 bg-red-600 hover:bg-red-700"
             >
               Return to Assessments
@@ -141,7 +141,7 @@ export default function AssessmentResultPage() {
   const tier = getScoreTier(resultData.percentageScore);
 
   return (
-    <PragatiFrame title="Assessment Result" activePath="/assessments">
+    <PragatiFrame title="Assessment Result" activePath="/student/assessments">
       <div className="min-h-screen dashboard-grid">
         {/* ── Hero Result Header ─────────────────────────────────────────── */}
         <motion.div
@@ -163,7 +163,7 @@ export default function AssessmentResultPage() {
 
           <div className="relative z-10 max-w-7xl mx-auto">
             <button
-              onClick={() => navigate("/assessments")}
+              onClick={() => navigate("/student/assessments")}
               className="mb-5 flex items-center gap-2 text-white/70 hover:text-white font-medium text-sm transition"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -338,7 +338,7 @@ export default function AssessmentResultPage() {
             className="flex flex-col sm:flex-row gap-4"
           >
             <Button
-              onClick={() => navigate("/skills")}
+              onClick={() => navigate("/student/skills")}
               className="text-white shadow-md hover:opacity-90 flex items-center gap-2"
               style={{
                 background: `linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 80%, black))`,
@@ -349,7 +349,7 @@ export default function AssessmentResultPage() {
               <ArrowUpRight className="h-3.5 w-3.5 opacity-60" />
             </Button>
             <Button
-              onClick={() => navigate("/assessments")}
+              onClick={() => navigate("/student/assessments")}
               variant="outline"
               className="flex items-center gap-2"
             >
