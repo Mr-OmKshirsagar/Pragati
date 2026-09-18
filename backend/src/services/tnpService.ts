@@ -171,7 +171,7 @@ export async function getOrCreateBenchmarkDrive(
     const [foundUser] = await db
       .select()
       .from(users)
-      .where(eq(users.role, "TNP_COORDINATOR"))
+      .where(eq(users.role, "ADMIN"))
       .limit(1);
 
     if (foundUser) {

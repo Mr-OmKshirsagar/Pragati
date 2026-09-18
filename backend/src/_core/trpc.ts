@@ -106,7 +106,7 @@ export const studentProcedure = requireRole(["STUDENT"]).use(async ({ ctx, next 
 });
 export const facultyProcedure = requireRole(["FACULTY", "HOD", "ADMIN"]);
 export const hodProcedure = requireRole(["HOD", "ADMIN"]);
-export const tnpProcedure = requireRole(["TNP_COORDINATOR", "ADMIN"]);
+export const tnpProcedure = requireRole(["HOD", "ADMIN"]);
 export const adminProcedure = requireRole(["ADMIN"]);
 
 /**
